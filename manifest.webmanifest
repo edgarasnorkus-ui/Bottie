@@ -1,0 +1,1 @@
+{"name":"Bottie","short_name":"Bottie","description":"Anteckningar, påminnelser med kvittens och väder","lang":"sv","start_url":"./","scope":"./","display":"standalone","background_color":"#EAF6F4","theme_color":"#5FD4B0","icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}

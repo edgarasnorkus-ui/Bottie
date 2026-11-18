@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bottie</title>
+<meta name="theme-color" content="#5FD4B0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bottie">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23FFC83D'/%3E%3Cellipse cx='50' cy='58' rx='32' ry='28' fill='%235FD4B0'/%3E%3Ccircle cx='38' cy='52' r='7' fill='%23fff'/%3E%3Ccircle cx='62' cy='52' r='7' fill='%23fff'/%3E%3Ccircle cx='39' cy='53' r='3.5' fill='%231F2A44'/%3E%3Ccircle cx='63' cy='53' r='3.5' fill='%231F2A44'/%3E%3Cpath d='M40 68q10 8 20 0' stroke='%231F2A44' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#EAF6F4; --card:#FFFFFF; --ink:#1F2A44; --muted:#5B6785; --line:#CFE3E0;
+  --mint:#5FD4B0; --sun:#FFC83D; --pink:#FF6B8B; --accent:#1F8F7A; --onaccent:#fff;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14213A; --card:#1E2E4F; --ink:#F2F6FF; --muted:#A3B1D1; --line:#2E4170; --accent:#5FD4B0; --onaccent:#14213A;}}
+:root[data-theme="dark"]{--bg:#14213A; --card:#1E2E4F; --ink:#F2F6FF; --muted:#A3B1D1; --line:#2E4170; --accent:#5FD4B0; --onaccent:#14213A;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Baloo 2","Nunito","Trebuchet MS",system-ui,sans-serif;font-size:17px;line-height:1.45}
+main{max-width:560px;margin:0 auto;padding:18px 16px 150px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+header svg{width:64px;height:64px;flex:none}
+h1{font-size:2rem;margin:0;line-height:1}
+header p{margin:2px 0 0;color:var(--muted);font-size:.95rem}
+.card{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px}
+textarea,input[type=datetime-local]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+textarea{min-height:84px;resize:vertical}
+textarea:focus,input:focus,button:focus-visible{outline:3px solid var(--sun);outline-offset:1px}
+.row{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+label.chk{display:flex;gap:8px;align-items:center;font-size:.95rem}
+label.chk input{width:22px;height:22px;accent-color:var(--accent)}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 18px;cursor:pointer;background:var(--accent);color:var(--onaccent)}
+button.soft{background:transparent;color:var(--ink);border:2px solid var(--line)}
+button.warn{background:var(--pink);color:#fff}
+.note{margin-top:12px;display:flex;gap:10px;align-items:flex-start}
+.note p{margin:0;white-space:pre-wrap;word-break:break-word}
+.meta{font-size:.85rem;color:var(--muted);margin-top:4px}
+.tag{display:inline-block;border-radius:999px;padding:1px 10px;font-size:.8rem;font-weight:700;background:var(--sun);color:#1F2A44;margin-right:6px}
+.tag.late{background:var(--pink);color:#fff}.tag.ok{background:var(--mint)}
+.x{margin-left:auto;background:transparent;color:var(--muted);padding:4px 10px;font-size:1.3rem}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.empty svg{width:90px;height:90px}
+#alert{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(20,33,58,.88)}
+#alert.on{display:flex}
+#alert .box{background:var(--card);border-radius:28px;padding:24px;max-width:420px;width:100%;text-align:center;border:4px solid var(--pink)}
+#alert svg{width:110px;height:110px;animation:hop .7s ease-in-out infinite}
+#alert h2{margin:6px 0}#alert p{font-size:1.2rem;white-space:pre-wrap;word-break:break-word}
+#alert .row{justify-content:center}
+@keyframes hop{50%{transform:translateY(-14px) rotate(-4deg)}}
+@media (prefers-reduced-motion:reduce){#alert svg{animation:none}}
+button{min-height:48px;touch-action:manipulation}
+.x{min-width:48px}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:6;max-width:560px;margin:0 auto;border-radius:28px 28px 0 0;border-bottom:0;max-height:92%;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));transform:translateY(110%);visibility:hidden;transition:transform .25s,visibility 0s .25s;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+#sheet.open{transform:none;visibility:visible;transition:transform .25s}
+#fabs{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;gap:12px;z-index:4}
+.fab{width:62px;height:62px;padding:0;font-size:2rem;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+#fabMic{background:var(--sun);color:#1F2A44;font-size:1.5rem}
+#vstat,#astat{min-height:1.3em}
+body:not(.notes) #fabs{display:none}
+#tabs{display:flex;gap:8px;margin-bottom:14px}
+#tabs button{flex:1;background:transparent;color:var(--ink);border:2px solid var(--line);padding:8px 4px}
+#tabs button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+section.view{display:none}section.view.on{display:block}
+.tiles{display:grid;gap:12px}
+.tile{text-align:left;width:100%;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:22px;padding:14px;font-weight:400}
+.tile h3{margin:0 0 4px;font-size:1rem;color:var(--muted)}
+.big{font-size:2.2rem;font-weight:800;line-height:1.1}
+.fc{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-top:2px solid var(--line)}
+.fc:first-child{border-top:0}
+@media (prefers-reduced-motion:reduce){#sheet,#sheet.open{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <svg id="logo" viewBox="0 0 100 100" aria-hidden="true"></svg>
+    <div><h1>Bottie</h1><p>Anteckna, och Bottie påminner tills du kvitterar.</p></div>
+  </header>
+
+  <section class="card" id="sheet" aria-label="Ny anteckning">
+    <textarea id="txt" placeholder="Vad vill du komma ihåg? Du kan också säga: ”ring mamma om 10 minuter”" aria-label="Ny anteckning"></textarea>
+    <div class="row"><button class="soft" id="mic" type="button">🎤 Diktera</button><button class="soft" id="close" type="button" style="margin-left:auto">Stäng</button></div>
+    <div class="meta" id="vstat" aria-live="polite"></div>
+    <div class="row">
+      <input type="datetime-local" id="due" aria-label="Påminn mig">
+    </div>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="need" checked> Kräv kvittens</label>
+      <button id="add" style="margin-left:auto">Spara anteckning</button>
+    </div>
+    <div class="row"><button class="soft" id="perm" type="button">Slå på notiser</button><span class="meta" id="permInfo"></span></div>
+  </section>
+
+  <div id="fabs"><button class="fab" id="fabMic" aria-label="Diktera ny anteckning">🎤</button><button class="fab" id="fabAdd" aria-label="Ny anteckning">+</button></div>
+
+  <nav id="tabs" aria-label="Appar"><button data-v="home">Översikt</button><button data-v="notes">Anteckningar</button><button data-v="weather">Väder</button></nav>
+  <section class="view" id="v-home"></section>
+  <section class="view" id="v-weather"></section>
+  <section class="view" id="v-notes"><div id="list"></div></section>
+  <p class="meta" style="margin-top:22px">Påminnelser fungerar medan Bottie är öppen i webbläsaren. Anteckningarna sparas på den här enheten.</p>
+</main>
+
+<div id="alert" role="alertdialog" aria-modal="true" aria-labelledby="atitle">
+  <div class="box">
+    <svg id="logo2" viewBox="0 0 100 100" aria-hidden="true"></svg>
+    <h2 id="atitle">Bottie påminner!</h2>
+    <p id="atext"></p>
+    <div class="row">
+      <button id="ack">Kvittera</button>
+      <button class="soft" id="snooze">Skjut upp 10 min</button>
+      <button class="soft" id="vcmd">🎤 Svara med rösten</button>
+      <span class="meta" id="astat" style="width:100%" aria-live="polite"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+var BOT='<rect width="100" height="100" rx="26" fill="#FFC83D"/><path d="M36 22l-5-12M64 22l5-12" stroke="#1F2A44" stroke-width="4" stroke-linecap="round"/><circle cx="30" cy="9" r="4" fill="#FF6B8B"/><circle cx="70" cy="9" r="4" fill="#FF6B8B"/><ellipse cx="50" cy="60" rx="34" ry="30" fill="#5FD4B0"/><ellipse cx="50" cy="66" rx="20" ry="16" fill="#A8EBD6"/><circle cx="37" cy="52" r="8" fill="#fff"/><circle cx="63" cy="52" r="8" fill="#fff"/><circle cx="38.5" cy="53" r="4" fill="#1F2A44"/><circle cx="64.5" cy="53" r="4" fill="#1F2A44"/><circle cx="26" cy="64" r="4.5" fill="#FF9DB3" opacity=".8"/><circle cx="74" cy="64" r="4.5" fill="#FF9DB3" opacity=".8"/><path d="M41 69q9 8 18 0" stroke="#1F2A44" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M30 88q-6 6-12 2M70 88q6 6 12 2" stroke="#3FB896" stroke-width="6" fill="none" stroke-linecap="round"/>';
+document.getElementById('logo').innerHTML=BOT;
+document.getElementById('logo2').innerHTML=BOT;
+
+var $=function(i){return document.getElementById(i)};
+var notes=[];
+try{notes=JSON.parse(localStorage.getItem('bottie-notes')||'[]')||[]}catch(e){notes=[]}
+function save(){try{localStorage.setItem('bottie-notes',JSON.stringify(notes))}catch(e){}}
+
+function fmt(t){return new Date(t).toLocaleString('sv-SE',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+function isDue(n){return n.due&&n.need&&!n.ack&&n.due<=Date.now()}
+
+function render(){
+  var l=$('list');l.innerHTML='';
+  if(!notes.length){
+    l.innerHTML='<div class="empty"><svg viewBox="0 0 100 100">'+BOT+'</svg><p>Inga anteckningar än. Skriv något ovan så håller Bottie koll.</p></div>';
+    return;
+  }
+  notes.slice().sort(function(a,b){return b.id-a.id}).forEach(function(n){
+    var d=document.createElement('div');d.className='card note';
+    var tag='';
+    if(n.due){
+      if(n.need&&n.ack)tag='<span class="tag ok">Kvitterad</span>';
+      else if(n.due<=Date.now()&&n.need)tag='<span class="tag late">Väntar på kvittens</span>';
+      else tag='<span class="tag">'+(n.need?'Kräver kvittens':'Påminnelse')+'</span>';
+    }
+    var box=document.createElement('div');
+    var p=document.createElement('p');p.textContent=n.text;
+    var m=document.createElement('div');m.className='meta';
+    m.innerHTML=tag+(n.due?fmt(n.due):'');
+    box.appendChild(p);if(n.due)box.appendChild(m);
+    var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ta bort anteckning');
+    x.onclick=function(){notes=notes.filter(function(q){return q.id!==n.id});save();render();check()};
+    d.appendChild(box);d.appendChild(x);l.appendChild(d);
+  });
+}
+
+$('add').onclick=function(){
+  var t=$('txt').value.trim();if(!t){$('txt').focus();return}
+  var due=$('due').value?new Date($('due').value).getTime():null;
+  notes.push({id:Date.now(),text:t,due:due,need:!!due&&$('need').checked,ack:false,last:0});
+  save();$('txt').value='';$('due').value='';$('vstat').textContent='';closeSheet();render();check();
+};
+
+/* Notiser och ljud */
+function permInfo(){
+  var s=!('Notification' in window)?'Webbläsaren saknar notiser, Bottie visar påminnelser i appen.':
+    Notification.permission==='granted'?'Notiser är på.':Notification.permission==='denied'?'Notiser är blockerade i webbläsaren.':'';
+  $('permInfo').textContent=s;
+}
+$('perm').onclick=function(){
+  try{if('Notification' in window)Notification.requestPermission().then(permInfo)}catch(e){}
+  permInfo();
+};
+permInfo();
+
+function beep(){
+  try{
+    var C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+    var c=new C(),o=c.createOscillator(),g=c.createGain();
+    o.type='sine';o.frequency.value=660;o.connect(g);g.connect(c.destination);
+    g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.3,c.currentTime+.05);
+    g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.5);
+    o.start();o.stop(c.currentTime+.55);
+  }catch(e){}
+  try{if(navigator.vibrate)navigator.vibrate([200,100,200])}catch(e){}
+}
+function nudge(n){
+  beep();
+  try{
+    if('Notification' in window&&Notification.permission==='granted'){
+      new Notification('Bottie påminner',{body:n.text,tag:'bottie-'+n.id,requireInteraction:true});
+    }
+  }catch(e){}
+}
+
+var current=null;
+function check(){
+  var due=notes.filter(isDue).sort(function(a,b){return a.due-b.due});
+  var n=due[0]||null;
+  if(!n){current=null;$('alert').classList.remove('on');return}
+  var fresh=!current||current.id!==n.id;
+  current=n;
+  $('atext').textContent=n.text;
+  $('alert').classList.add('on');
+  if(fresh)$('ack').focus();
+  if(Date.now()-(n.last||0)>30000){n.last=Date.now();nudge(n);save()}
+}
+$('ack').onclick=function(){
+  if(!current)return;current.ack=true;save();render();check();
+};
+$('snooze').onclick=function(){
+  if(!current)return;current.due=Date.now()+10*60000;current.last=0;save();render();check();
+};
+
+/* Mobilvy: panel för ny anteckning */
+var sheet=$('sheet');
+function openSheet(){sheet.classList.add('open');$('fabs').style.display='none'}
+function closeSheet(){stopRec();sheet.classList.remove('open');$('fabs').style.display=''}
+$('fabAdd').onclick=function(){openSheet();setTimeout(function(){$('txt').focus()},260)};
+$('fabMic').onclick=function(){openSheet();dictate()};
+$('close').onclick=closeSheet;
+$('mic').onclick=function(){if(rec)stopRec();else dictate()};
+
+/* Röststyrning (webbläsarens taligenkänning) */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null,arec=null;
+function listen(onText,stat,done){
+  if(!SR){stat.textContent='Röststyrning stöds inte i den här webbläsaren.';return null}
+  var r=new SR();r.lang='sv-SE';r.interimResults=true;r.continuous=false;
+  r.onstart=function(){stat.textContent='Lyssnar…'};
+  r.onresult=function(e){var t='',fin=false;for(var i=0;i<e.results.length;i++){t+=e.results[i][0].transcript;fin=e.results[i].isFinal}onText(t.trim(),fin)};
+  r.onerror=function(e){stat.textContent=(e.error==='not-allowed'||e.error==='service-not-allowed')?'Mikrofonen är blockerad. Tillåt den i webbläsaren.':'Kunde inte lyssna ('+e.error+').'};
+  r.onend=function(){done()};
+  try{r.start()}catch(e){stat.textContent='Kunde inte starta mikrofonen.';return null}
+  return r;
+}
+function stopRec(){try{if(rec)rec.stop()}catch(e){}rec=null;if(DICT&&dOn&&!cmdMode)DICT.stop();$('mic').textContent='🎤 Diktera'}
+function dictate(){
+  if(DICT){
+    if(dOn){DICT.stop();return}
+    cmdMode=false;dBase=$('txt').value.trim();
+    DICT.start().catch(function(e){$('vstat').textContent=(e&&e.code==='not_granted')?'Mikrofonen är inte tillåten. Skriv eller använd mikrofonknappen på tangentbordet.':'Kunde inte starta mikrofonen.'});
+    return;
+  }
+  if(!DICT){$('txt').focus();$('vstat').textContent='Tryck på mikrofonen på tangentbordet för att tala in texten.';return}
+  var base=$('txt').value.trim();
+  $('mic').textContent='⏹ Sluta';
+  rec=listen(function(t,fin){
+    $('txt').value=(base?base+' ':'')+t;
+    if(fin)applyTime();
+  },$('vstat'),function(){
+    rec=null;$('mic').textContent='🎤 Diktera';
+    if($('vstat').textContent==='Lyssnar…')$('vstat').textContent='';
+  });
+  if(!rec)$('mic').textContent='🎤 Diktera';
+}
+var NUM={en:1,ett:1,'två':2,tre:3,fyra:4,fem:5,sex:6,sju:7,'åtta':8,nio:9,tio:10,femton:15,tjugo:20,trettio:30};
+var RE1=/\s*(?:påminn mig\s+)?\bom (\d+|en|ett|två|tre|fyra|fem|sex|sju|åtta|nio|tio|femton|tjugo|trettio) (minuter|minut|timmar|timme)/i;
+var RE2=/\s*(?:i morgon|imorgon)(?: (?:klockan|kl\.?) (\d{1,2}))?/i;
+function localInput(ms){var d=new Date(ms-new Date(ms).getTimezoneOffset()*60000);return d.toISOString().slice(0,16)}
+function applyTime(){
+  var s=$('txt').value,m,ms=null;
+  if((m=s.match(RE1))){
+    var n=isNaN(m[1])?NUM[m[1].toLowerCase()]:+m[1];
+    if(n){ms=Date.now()+n*(/^t/i.test(m[2])?60:1)*60000;s=s.replace(RE1,'')}
+  }else if((m=s.match(RE2))){
+    var d=new Date();d.setDate(d.getDate()+1);d.setHours(m[1]?+m[1]:9,0,0,0);
+    ms=d.getTime();s=s.replace(RE2,'');
+  }
+  if(ms){$('txt').value=s.trim();$('due').value=localInput(ms);$('need').checked=true;$('vstat').textContent='Påminnelse inställd: '+fmt(ms)}
+}
+/* Svara på påminnelse med rösten */
+$('vcmd').onclick=function(){
+  if(DICT){
+    if(dOn){DICT.stop();return}
+    cmdMode=true;cmdHandled=false;
+    DICT.start().catch(function(e){cmdMode=false;$('astat').textContent='Mikrofonen kunde inte startas.'});
+    return;
+  }
+  if(!DICT){$('astat').textContent='Röstsvar finns inte här. Tryck på Kvittera eller Skjut upp.';return}
+  if(arec){try{arec.stop()}catch(e){}return}
+  var handled=false;
+  arec=listen(function(t,fin){
+    if(handled)return;
+    var s=t.toLowerCase();
+    if(/kvitt/.test(s)){handled=true;$('ack').click()}
+    else if(/skjut|snooze|senare|vänta/.test(s)){handled=true;$('snooze').click()}
+    else if(fin)$('astat').textContent='Hörde ”'+t+'”. Säg kvittera eller skjut upp.';
+  },$('astat'),function(){arec=null});
+};
+
+/* Mikrofon via plattformens diktering */
+var DICT=null,dBase='',dOn=false,cmdMode=false,cmdHandled=false;
+function cmdText(t,fin){
+  if(cmdHandled)return;var s=t.toLowerCase();
+  if(/kvitt/.test(s)){cmdHandled=true;$('ack').click()}
+  else if(/skjut|snooze|senare|vänta/.test(s)){cmdHandled=true;$('snooze').click()}
+  else if(fin)$('astat').textContent='Hörde ”'+t+'”. Säg kvittera eller skjut upp.';
+}
+try{if(window.claude&&claude.use)claude.use('dictation').then(function(d){
+  if(!d)return;DICT=d;
+  d.onPartial(function(x){if(cmdMode)cmdText(x.text,false);else $('txt').value=(dBase?dBase+' ':'')+x.text});
+  d.onFinal(function(x){if(cmdMode){cmdText(x.text,true);return}dBase=(dBase?dBase+' ':'')+x.text;$('txt').value=dBase;applyTime()});
+  d.onState(function(s){
+    dOn=s.state==='listening';
+    var el=cmdMode?$('astat'):$('vstat');
+    if(!cmdMode)$('mic').textContent=dOn?'⏹ Sluta':'🎤 Diktera';
+    if(dOn)el.textContent='Lyssnar…';else{if(el.textContent==='Lyssnar…')el.textContent='';cmdMode=false}
+  });
+}).catch(function(){})}catch(e){}
+
+/* Dashboard */
+var WX={place:'Tibro',at:'17 nov 2026',now:{t:0.1,c:'Mest molnigt'},days:[['Idag',1.0,-0.5,10],['Ons',0.1,-2.9,25],['Tors',-1.8,-3.3,5],['Fre',0.0,-2.8,25],['Lör',1.6,-2.7,5],['Sön',1.4,-2.0,0],['Mån',0.4,-3.5,10],['Tis',-0.8,-4.1,10]]};
+function deg(n){return String(n).replace('.',',').replace('-','−')+'°'}
+function tile(title,big,sub,view){
+  var b=document.createElement('button');b.className='tile';b.type='button';
+  var h=document.createElement('h3');h.textContent=title;
+  var g=document.createElement('div');g.className='big';g.textContent=big;
+  var s=document.createElement('div');s.className='meta';s.textContent=sub;
+  b.appendChild(h);b.appendChild(g);b.appendChild(s);b.onclick=function(){setView(view)};return b;
+}
+function renderHome(){
+  var h=$('v-home');h.innerHTML='';var t=document.createElement('div');t.className='tiles';
+  var d0=WX.days[0];
+  t.appendChild(tile('Väder i '+WX.place,'☁️ '+deg(WX.now.t),WX.now.c+' · nederbördschans idag '+d0[3]+' %','weather'));
+  var up=notes.filter(function(n){return n.due&&n.need&&!n.ack}).sort(function(a,b){return a.due-b.due})[0];
+  t.appendChild(tile('Nästa påminnelse',up?fmt(up.due):'Inga',up?up.text.slice(0,80):'Skapa en anteckning med tid så dyker den upp här.','notes'));
+  t.appendChild(tile('Anteckningar',String(notes.length),notes.length?'Tryck för att se alla.':'Tryck för att skriva din första.','notes'));
+  h.appendChild(t);
+}
+function renderWeather(){
+  var w=$('v-weather');w.innerHTML='';
+  var c=document.createElement('div');c.className='card';
+  var top=document.createElement('div');top.innerHTML='<div class="meta"></div><div class="big"></div><div></div>';
+  top.children[0].textContent=WX.place;top.children[1].textContent='☁️ '+deg(WX.now.t);top.children[2].textContent=WX.now.c;
+  c.appendChild(top);
+  var box=document.createElement('div');box.style.marginTop='10px';
+  WX.days.forEach(function(d){
+    var r=document.createElement('div');r.className='fc';
+    var a=document.createElement('span');a.textContent=d[0];
+    var b=document.createElement('span');b.textContent='💧 '+d[3]+' %';
+    var e=document.createElement('strong');e.textContent=deg(d[1])+' / '+deg(d[2]);
+    r.appendChild(a);r.appendChild(b);r.appendChild(e);box.appendChild(r);
+  });
+  c.appendChild(box);w.appendChild(c);
+  var n=document.createElement('p');n.className='meta';n.textContent=WX.live?'Live-prognos från Open-Meteo, hämtad '+WX.at+'.':'Visar sparad prognos från '+WX.at+'. Ingen uppkoppling just nu.';w.appendChild(n);
+}
+function setView(v){
+  ['home','notes','weather'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
+  document.body.classList.toggle('notes',v==='notes');
+  if(v!=='notes')closeSheet();
+  if(v==='home')renderHome();
+}
+Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.onclick=function(){setView(b.getAttribute('data-v'))}});
+var WCODE=function(c){return c===0?'Klart':c<=2?'Mest klart':c===3?'Mulet':c<=48?'Dimma':c<=57?'Duggregn':c<=67?'Regn':c<=77?'Snö':c<=82?'Regnskurar':c<=86?'Snöbyar':'Åska'};
+function loadWeather(lat,lon,place){
+  var u='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto';
+  fetch(u).then(function(r){return r.json()}).then(function(j){
+    var d=j.daily,days=[];
+    for(var i=0;i<d.time.length;i++){days.push([i===0?'Idag':new Date(d.time[i]+'T12:00').toLocaleDateString('sv-SE',{weekday:'short'}),Math.round(d.temperature_2m_max[i]),Math.round(d.temperature_2m_min[i]),d.precipitation_probability_max[i]||0])}
+    WX={place:place,live:true,at:new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'}),now:{t:Math.round(j.current.temperature_2m),c:WCODE(j.current.weather_code)},days:days};
+    try{localStorage.setItem('bottie-wx',JSON.stringify(WX))}catch(e){}
+    renderWeather();if($('v-home').classList.contains('on'))renderHome();
+  }).catch(function(){});
+}
+function refreshWeather(){
+  var go=function(la,lo,p){loadWeather(la,lo,p)};
+  if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(p){go(p.coords.latitude.toFixed(3),p.coords.longitude.toFixed(3),'Din plats')},function(){go(58.445,14.141,'Tibro')},{timeout:8000,maximumAge:600000})}
+  else go(58.445,14.141,'Tibro');
+}
+try{var sv=JSON.parse(localStorage.getItem('bottie-wx')||'null');if(sv&&sv.days){sv.live=false;sv.at=sv.at||'tidigare';WX=sv}}catch(e){}
+renderWeather();
+refreshWeather();setInterval(refreshWeather,1800000);
+
+render();check();setView('home');
+setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)check()});
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+</script>
+</body>
+</html>
