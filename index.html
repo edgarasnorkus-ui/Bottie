@@ -112,7 +112,7 @@ section.view{display:none}section.view.on{display:block}
   <section class="view" id="v-price">
     <div id="pbody"></div>
     <div class="card" style="margin-top:12px">
-      <div class="meta">Tibber-token (sparas bara på den här enheten)</div>
+      <div class="meta">Tibber-token eller proxy-adress som börjar med https:// (sparas bara på den här enheten)</div>
       <input type="password" id="ptok" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Tibber-token" placeholder="Klistra in din token">
       <div class="row"><button id="psave">Spara och hämta</button><button class="soft" id="pdel">Ta bort token</button></div>
       <div class="meta" id="pstat" aria-live="polite"></div>
@@ -415,8 +415,8 @@ function cheapest(list,n){
 function loadPrice(){
   var tok=getTok();if(!tok){renderPrice();return}
   $('pstat').textContent='Hämtar…';
-  fetch('https://api.tibber.com/v1-beta/gql',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
-    body:JSON.stringify({query:'{viewer{homes{currentSubscription{priceInfo{current{total startsAt level currency}today{total startsAt level}tomorrow{total startsAt level}}}}}}'})})
+  (tok.indexOf('https://')===0?fetch(tok):fetch('https://api.tibber.com/v1-beta/gql',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+    body:JSON.stringify({query:'{viewer{homes{currentSubscription{priceInfo{current{total startsAt level currency}today{total startsAt level}tomorrow{total startsAt level}}}}}}'})}))
   .then(function(r){if(r.status===401)throw new Error('token');return r.json()})
   .then(function(j){
     if(!j||j.errors&&j.errors.length)throw new Error('api');
@@ -429,7 +429,7 @@ function loadPrice(){
     if($('v-home').classList.contains('on'))renderHome();
   }).catch(function(e){
     var m=e&&e.message;
-    $('pstat').textContent=m==='token'?'Tibber avvisade token. Kontrollera att den är rätt.':m==='empty'?'Hittade inget elavtal med priser på kontot.':'Kunde inte hämta priser. Antingen saknas uppkoppling eller så blockerar Tibber anrop från webbläsaren.';
+    $('pstat').textContent=m==='token'?'Tibber avvisade token. Kontrollera att den är rätt.':m==='empty'?'Hittade inget elavtal med priser på kontot.':'Kunde inte hämta priser. Antingen saknas uppkoppling eller så blockeras anropet. Teknisk info: '+(m||'okänt')+' (version 3)';
     renderPrice();
   });
 }
