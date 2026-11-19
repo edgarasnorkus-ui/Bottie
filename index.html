@@ -75,6 +75,12 @@ section.view{display:none}section.view.on{display:block}
 .fc{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-top:2px solid var(--line)}
 .fc:first-child{border-top:0}
 @media (prefers-reduced-motion:reduce){#sheet,#sheet.open{transition:none}}
+#tabs button{font-size:.9rem}
+#ptok{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:6px}
+.chart{display:flex;align-items:flex-end;gap:1px;height:90px;margin-top:12px}
+.chart div{flex:1;min-height:2px;border-radius:2px 2px 0 0}
+.chart div.now{outline:2px solid var(--ink)}
+.axis{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -100,9 +106,18 @@ section.view{display:none}section.view.on{display:block}
 
   <div id="fabs"><button class="fab" id="fabMic" aria-label="Diktera ny anteckning">🎤</button><button class="fab" id="fabAdd" aria-label="Ny anteckning">+</button></div>
 
-  <nav id="tabs" aria-label="Appar"><button data-v="home">Översikt</button><button data-v="notes">Anteckningar</button><button data-v="weather">Väder</button></nav>
+  <nav id="tabs" aria-label="Appar"><button data-v="home">Översikt</button><button data-v="notes">Anteckningar</button><button data-v="weather">Väder</button><button data-v="price">Elpris</button></nav>
   <section class="view" id="v-home"></section>
   <section class="view" id="v-weather"></section>
+  <section class="view" id="v-price">
+    <div id="pbody"></div>
+    <div class="card" style="margin-top:12px">
+      <div class="meta">Tibber-token (sparas bara på den här enheten)</div>
+      <input type="password" id="ptok" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Tibber-token" placeholder="Klistra in din token">
+      <div class="row"><button id="psave">Spara och hämta</button><button class="soft" id="pdel">Ta bort token</button></div>
+      <div class="meta" id="pstat" aria-live="polite"></div>
+    </div>
+  </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Påminnelser fungerar medan Bottie är öppen i webbläsaren. Anteckningarna sparas på den här enheten.</p>
 </main>
@@ -327,6 +342,8 @@ function renderHome(){
   var h=$('v-home');h.innerHTML='';var t=document.createElement('div');t.className='tiles';
   var d0=WX.days[0];
   t.appendChild(tile('Väder i '+WX.place,'☁️ '+deg(WX.now.t),WX.now.c+' · nederbördschans idag '+d0[3]+' %','weather'));
+  var cs=currentSlot();
+  t.appendChild(tile('Elpris nu',cs?ore(cs.total)+' öre':'–',cs?(LV[cs.level]||'')+' · öre per kWh':'Lägg till din Tibber-token i Elpris-fliken.','price'));
   var up=notes.filter(function(n){return n.due&&n.need&&!n.ack}).sort(function(a,b){return a.due-b.due})[0];
   t.appendChild(tile('Nästa påminnelse',up?fmt(up.due):'Inga',up?up.text.slice(0,80):'Skapa en anteckning med tid så dyker den upp här.','notes'));
   t.appendChild(tile('Anteckningar',String(notes.length),notes.length?'Tryck för att se alla.':'Tryck för att skriva din första.','notes'));
@@ -350,11 +367,12 @@ function renderWeather(){
   var n=document.createElement('p');n.className='meta';n.textContent=WX.live?'Live-prognos från Open-Meteo, hämtad '+WX.at+'.':'Visar sparad prognos från '+WX.at+'. Ingen uppkoppling just nu.';w.appendChild(n);
 }
 function setView(v){
-  ['home','notes','weather'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
+  ['home','notes','weather','price'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
   Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
   document.body.classList.toggle('notes',v==='notes');
   if(v!=='notes')closeSheet();
   if(v==='home')renderHome();
+  if(v==='price'){renderPrice();if(getTok())loadPrice()}
 }
 Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.onclick=function(){setView(b.getAttribute('data-v'))}});
 var WCODE=function(c){return c===0?'Klart':c<=2?'Mest klart':c===3?'Mulet':c<=48?'Dimma':c<=57?'Duggregn':c<=67?'Regn':c<=77?'Snö':c<=82?'Regnskurar':c<=86?'Snöbyar':'Åska'};
@@ -376,6 +394,83 @@ function refreshWeather(){
 try{var sv=JSON.parse(localStorage.getItem('bottie-wx')||'null');if(sv&&sv.days){sv.live=false;sv.at=sv.at||'tidigare';WX=sv}}catch(e){}
 renderWeather();
 refreshWeather();setInterval(refreshWeather,1800000);
+
+/* Elpris (Tibber) */
+var TT='bottie-tibber-token',TC='bottie-tibber-cache';
+function getTok(){try{return localStorage.getItem(TT)||''}catch(e){return ''}}
+var PRICE=null;try{PRICE=JSON.parse(localStorage.getItem(TC)||'null')}catch(e){}
+var LV={VERY_CHEAP:'Mycket billigt',CHEAP:'Billigt',NORMAL:'Normalt',EXPENSIVE:'Dyrt',VERY_EXPENSIVE:'Mycket dyrt'};
+function ore(x){return Math.round(x*100)}
+function hhmm(s){return new Date(s).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})}
+function currentSlot(){
+  if(!PRICE)return null;
+  var all=(PRICE.today||[]).concat(PRICE.tomorrow||[]),now=Date.now(),c=null;
+  for(var i=0;i<all.length;i++){if(new Date(all[i].startsAt).getTime()<=now)c=all[i]}
+  return c||PRICE.cur||null;
+}
+function cheapest(list,n){
+  return list.slice().sort(function(a,b){return a.total-b.total}).slice(0,n)
+    .sort(function(a,b){return new Date(a.startsAt)-new Date(b.startsAt)}).map(function(x){return hhmm(x.startsAt)}).join(', ');
+}
+function loadPrice(){
+  var tok=getTok();if(!tok){renderPrice();return}
+  $('pstat').textContent='Hämtar…';
+  fetch('https://api.tibber.com/v1-beta/gql',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+    body:JSON.stringify({query:'{viewer{homes{currentSubscription{priceInfo{current{total startsAt level currency}today{total startsAt level}tomorrow{total startsAt level}}}}}}'})})
+  .then(function(r){if(r.status===401)throw new Error('token');return r.json()})
+  .then(function(j){
+    if(!j||j.errors&&j.errors.length)throw new Error('api');
+    var hs=j.data.viewer.homes,pi=null;
+    for(var i=0;i<hs.length;i++){var c=hs[i].currentSubscription;if(c&&c.priceInfo){pi=c.priceInfo;break}}
+    if(!pi)throw new Error('empty');
+    PRICE={at:Date.now(),cur:pi.current,today:pi.today||[],tomorrow:pi.tomorrow||[]};
+    try{localStorage.setItem(TC,JSON.stringify(PRICE))}catch(e){}
+    $('pstat').textContent='';renderPrice();
+    if($('v-home').classList.contains('on'))renderHome();
+  }).catch(function(e){
+    var m=e&&e.message;
+    $('pstat').textContent=m==='token'?'Tibber avvisade token. Kontrollera att den är rätt.':m==='empty'?'Hittade inget elavtal med priser på kontot.':'Kunde inte hämta priser. Antingen saknas uppkoppling eller så blockerar Tibber anrop från webbläsaren.';
+    renderPrice();
+  });
+}
+function renderPrice(){
+  var b=$('pbody');b.innerHTML='';
+  $('ptok').placeholder=getTok()?'Token sparad. Klistra in en ny för att byta.':'Klistra in din token';
+  var c=document.createElement('div');c.className='card';b.appendChild(c);
+  var cs=currentSlot();
+  if(!PRICE||!cs){c.textContent='Lägg till din Tibber-token nedan för att se elpriset.';return}
+  var m=document.createElement('div');m.className='meta';m.textContent='Elpris nu';
+  var g=document.createElement('div');g.className='big';g.textContent=ore(cs.total)+' öre/kWh';
+  var l=document.createElement('div');l.textContent=(LV[cs.level]||'')+' · uppdaterat '+new Date(PRICE.at).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
+  c.appendChild(m);c.appendChild(g);c.appendChild(l);
+  var td=PRICE.today||[];
+  if(td.length){
+    var mx=Math.max.apply(null,td.map(function(x){return x.total}))||1,ch=document.createElement('div');ch.className='chart';
+    ch.setAttribute('role','img');ch.setAttribute('aria-label','Elpris i dag');
+    td.forEach(function(x){
+      var d=document.createElement('div');d.style.height=Math.max(2,Math.max(0,x.total)/mx*100)+'%';
+      d.style.background=/CHEAP/.test(x.level)?'var(--mint)':/EXPENSIVE/.test(x.level)?'var(--pink)':'var(--sun)';
+      if(cs.startsAt===x.startsAt)d.className='now';ch.appendChild(d);
+    });
+    c.appendChild(ch);
+    var ax=document.createElement('div');ax.className='axis';ax.innerHTML='<span></span><span></span>';
+    ax.children[0].textContent=hhmm(td[0].startsAt);ax.children[1].textContent='dygnets slut';c.appendChild(ax);
+    var p=document.createElement('p');p.textContent='Billigast i dag: '+cheapest(td,td.length>30?8:3);c.appendChild(p);
+  }
+  if((PRICE.tomorrow||[]).length){var q=document.createElement('p');q.textContent='Billigast i morgon: '+cheapest(PRICE.tomorrow,PRICE.tomorrow.length>30?8:3);c.appendChild(q)}
+}
+$('psave').onclick=function(){
+  var v=$('ptok').value.trim();
+  if(v){try{localStorage.setItem(TT,v)}catch(e){}}
+  $('ptok').value='';loadPrice();
+};
+$('pdel').onclick=function(){
+  try{localStorage.removeItem(TT);localStorage.removeItem(TC)}catch(e){}
+  PRICE=null;$('ptok').value='';$('pstat').textContent='Token och sparade priser är borttagna.';renderPrice();
+  if($('v-home').classList.contains('on'))renderHome();
+};
+setInterval(function(){if(getTok())loadPrice()},900000);
+if(getTok())loadPrice();
 
 render();check();setView('home');
 setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
