@@ -76,11 +76,16 @@ section.view{display:none}section.view.on{display:block}
 .fc:first-child{border-top:0}
 @media (prefers-reduced-motion:reduce){#sheet,#sheet.open{transition:none}}
 #tabs button{font-size:.9rem}
-#ptok{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:6px}
+#ptok,#pex{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:6px}
 .chart{display:flex;align-items:flex-end;gap:1px;height:90px;margin-top:12px}
 .chart div{flex:1;min-height:2px;border-radius:2px 2px 0 0}
 .chart div.now{outline:2px solid var(--ink)}
 .axis{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+#tabs{overflow-x:auto}
+#tabs button{flex:0 0 auto;padding:8px 14px}
+.inp{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+.row .inp{flex:1;min-width:0}
+.note>div{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -106,17 +111,47 @@ section.view{display:none}section.view.on{display:block}
 
   <div id="fabs"><button class="fab" id="fabMic" aria-label="Diktera ny anteckning">🎤</button><button class="fab" id="fabAdd" aria-label="Ny anteckning">+</button></div>
 
-  <nav id="tabs" aria-label="Appar"><button data-v="home">Översikt</button><button data-v="notes">Anteckningar</button><button data-v="weather">Väder</button><button data-v="price">Elpris</button></nav>
+  <nav id="tabs" aria-label="Appar"><button data-v="home">Översikt</button><button data-v="cal">Kalender</button><button data-v="notes">Anteckningar</button><button data-v="weather">Väder</button><button data-v="price">Elpris</button><button data-v="set">Inställningar</button></nav>
   <section class="view" id="v-home"></section>
   <section class="view" id="v-weather"></section>
   <section class="view" id="v-price">
     <div id="pbody"></div>
+    <div class="card" style="margin-top:12px">
+      <div class="meta">Extra avgift att lägga på (öre per kWh), till exempel din nätavgift inklusive moms</div>
+      <input type="text" id="pex" inputmode="decimal" autocomplete="off" aria-label="Extra avgift i öre per kWh" placeholder="0">
+      <div class="row"><button class="soft" id="pexsave" type="button">Spara avgift</button></div>
+    </div>
     <div class="card" style="margin-top:12px">
       <div class="meta">Tibber-token eller proxy-adress som börjar med https:// (sparas bara på den här enheten)</div>
       <input type="password" id="ptok" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Tibber-token" placeholder="Klistra in din token">
       <div class="row"><button id="psave">Spara och hämta</button><button class="soft" id="pdel">Ta bort token</button></div>
       <div class="meta" id="pstat" aria-live="polite"></div>
     </div>
+  </section>
+  <section class="view" id="v-cal">
+    <div class="row" style="margin-top:0"><button class="soft" id="wprev" type="button">‹ Förra</button><button class="soft" id="wnow" type="button">Idag</button><button class="soft" id="wnext" type="button">Nästa ›</button><button id="evnew" type="button" style="margin-left:auto">+ Aktivitet</button></div>
+    <div class="card" id="evform" style="display:none;margin-top:12px">
+      <input type="text" class="inp" id="evt" placeholder="Aktivitet, till exempel Fotboll" aria-label="Aktivitet">
+      <div class="row"><select id="evc" class="inp" aria-label="Barn"></select></div>
+      <div class="row"><input type="date" class="inp" id="evd" aria-label="Datum"><input type="time" class="inp" id="evtm" aria-label="Tid"></div>
+      <input type="text" class="inp" id="evp" placeholder="Plats (valfritt)" style="margin-top:10px">
+      <div class="row"><label class="chk"><input type="checkbox" id="evw"> Varje vecka</label><button id="evsave" type="button" style="margin-left:auto">Spara</button></div>
+    </div>
+    <div id="cal"></div>
+  </section>
+  <section class="view" id="v-set">
+    <div class="card"><h3 style="margin:0 0 6px">Delad lagring (Google Kalkylark)</h3>
+      <div class="meta">Adressen till ert Google-skript och familjekoden. Sparas bara på den här enheten.</div>
+      <input class="inp" type="text" id="surl" placeholder="https://script.google.com/macros/s/…/exec" style="margin-top:8px" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <input class="inp" type="password" id="skey" placeholder="Familjekod" style="margin-top:8px" autocomplete="off">
+      <div class="row"><button id="ssave" type="button">Spara och synka</button><button class="soft" id="soff" type="button">Koppla från</button></div>
+      <div class="meta" id="sstat" aria-live="polite"></div></div>
+    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Jag heter</h3>
+      <input class="inp" type="text" id="myname" placeholder="Ditt namn" autocomplete="off">
+      <div class="meta">Visas när du kryssar av en aktivitet.</div></div>
+    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Barn</h3>
+      <div id="kids"></div>
+      <div class="row"><input class="inp" type="text" id="kname" placeholder="Barnets namn" autocomplete="off"><button id="kadd" type="button" style="flex:none">Lägg till</button></div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Påminnelser fungerar medan Bottie är öppen i webbläsaren. Anteckningarna sparas på den här enheten.</p>
@@ -144,18 +179,20 @@ document.getElementById('logo2').innerHTML=BOT;
 var $=function(i){return document.getElementById(i)};
 var notes=[];
 try{notes=JSON.parse(localStorage.getItem('bottie-notes')||'[]')||[]}catch(e){notes=[]}
-function save(){try{localStorage.setItem('bottie-notes',JSON.stringify(notes))}catch(e){}}
+function persist(){try{localStorage.setItem('bottie-notes',JSON.stringify(notes))}catch(e){}}
+function save(){persist();if(DIRTY)syncSoon()}
+function live(){return notes.filter(function(n){return !n.deleted&&!n.kind})}
 
 function fmt(t){return new Date(t).toLocaleString('sv-SE',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
-function isDue(n){return n.due&&n.need&&!n.ack&&n.due<=Date.now()}
+function isDue(n){return n.due&&n.need&&!n.ack&&!n.deleted&&!n.kind&&n.due<=Date.now()}
 
 function render(){
   var l=$('list');l.innerHTML='';
-  if(!notes.length){
+  if(!live().length){
     l.innerHTML='<div class="empty"><svg viewBox="0 0 100 100">'+BOT+'</svg><p>Inga anteckningar än. Skriv något ovan så håller Bottie koll.</p></div>';
     return;
   }
-  notes.slice().sort(function(a,b){return b.id-a.id}).forEach(function(n){
+  live().sort(function(a,b){return b.id-a.id}).forEach(function(n){
     var d=document.createElement('div');d.className='card note';
     var tag='';
     if(n.due){
@@ -169,7 +206,7 @@ function render(){
     m.innerHTML=tag+(n.due?fmt(n.due):'');
     box.appendChild(p);if(n.due)box.appendChild(m);
     var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ta bort anteckning');
-    x.onclick=function(){notes=notes.filter(function(q){return q.id!==n.id});save();render();check()};
+    x.onclick=function(){n.deleted=true;touch(n);save();render();check()};
     d.appendChild(box);d.appendChild(x);l.appendChild(d);
   });
 }
@@ -177,7 +214,7 @@ function render(){
 $('add').onclick=function(){
   var t=$('txt').value.trim();if(!t){$('txt').focus();return}
   var due=$('due').value?new Date($('due').value).getTime():null;
-  notes.push({id:Date.now(),text:t,due:due,need:!!due&&$('need').checked,ack:false,last:0});
+  var nn={id:nid(),text:t,due:due,need:!!due&&$('need').checked,ack:false,last:0};touch(nn);notes.push(nn);
   save();$('txt').value='';$('due').value='';$('vstat').textContent='';closeSheet();render();check();
 };
 
@@ -226,10 +263,10 @@ function check(){
   if(Date.now()-(n.last||0)>30000){n.last=Date.now();nudge(n);save()}
 }
 $('ack').onclick=function(){
-  if(!current)return;current.ack=true;save();render();check();
+  if(!current)return;current.ack=true;touch(current);save();render();check();
 };
 $('snooze').onclick=function(){
-  if(!current)return;current.due=Date.now()+10*60000;current.last=0;save();render();check();
+  if(!current)return;current.due=Date.now()+10*60000;current.last=0;touch(current);save();render();check();
 };
 
 /* Mobilvy: panel för ny anteckning */
@@ -344,9 +381,12 @@ function renderHome(){
   t.appendChild(tile('Väder i '+WX.place,'☁️ '+deg(WX.now.t),WX.now.c+' · nederbördschans idag '+d0[3]+' %','weather'));
   var cs=currentSlot();
   t.appendChild(tile('Elpris nu',cs?ore(cs.total)+' öre':'–',cs?(LV[cs.level]||'')+' · öre per kWh':'Lägg till din Tibber-token i Elpris-fliken.','price'));
-  var up=notes.filter(function(n){return n.due&&n.need&&!n.ack}).sort(function(a,b){return a.due-b.due})[0];
+  var tdl=dayList(new Date(new Date().setHours(0,0,0,0))),dkT=dkey(new Date());
+  var opn=tdl.filter(function(e){return !(e.acks&&e.acks[dkT])});
+  t.appendChild(tile('Aktiviteter idag',opn.length+' kvar',opn.length?((opn[0].time?opn[0].time+' ':'')+opn[0].title):(tdl.length?'Allt klart!':'Inget inplanerat'),'cal'));
+  var up=notes.filter(function(n){return n.due&&n.need&&!n.ack&&!n.deleted&&!n.kind}).sort(function(a,b){return a.due-b.due})[0];
   t.appendChild(tile('Nästa påminnelse',up?fmt(up.due):'Inga',up?up.text.slice(0,80):'Skapa en anteckning med tid så dyker den upp här.','notes'));
-  t.appendChild(tile('Anteckningar',String(notes.length),notes.length?'Tryck för att se alla.':'Tryck för att skriva din första.','notes'));
+  t.appendChild(tile('Anteckningar',String(live().length),live().length?'Tryck för att se alla.':'Tryck för att skriva din första.','notes'));
   h.appendChild(t);
 }
 function renderWeather(){
@@ -367,12 +407,14 @@ function renderWeather(){
   var n=document.createElement('p');n.className='meta';n.textContent=WX.live?'Live-prognos från Open-Meteo, hämtad '+WX.at+'.':'Visar sparad prognos från '+WX.at+'. Ingen uppkoppling just nu.';w.appendChild(n);
 }
 function setView(v){
-  ['home','notes','weather','price'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
+  ['home','cal','notes','weather','price','set'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
   Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
   document.body.classList.toggle('notes',v==='notes');
   if(v!=='notes')closeSheet();
   if(v==='home')renderHome();
   if(v==='price'){renderPrice();if(getTok())loadPrice()}
+  if(v==='cal')renderCal();
+  if(v==='set')renderSet();
 }
 Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.onclick=function(){setView(b.getAttribute('data-v'))}});
 var WCODE=function(c){return c===0?'Klart':c<=2?'Mest klart':c===3?'Mulet':c<=48?'Dimma':c<=57?'Duggregn':c<=67?'Regn':c<=77?'Snö':c<=82?'Regnskurar':c<=86?'Snöbyar':'Åska'};
@@ -400,7 +442,9 @@ var TT='bottie-tibber-token',TC='bottie-tibber-cache';
 function getTok(){try{return localStorage.getItem(TT)||''}catch(e){return ''}}
 var PRICE=null;try{PRICE=JSON.parse(localStorage.getItem(TC)||'null')}catch(e){}
 var LV={VERY_CHEAP:'Mycket billigt',CHEAP:'Billigt',NORMAL:'Normalt',EXPENSIVE:'Dyrt',VERY_EXPENSIVE:'Mycket dyrt'};
-function ore(x){return Math.round(x*100)}
+var EXK='bottie-extra';
+function EX(){try{var v=parseFloat((localStorage.getItem(EXK)||'0').replace(',','.'));return isNaN(v)?0:v/100}catch(e){return 0}}
+function ore(x){return Math.round((x+EX())*100)}
 function hhmm(s){return new Date(s).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})}
 function currentSlot(){
   if(!PRICE)return null;
@@ -443,12 +487,15 @@ function renderPrice(){
   var g=document.createElement('div');g.className='big';g.textContent=ore(cs.total)+' öre/kWh';
   var l=document.createElement('div');l.textContent=(LV[cs.level]||'')+' · uppdaterat '+new Date(PRICE.at).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
   c.appendChild(m);c.appendChild(g);c.appendChild(l);
+  var nt=document.createElement('div');nt.className='meta';
+  nt.textContent='Inkl. skatter och moms enligt Tibber'+(EX()?' + '+Math.round(EX()*100)+' öre egen avgift.':'. Nätavgift ingår normalt inte.');
+  c.appendChild(nt);
   var td=PRICE.today||[];
   if(td.length){
-    var mx=Math.max.apply(null,td.map(function(x){return x.total}))||1,ch=document.createElement('div');ch.className='chart';
+    var mx=Math.max.apply(null,td.map(function(x){return x.total+EX()}))||1,ch=document.createElement('div');ch.className='chart';
     ch.setAttribute('role','img');ch.setAttribute('aria-label','Elpris i dag');
     td.forEach(function(x){
-      var d=document.createElement('div');d.style.height=Math.max(2,Math.max(0,x.total)/mx*100)+'%';
+      var d=document.createElement('div');d.style.height=Math.max(2,Math.max(0,x.total+EX())/mx*100)+'%';
       d.style.background=/CHEAP/.test(x.level)?'var(--mint)':/EXPENSIVE/.test(x.level)?'var(--pink)':'var(--sun)';
       if(cs.startsAt===x.startsAt)d.className='now';ch.appendChild(d);
     });
@@ -469,8 +516,142 @@ $('pdel').onclick=function(){
   PRICE=null;$('ptok').value='';$('pstat').textContent='Token och sparade priser är borttagna.';renderPrice();
   if($('v-home').classList.contains('on'))renderHome();
 };
+try{$('pex').value=localStorage.getItem(EXK)||''}catch(e){}
+$('pexsave').onclick=function(){
+  var v=$('pex').value.trim().replace(',','.');
+  if(v===''||!isNaN(parseFloat(v))){try{localStorage.setItem(EXK,v)}catch(e){}$('pstat').textContent='Extra avgift sparad.'}
+  else $('pstat').textContent='Skriv ett tal, till exempel 45.';
+  renderPrice();if($('v-home').classList.contains('on'))renderHome();
+};
 setInterval(function(){if(getTok())loadPrice()},900000);
 if(getTok())loadPrice();
+
+/* Delad lagring (Google Kalkylark) och kalender */
+var SK='bottie-sync',NK='bottie-name',PAL=['#FF6B8B','#5FD4B0','#FFC83D','#6BA8FF','#B58CFF','#FF9F5A'];
+var DIRTY=false,syncT=null,syncing=false,wOff=0;
+function nid(){return Date.now()*10+Math.floor(Math.random()*10)}
+function touch(o){o.updated=Date.now();DIRTY=true}
+function syncCfg(){try{return JSON.parse(localStorage.getItem(SK)||'null')}catch(e){return null}}
+function sstat(t){var e=$('sstat');if(e)e.textContent=t}
+function syncSoon(){clearTimeout(syncT);syncT=setTimeout(syncNow,1500)}
+function syncNow(){
+  var c=syncCfg();if(!c||!c.url||!c.key||syncing)return;
+  syncing=true;DIRTY=false;sstat('Synkar…');
+  fetch(c.url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({key:c.key,items:notes})})
+  .then(function(r){return r.json()})
+  .then(function(j){
+    if(j.error)throw new Error(j.error);
+    var loc={};notes.forEach(function(n){loc[n.id]=n});
+    var out=j.items.map(function(s){var l=loc[s.id];return(l&&(l.updated||0)>(s.updated||0))?l:s});
+    var seen={};out.forEach(function(s){seen[s.id]=1});
+    notes.forEach(function(n){if(!seen[n.id])out.push(n)});
+    notes=out;persist();render();renderCal();renderHome();check();
+    if($('v-set').classList.contains('on')&&!/INPUT/.test(document.activeElement.tagName))renderSet();
+    sstat('Synkad '+hhmm(Date.now())+'.');
+  }).catch(function(e){
+    sstat(e&&e.message==='unauthorized'?'Fel familjekod.':'Kunde inte synka. Kontrollera adressen och uppkopplingen.');
+  }).then(function(){syncing=false;if(DIRTY)syncSoon()});
+}
+function cfgItem(){
+  var c=notes.filter(function(n){return n.id==='config'})[0];
+  if(!c){c={id:'config',kind:'config',children:[],updated:0};notes.push(c)}
+  return c;
+}
+function kidColor(name){var k=cfgItem().children.filter(function(c){return c.name===name})[0];return k?k.color:'var(--line)'}
+function myName(){try{return localStorage.getItem(NK)||''}catch(e){return ''}}
+
+function dkey(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+function dparse(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+function occurs(e,d){var df=Math.round((d-dparse(e.date))/864e5);return df===0||(e.weekly&&df>0&&df%7===0)}
+function dayList(d){
+  return notes.filter(function(n){return n.kind==='event'&&!n.deleted&&occurs(n,d)})
+    .sort(function(a,b){return (a.time||'').localeCompare(b.time||'')});
+}
+function evCard(e,dk){
+  var c=document.createElement('div');c.className='card note';c.style.marginTop='8px';c.style.borderLeft='8px solid '+kidColor(e.child);
+  var box=document.createElement('div');
+  var done=e.acks&&e.acks[dk];
+  var p=document.createElement('p');p.textContent=(e.time?e.time+' ':'')+e.title;if(done)p.style.textDecoration='line-through';
+  var m=document.createElement('div');m.className='meta';
+  m.textContent=[e.child,e.place,e.weekly?'varje vecka':''].filter(Boolean).join(' · ')+(done?' · ✓ '+done:'');
+  box.appendChild(p);box.appendChild(m);
+  var b=document.createElement('button');b.className=done?'soft':'';b.textContent=done?'Ångra':'Klart';
+  b.onclick=function(){
+    e.acks=e.acks||{};
+    if(done)delete e.acks[dk];else e.acks[dk]=(myName()?myName()+' ':'')+hhmm(Date.now());
+    touch(e);save();renderCal();renderHome();
+  };
+  var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ta bort aktivitet');
+  x.onclick=function(){
+    if(!confirm('Ta bort ”'+e.title+'”'+(e.weekly?' (alla veckor)':'')+'?'))return;
+    e.deleted=true;touch(e);save();renderCal();renderHome();
+  };
+  c.appendChild(box);c.appendChild(b);c.appendChild(x);return c;
+}
+function renderCal(){
+  var box=$('cal');box.innerHTML='';
+  var sel=$('evc'),cur=sel.value;sel.innerHTML='<option value="">Alla / ingen</option>';
+  cfgItem().children.forEach(function(k){var o=document.createElement('option');o.value=k.name;o.textContent=k.name;sel.appendChild(o)});
+  sel.value=cur;
+  var base=new Date();base.setHours(0,0,0,0);base.setDate(base.getDate()+wOff);
+  for(var i=0;i<7;i++){
+    var d=new Date(base);d.setDate(base.getDate()+i);
+    var dk=dkey(d),list=dayList(d);
+    var h=document.createElement('h3');h.style.margin='16px 0 6px';
+    h.textContent=d.toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'short'});
+    box.appendChild(h);
+    if(!list.length){var em=document.createElement('div');em.className='meta';em.textContent='Inget inplanerat';box.appendChild(em);continue}
+    list.forEach(function(e){box.appendChild(evCard(e,dk))});
+  }
+}
+$('evnew').onclick=function(){
+  var f=$('evform'),open=f.style.display==='none';
+  f.style.display=open?'block':'none';
+  if(open){if(!$('evd').value)$('evd').value=dkey(new Date());$('evt').focus()}
+};
+$('evsave').onclick=function(){
+  var t=$('evt').value.trim(),d=$('evd').value;if(!t||!d){$('evt').focus();return}
+  var e={id:nid(),kind:'event',title:t,child:$('evc').value,date:d,time:$('evtm').value,place:$('evp').value.trim(),weekly:$('evw').checked,acks:{}};
+  touch(e);notes.push(e);save();
+  ['evt','evtm','evp'].forEach(function(i){$(i).value=''});$('evw').checked=false;$('evform').style.display='none';
+  renderCal();renderHome();
+};
+$('wprev').onclick=function(){wOff-=7;renderCal()};
+$('wnext').onclick=function(){wOff+=7;renderCal()};
+$('wnow').onclick=function(){wOff=0;renderCal()};
+
+function renderSet(){
+  var c=syncCfg()||{};
+  $('surl').value=c.url||'';$('skey').value='';$('skey').placeholder=c.key?'Familjekod sparad':'Familjekod';
+  $('myname').value=myName();
+  var k=$('kids');k.innerHTML='';
+  cfgItem().children.forEach(function(ch,i){
+    var r=document.createElement('div');r.className='fc';
+    var a=document.createElement('span');
+    var dot=document.createElement('span');dot.style.cssText='display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;background:'+ch.color;
+    a.appendChild(dot);a.appendChild(document.createTextNode(ch.name));
+    var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ta bort '+ch.name);
+    x.onclick=function(){var cf=cfgItem();cf.children.splice(i,1);touch(cf);save();renderSet()};
+    r.appendChild(a);r.appendChild(x);k.appendChild(r);
+  });
+}
+$('ssave').onclick=function(){
+  var u=$('surl').value.trim(),kk=$('skey').value.trim(),o=syncCfg()||{};
+  if(u)o.url=u;if(kk)o.key=kk;
+  if(!o.url||!o.key){sstat('Fyll i både adress och familjekod.');return}
+  try{localStorage.setItem(SK,JSON.stringify(o))}catch(e){}
+  $('skey').value='';DIRTY=true;syncNow();
+};
+$('soff').onclick=function(){try{localStorage.removeItem(SK)}catch(e){}sstat('Frånkopplad. Datan finns kvar på den här enheten.');renderSet()};
+$('myname').onchange=function(){try{localStorage.setItem(NK,$('myname').value.trim())}catch(e){}};
+$('kadd').onclick=function(){
+  var n=$('kname').value.trim();if(!n)return;
+  var cf=cfgItem();cf.children.push({name:n,color:PAL[cf.children.length%PAL.length]});
+  touch(cf);$('kname').value='';save();renderSet();
+};
+setInterval(syncNow,60000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)syncNow()});
+if(syncCfg()){DIRTY=true;syncNow()}
 
 render();check();setView('home');
 setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
