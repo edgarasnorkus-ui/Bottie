@@ -118,7 +118,6 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(12px + env(safe-area-i
 .dcard h3{margin:0 0 8px;font-size:1.1rem;color:var(--muted)}
 .dl{padding:10px 12px;border-radius:14px;background:var(--bg);margin-top:8px;font-size:1.25rem;word-break:break-word}
 .dev{cursor:pointer}
-body.dim #v-disp{filter:brightness(.4)}
 @media (min-width:900px) and (orientation:landscape){
   #v-disp.on{grid-template-columns:1.2fr 1fr 1fr;align-items:start}
   .dclockbox{grid-column:1/3}
@@ -207,7 +206,7 @@ body.dim #v-disp{filter:brightness(.4)}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 15</div></div>
+      <div class="meta">Versija 16</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -682,9 +681,8 @@ function wake(on){
 }
 function pad(n){return ('0'+n).slice(-2)}
 function tickClock(){
-  var d=new Date(),c=$('dclock'),on=$('v-disp').classList.contains('on');
+  var d=new Date(),c=$('dclock');
   if(c)c.textContent=pad(d.getHours())+':'+pad(d.getMinutes());
-  var h=d.getHours();document.body.classList.toggle('dim',on&&(h>=22||h<6));
 }
 function dcard(title,add,label){
   var c=document.createElement('div');c.className='card dcard';
