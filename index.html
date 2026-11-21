@@ -123,8 +123,6 @@ body.dim #v-disp{filter:brightness(.4)}
   #v-disp.on{grid-template-columns:1.2fr 1fr 1fr;align-items:start}
   .dclockbox{grid-column:1/3}
 }
-#idle{display:none;position:fixed;inset:0;z-index:8;background:rgba(0,0,0,.8)}
-body.sleepy #idle{display:block}
 </style>
 </head>
 <body>
@@ -135,8 +133,8 @@ body.sleepy #idle{display:block}
   </header>
 
   <section class="card" id="sheet" aria-label="Naujas užrašas">
-    <textarea id="txt" placeholder="Ką norėtum prisiminti? Gali ir pasakyti: „paskambinti mamai po 10 minučių“" aria-label="Naujas užrašas"></textarea>
-    <div class="row"><button class="soft" id="mic" type="button">🎤 Diktuoti</button><button class="soft" id="close" type="button" style="margin-left:auto">Uždaryti</button></div>
+    <textarea id="txt" placeholder="Ką norėtum prisiminti?" aria-label="Naujas užrašas"></textarea>
+    <div class="row"><button class="soft" id="close" type="button" style="margin-left:auto">Uždaryti</button></div>
     <div class="meta" id="vstat" aria-live="polite"></div>
     <div class="row">
       <input type="datetime-local" id="due" aria-label="Priminti man">
@@ -148,7 +146,7 @@ body.sleepy #idle{display:block}
     <div class="row"><button class="soft" id="perm" type="button">Įjungti pranešimus</button><span class="meta" id="permInfo"></span></div>
   </section>
 
-  <div id="fabs"><button class="fab" id="fabMic" aria-label="Padiktuoti naują užrašą">🎤</button><button class="fab" id="fabAdd" aria-label="Naujas užrašas">+</button></div>
+  <div id="fabs"><button class="fab" id="fabAdd" aria-label="Naujas užrašas">+</button></div>
 
   <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="set">Nustatymai</button><button data-v="disp">Ekranas</button></nav>
   <section class="view" id="v-home"></section>
@@ -193,7 +191,7 @@ body.sleepy #idle{display:block}
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Vaikai</h3>
       <div id="kids"></div>
       <div class="row"><input class="inp" type="text" id="kname" placeholder="Vaiko vardas" autocomplete="off"><button id="kadd" type="button" style="flex:none">Pridėti</button></div></div>
-    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Išvaizda ir ekranas</h3>
+    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Išvaizda</h3>
       <select id="pth" class="inp" aria-label="Tema">
         <option value="auto">Pagal pasirinktas valandas</option>
         <option value="light">Visada šviesi</option>
@@ -203,8 +201,7 @@ body.sleepy #idle{display:block}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="row"><label class="chk"><input type="checkbox" id="pdim"> Ekrano režime pritemdyti ekraną (iki 20 %) po 1 min. be prisilietimo</label></div>
-      <div class="meta">Pritemdytą ekraną pažadina pirmas prisilietimas.</div></div>
+      <div class="meta">Versija 13</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -218,13 +215,9 @@ body.sleepy #idle{display:block}
     <div class="row">
       <button id="ack">Patvirtinti</button>
       <button class="soft" id="snooze">Atidėti 10 min.</button>
-      <button class="soft" id="vcmd">🎤 Atsakyti balsu</button>
-      <span class="meta" id="astat" style="width:100%" aria-live="polite"></span>
     </div>
   </div>
 </div>
-
-<div id="idle" aria-hidden="true"></div>
 
 <script>
 var BOT='<rect width="100" height="100" rx="26" fill="#FFC83D"/><path d="M36 22l-5-12M64 22l5-12" stroke="#1F2A44" stroke-width="4" stroke-linecap="round"/><circle cx="30" cy="9" r="4" fill="#FF6B8B"/><circle cx="70" cy="9" r="4" fill="#FF6B8B"/><ellipse cx="50" cy="60" rx="34" ry="30" fill="#5FD4B0"/><ellipse cx="50" cy="66" rx="20" ry="16" fill="#A8EBD6"/><circle cx="37" cy="52" r="8" fill="#fff"/><circle cx="63" cy="52" r="8" fill="#fff"/><circle cx="38.5" cy="53" r="4" fill="#1F2A44"/><circle cx="64.5" cy="53" r="4" fill="#1F2A44"/><circle cx="26" cy="64" r="4.5" fill="#FF9DB3" opacity=".8"/><circle cx="74" cy="64" r="4.5" fill="#FF9DB3" opacity=".8"/><path d="M41 69q9 8 18 0" stroke="#1F2A44" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M30 88q-6 6-12 2M70 88q6 6 12 2" stroke="#3FB896" stroke-width="6" fill="none" stroke-linecap="round"/>';
@@ -262,14 +255,20 @@ function render(){
     box.appendChild(p);if(n.due)box.appendChild(m);
     var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ištrinti užrašą');
     x.onclick=function(){n.deleted=true;touch(n);save();render();check()};
-    d.appendChild(box);d.appendChild(x);l.appendChild(d);
+    var ed=document.createElement('button');ed.className='x';ed.textContent='✎';ed.setAttribute('aria-label','Redaguoti užrašą');
+    ed.onclick=function(){editNote(n)};x.style.marginLeft='0';
+    d.appendChild(box);d.appendChild(ed);d.appendChild(x);l.appendChild(d);
   });
 }
 
 $('add').onclick=function(){
   var t=$('txt').value.trim();if(!t){$('txt').focus();return}
   var due=$('due').value?new Date($('due').value).getTime():null;
-  var nn={id:nid(),text:t,due:due,need:!!due&&$('need').checked,ack:false,last:0};touch(nn);notes.push(nn);
+  var need=!!due&&$('need').checked;
+  if(editing!==null){
+    var n=notes.filter(function(q){return q.id===editing})[0];
+    if(n){if(n.due!==due||n.need!==need){n.ack=false;n.last=0}n.text=t;n.due=due;n.need=need;touch(n)}
+  }else{var nn={id:nid(),text:t,due:due,need:need,ack:false,last:0};touch(nn);notes.push(nn)}
   save();$('txt').value='';$('due').value='';$('vstat').textContent='';closeSheet();render();check();
 };
 
@@ -321,7 +320,7 @@ function check(){
   var fresh=!current||current.id!==n.id;
   current=n;
   $('atext').textContent=n.text;
-  $('alert').classList.add('on');if(sleepy)wakeUp();
+  $('alert').classList.add('on');
   if(fresh)$('ack').focus();
   if(Date.now()-(n.last||0)>14000){n.last=Date.now();nudge(n);save()}
 }
@@ -335,98 +334,21 @@ $('snooze').onclick=function(){
 /* Mobilvy: panel för ny anteckning */
 var sheet=$('sheet');
 function openSheet(){sheet.classList.add('open');$('fabs').style.display='none'}
-function closeSheet(){stopRec();sheet.classList.remove('open');$('fabs').style.display=''}
+var editing=null;
+function closeSheet(){
+  sheet.classList.remove('open');$('fabs').style.display='';
+  if(editing!==null){editing=null;$('txt').value='';$('due').value='';$('need').checked=true;$('add').textContent='Išsaugoti užrašą'}
+}
+function editNote(n){
+  editing=n.id;openSheet();
+  $('txt').value=n.text;$('due').value=n.due?localInput(n.due):'';$('need').checked=!!n.need;
+  $('add').textContent='Išsaugoti pakeitimus';
+  setTimeout(function(){$('txt').focus()},260);
+}
 $('fabAdd').onclick=function(){openSheet();setTimeout(function(){$('txt').focus()},260)};
-$('fabMic').onclick=function(){openSheet();dictate()};
 $('close').onclick=closeSheet;
-$('mic').onclick=function(){if(rec)stopRec();else dictate()};
 
-/* Röststyrning (webbläsarens taligenkänning) */
-var SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null,arec=null;
-function listen(onText,stat,done){
-  if(!SR){stat.textContent='Balso valdymas šioje naršyklėje nepalaikomas.';return null}
-  var r=new SR();r.lang='lt-LT';r.interimResults=true;r.continuous=false;
-  r.onstart=function(){stat.textContent='Klausoma…'};
-  r.onresult=function(e){var t='',fin=false;for(var i=0;i<e.results.length;i++){t+=e.results[i][0].transcript;fin=e.results[i].isFinal}onText(t.trim(),fin)};
-  r.onerror=function(e){stat.textContent=(e.error==='not-allowed'||e.error==='service-not-allowed')?'Mikrofonas užblokuotas. Leisk jį naršyklėje.':'Nepavyko klausytis ('+e.error+').'};
-  r.onend=function(){done()};
-  try{r.start()}catch(e){stat.textContent='Nepavyko įjungti mikrofono.';return null}
-  return r;
-}
-function stopRec(){try{if(rec)rec.stop()}catch(e){}rec=null;if(DICT&&dOn&&!cmdMode)DICT.stop();$('mic').textContent='🎤 Diktuoti'}
-function dictate(){
-  if(DICT){
-    if(dOn){DICT.stop();return}
-    cmdMode=false;dBase=$('txt').value.trim();
-    DICT.start().catch(function(e){$('vstat').textContent=(e&&e.code==='not_granted')?'Mikrofonas neleidžiamas. Rašyk arba naudok klaviatūros mikrofono mygtuką.':'Nepavyko įjungti mikrofono.'});
-    return;
-  }
-  if(!DICT){$('txt').focus();$('vstat').textContent='Spausk klaviatūros mikrofoną, kad padiktuotum tekstą.';return}
-  var base=$('txt').value.trim();
-  $('mic').textContent='⏹ Baigti';
-  rec=listen(function(t,fin){
-    $('txt').value=(base?base+' ':'')+t;
-    if(fin)applyTime();
-  },$('vstat'),function(){
-    rec=null;$('mic').textContent='🎤 Diktuoti';
-    if($('vstat').textContent==='Klausoma…')$('vstat').textContent='';
-  });
-  if(!rec)$('mic').textContent='🎤 Diktuoti';
-}
-var NUM={viena:1,'vieną':1,dvi:2,'dviejų':2,trys:3,'trijų':3,'penkių':5,'penkias':5,'dešimt':10,'dešimties':10,penkiolika:15,penkiolikos:15,'dvidešimt':20,'dvidešimties':20,'trisdešimt':30,'trisdešimties':30};
-var RE1=/\s*(?:priminti man\s+)?(?:po|už) (\d+|viena|vieną|dvi|dviejų|trys|trijų|penkių|penkias|dešimt|dešimties|penkiolika|penkiolikos|dvidešimt|dvidešimties|trisdešimt|trisdešimties) (minučių|minutes|minutės|minutę|valandų|valandos|valandą|valandas)/i;
-var RE2=/\s*rytoj(?: (?:val\.?|valandą|valandos) (\d{1,2}))?/i;
 function localInput(ms){var d=new Date(ms-new Date(ms).getTimezoneOffset()*60000);return d.toISOString().slice(0,16)}
-function applyTime(){
-  var s=$('txt').value,m,ms=null;
-  if((m=s.match(RE1))){
-    var n=isNaN(m[1])?NUM[m[1].toLowerCase()]:+m[1];
-    if(n){ms=Date.now()+n*(/^v/i.test(m[2])?60:1)*60000;s=s.replace(RE1,'')}
-  }else if((m=s.match(RE2))){
-    var d=new Date();d.setDate(d.getDate()+1);d.setHours(m[1]?+m[1]:9,0,0,0);
-    ms=d.getTime();s=s.replace(RE2,'');
-  }
-  if(ms){$('txt').value=s.trim();$('due').value=localInput(ms);$('need').checked=true;$('vstat').textContent='Priminimas nustatytas: '+fmt(ms)}
-}
-/* Svara på påminnelse med rösten */
-$('vcmd').onclick=function(){
-  if(DICT){
-    if(dOn){DICT.stop();return}
-    cmdMode=true;cmdHandled=false;
-    DICT.start().catch(function(e){cmdMode=false;$('astat').textContent='Nepavyko įjungti mikrofono.'});
-    return;
-  }
-  if(!DICT){$('astat').textContent='Atsakymo balsu čia nėra. Spausk „Patvirtinti“ arba „Atidėti“.';return}
-  if(arec){try{arec.stop()}catch(e){}return}
-  var handled=false;
-  arec=listen(function(t,fin){
-    if(handled)return;
-    var s=t.toLowerCase();
-    if(/patvirtin|gerai|atlikta/.test(s)){handled=true;$('ack').click()}
-    else if(/atid|vėliau|palauk|snooze/.test(s)){handled=true;$('snooze').click()}
-    else if(fin)$('astat').textContent='Išgirdau „'+t+'“. Sakyk „patvirtinti“ arba „atidėti“.';
-  },$('astat'),function(){arec=null});
-};
-
-/* Mikrofon via plattformens diktering */
-var DICT=null,dBase='',dOn=false,cmdMode=false,cmdHandled=false;
-function cmdText(t,fin){
-  if(cmdHandled)return;var s=t.toLowerCase();
-  if(/patvirtin|gerai|atlikta/.test(s)){cmdHandled=true;$('ack').click()}
-  else if(/atid|vėliau|palauk|snooze/.test(s)){cmdHandled=true;$('snooze').click()}
-  else if(fin)$('astat').textContent='Išgirdau „'+t+'“. Sakyk „patvirtinti“ arba „atidėti“.';
-}
-try{if(window.claude&&claude.use)claude.use('dictation').then(function(d){
-  if(!d)return;DICT=d;
-  d.onPartial(function(x){if(cmdMode)cmdText(x.text,false);else $('txt').value=(dBase?dBase+' ':'')+x.text});
-  d.onFinal(function(x){if(cmdMode){cmdText(x.text,true);return}dBase=(dBase?dBase+' ':'')+x.text;$('txt').value=dBase;applyTime()});
-  d.onState(function(s){
-    dOn=s.state==='listening';
-    var el=cmdMode?$('astat'):$('vstat');
-    if(!cmdMode)$('mic').textContent=dOn?'⏹ Baigti':'🎤 Diktuoti';
-    if(dOn)el.textContent='Klausoma…';else{if(el.textContent==='Klausoma…')el.textContent='';cmdMode=false}
-  });
-}).catch(function(){})}catch(e){}
 
 /* Dashboard */
 var WX={place:'Tibro',at:'2026-11-17',now:{t:0.1,c:'Daugiausia debesuota'},days:[['Šiandien',1.0,-0.5,10],['Tr',0.1,-2.9,25],['Kt',-1.8,-3.3,5],['Pn',0.0,-2.8,25],['Št',1.6,-2.7,5],['Sk',1.4,-2.0,0],['Pr',0.4,-3.5,10],['An',-0.8,-4.1,10]]};
@@ -473,7 +395,7 @@ function setView(v){
   ['home','cal','notes','weather','price','set','disp'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
   Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
   document.body.classList.toggle('notes',v==='notes');
-  document.body.classList.toggle('disp',v==='disp');wake(v==='disp');if(v!=='disp'&&sleepy)wakeUp();
+  document.body.classList.toggle('disp',v==='disp');wake(v==='disp');
   if(v!=='notes')closeSheet();
   if(v==='home')renderHome();
   if(v==='price'){renderPrice();if(getTok())loadPrice()}
@@ -863,7 +785,7 @@ function applyTheme(){
   if(t)r.setAttribute('data-theme',t);else r.removeAttribute('data-theme');
 }
 function loadPrefUI(){
-  var p=prefs();showSun();$('pth').value=p.theme;$('pfrom').value=p.from;$('pto').value=p.to;$('pdim').checked=!!p.dim;
+  var p=prefs();showSun();$('pth').value=p.theme;$('pfrom').value=p.from;$('pto').value=p.to;
 }
 function readPrefUI(){
   var p=prefs();
@@ -871,32 +793,13 @@ function readPrefUI(){
   var f=parseInt($('pfrom').value,10),t=parseInt($('pto').value,10);
   if(!isNaN(f)&&f>=0&&f<=23)p.from=f;
   if(!isNaN(t)&&t>=0&&t<=23)p.to=t;
-  p.dim=$('pdim').checked;
   savePrefs(p);
   if(p.theme==='sun'&&navigator.geolocation)navigator.geolocation.getCurrentPosition(function(g){try{localStorage.setItem('bottie-loc',JSON.stringify({lat:g.coords.latitude,lon:g.coords.longitude}))}catch(e){}applyTheme();showSun()},function(){},{timeout:8000});
-  applyTheme();showSun();armIdle();
-  if(!p.dim)wakeUp();
+  applyTheme();showSun();
 }
-['pth','pfrom','pto','pdim'].forEach(function(i){$(i).onchange=readPrefUI});
+['pth','pfrom','pto'].forEach(function(i){$(i).onchange=readPrefUI});
 
-var idleT=null,sleepy=false,swallow=0;
-function wakeUp(){sleepy=false;document.body.classList.remove('sleepy');armIdle()}
-function armIdle(){
-  clearTimeout(idleT);
-  if(!prefs().dim)return;
-  idleT=setTimeout(function(){
-    if($('alert').classList.contains('on')||!$('v-disp').classList.contains('on')){armIdle();return}
-    sleepy=true;document.body.classList.add('sleepy');
-  },60000);
-}
-['pointerdown','touchstart','mousedown','touchend','pointerup','mouseup','click','keydown','wheel'].forEach(function(ev){
-  document.addEventListener(ev,function(e){
-    if(sleepy){wakeUp();swallow=Date.now()+700}
-    if(Date.now()<swallow){e.stopPropagation();if(e.cancelable)e.preventDefault();return}
-    armIdle();
-  },{capture:true,passive:false});
-});
-applyTheme();setInterval(applyTheme,60000);armIdle();
+applyTheme();setInterval(applyTheme,60000);
 
 render();check();setView('home');
 setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
