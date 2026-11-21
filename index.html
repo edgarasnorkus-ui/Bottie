@@ -86,6 +86,43 @@ section.view{display:none}section.view.on{display:block}
 .inp{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
 .row .inp{flex:1;min-width:0}
 .note>div{flex:1;min-width:0}
+@media (min-width:700px){
+  main{max-width:980px;padding:22px 28px 150px}
+  body{font-size:18px}
+  header svg{width:76px;height:76px}
+  #tabs{overflow:visible}
+  #tabs button{flex:1;padding:10px 8px;font-size:1rem}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .tile{padding:18px}
+  #list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-items:start}
+  #list .note{margin-top:0}
+  #cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;align-items:start}
+  .day{min-width:0}
+  #v-price,#v-set,#v-weather,#evform{max-width:760px}
+  #sheet{max-width:720px}
+}
+@media (min-width:1000px){
+  main{max-width:1280px;padding:26px 40px 150px}
+  body{font-size:19px}
+  .tiles{grid-template-columns:repeat(3,1fr)}
+  .big{font-size:2.8rem}
+  h1{font-size:2.4rem}
+}
+#dexit{display:none}
+body.disp header,body.disp #tabs,body.disp main>p.meta{display:none}
+body.disp main{max-width:none;padding:18px 22px}
+body.disp #dexit{display:block;position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px;z-index:5;background:transparent;color:var(--muted);border:2px solid var(--line)}
+#v-disp.on{display:grid;grid-template-columns:1fr;gap:16px}
+.dclock{font-size:clamp(4.5rem,16vw,12rem);font-weight:800;line-height:1}
+.ddate{font-size:clamp(1.3rem,3.2vw,2.4rem);color:var(--muted)}
+.dcard h3{margin:0 0 8px;font-size:1.1rem;color:var(--muted)}
+.dl{padding:10px 12px;border-radius:14px;background:var(--bg);margin-top:8px;font-size:1.25rem;word-break:break-word}
+.dev{cursor:pointer}
+body.dim #v-disp{filter:brightness(.4)}
+@media (min-width:900px) and (orientation:landscape){
+  #v-disp.on{grid-template-columns:1.2fr 1fr 1fr;align-items:start}
+  .dclockbox{grid-column:1/3}
+}
 </style>
 </head>
 <body>
@@ -111,7 +148,7 @@ section.view{display:none}section.view.on{display:block}
 
   <div id="fabs"><button class="fab" id="fabMic" aria-label="Diktera ny anteckning">🎤</button><button class="fab" id="fabAdd" aria-label="Ny anteckning">+</button></div>
 
-  <nav id="tabs" aria-label="Appar"><button data-v="home">Översikt</button><button data-v="cal">Kalender</button><button data-v="notes">Anteckningar</button><button data-v="weather">Väder</button><button data-v="price">Elpris</button><button data-v="set">Inställningar</button></nav>
+  <nav id="tabs" aria-label="Appar"><button data-v="home">Översikt</button><button data-v="cal">Kalender</button><button data-v="notes">Anteckningar</button><button data-v="weather">Väder</button><button data-v="price">Elpris</button><button data-v="set">Inställningar</button><button data-v="disp">Display</button></nav>
   <section class="view" id="v-home"></section>
   <section class="view" id="v-weather"></section>
   <section class="view" id="v-price">
@@ -128,6 +165,8 @@ section.view{display:none}section.view.on{display:block}
       <div class="meta" id="pstat" aria-live="polite"></div>
     </div>
   </section>
+  <button id="dexit" type="button">✕ Avsluta display</button>
+  <section class="view" id="v-disp"></section>
   <section class="view" id="v-cal">
     <div class="row" style="margin-top:0"><button class="soft" id="wprev" type="button">‹ Förra</button><button class="soft" id="wnow" type="button">Idag</button><button class="soft" id="wnext" type="button">Nästa ›</button><button id="evnew" type="button" style="margin-left:auto">+ Aktivitet</button></div>
     <div class="card" id="evform" style="display:none;margin-top:12px">
@@ -407,14 +446,16 @@ function renderWeather(){
   var n=document.createElement('p');n.className='meta';n.textContent=WX.live?'Live-prognos från Open-Meteo, hämtad '+WX.at+'.':'Visar sparad prognos från '+WX.at+'. Ingen uppkoppling just nu.';w.appendChild(n);
 }
 function setView(v){
-  ['home','cal','notes','weather','price','set'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
+  ['home','cal','notes','weather','price','set','disp'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
   Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
   document.body.classList.toggle('notes',v==='notes');
+  document.body.classList.toggle('disp',v==='disp');wake(v==='disp');
   if(v!=='notes')closeSheet();
   if(v==='home')renderHome();
   if(v==='price'){renderPrice();if(getTok())loadPrice()}
   if(v==='cal')renderCal();
   if(v==='set')renderSet();
+  if(v==='disp')renderDisp();
 }
 Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.onclick=function(){setView(b.getAttribute('data-v'))}});
 var WCODE=function(c){return c===0?'Klart':c<=2?'Mest klart':c===3?'Mulet':c<=48?'Dimma':c<=57?'Duggregn':c<=67?'Regn':c<=77?'Snö':c<=82?'Regnskurar':c<=86?'Snöbyar':'Åska'};
@@ -597,11 +638,13 @@ function renderCal(){
   for(var i=0;i<7;i++){
     var d=new Date(base);d.setDate(base.getDate()+i);
     var dk=dkey(d),list=dayList(d);
+    var col=document.createElement('div');col.className='day';
     var h=document.createElement('h3');h.style.margin='16px 0 6px';
     h.textContent=d.toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'short'});
-    box.appendChild(h);
-    if(!list.length){var em=document.createElement('div');em.className='meta';em.textContent='Inget inplanerat';box.appendChild(em);continue}
-    list.forEach(function(e){box.appendChild(evCard(e,dk))});
+    col.appendChild(h);
+    if(!list.length){var em=document.createElement('div');em.className='meta';em.textContent='Inget inplanerat';col.appendChild(em)}
+    else list.forEach(function(e){col.appendChild(evCard(e,dk))});
+    box.appendChild(col);
   }
 }
 $('evnew').onclick=function(){
@@ -652,6 +695,98 @@ $('kadd').onclick=function(){
 setInterval(syncNow,60000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)syncNow()});
 if(syncCfg()){DIRTY=true;syncNow()}
+
+/* Displayläge */
+var WL=null;
+function wake(on){
+  try{
+    if(on&&navigator.wakeLock){navigator.wakeLock.request('screen').then(function(l){WL=l}).catch(function(){})}
+    else if(!on&&WL){WL.release();WL=null}
+  }catch(e){}
+}
+function pad(n){return ('0'+n).slice(-2)}
+function tickClock(){
+  var d=new Date(),c=$('dclock'),on=$('v-disp').classList.contains('on');
+  if(c)c.textContent=pad(d.getHours())+':'+pad(d.getMinutes());
+  var h=d.getHours();document.body.classList.toggle('dim',on&&(h>=22||h<6));
+}
+function dcard(title){
+  var c=document.createElement('div');c.className='card dcard';
+  var h=document.createElement('h3');h.textContent=title;c.appendChild(h);return c;
+}
+function dline(txt,sub){
+  var r=document.createElement('div');r.className='dl';
+  var a=document.createElement('div');a.textContent=txt;r.appendChild(a);
+  if(sub){var b=document.createElement('div');b.className='meta';b.textContent=sub;r.appendChild(b)}
+  return r;
+}
+function dEv(e,dk){
+  var r=document.createElement('div');r.className='dl dev';r.style.borderLeft='8px solid '+kidColor(e.child);
+  var done=e.acks&&e.acks[dk];
+  var a=document.createElement('div');a.textContent=(e.time?e.time+' ':'')+e.title;if(done)a.style.textDecoration='line-through';
+  var b=document.createElement('div');b.className='meta';
+  b.textContent=[e.child,e.place].filter(Boolean).join(' · ')+(done?' · ✓ '+done:' · tryck för klart');
+  r.appendChild(a);r.appendChild(b);
+  r.onclick=function(){
+    e.acks=e.acks||{};
+    if(done)delete e.acks[dk];else e.acks[dk]=(myName()?myName()+' ':'')+hhmm(Date.now());
+    touch(e);save();renderDisp();
+  };
+  return r;
+}
+function renderDisp(){
+  var v=$('v-disp');v.innerHTML='';
+  var now=new Date(),t0=new Date(now);t0.setHours(0,0,0,0);var dk=dkey(t0);
+  var cl=document.createElement('div');cl.className='dclockbox';
+  var big=document.createElement('div');big.id='dclock';big.className='dclock';
+  var dt=document.createElement('div');dt.className='ddate';
+  var ds=now.toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long'});
+  dt.textContent=ds.charAt(0).toUpperCase()+ds.slice(1);
+  cl.appendChild(big);cl.appendChild(dt);v.appendChild(cl);
+
+  var w=dcard('Väder · '+WX.place);
+  var wt=document.createElement('div');wt.className='big';wt.textContent='☁️ '+deg(WX.now.t);w.appendChild(wt);
+  w.appendChild(dline(WX.now.c));
+  WX.days.slice(0,4).forEach(function(d){
+    var r=document.createElement('div');r.className='fc';
+    var a=document.createElement('span');a.textContent=d[0];
+    var b=document.createElement('strong');b.textContent=deg(d[1])+' / '+deg(d[2]);
+    r.appendChild(a);r.appendChild(b);w.appendChild(r);
+  });
+  v.appendChild(w);
+
+  var ac=dcard('Aktiviteter idag');
+  var td=dayList(t0);
+  if(!td.length)ac.appendChild(dline('Inget inplanerat'));
+  td.forEach(function(e){ac.appendChild(dEv(e,dk))});
+  var tm=new Date(t0);tm.setDate(tm.getDate()+1);var tl=dayList(tm);
+  if(tl.length){
+    var h2=document.createElement('h3');h2.textContent='Imorgon';h2.style.marginTop='14px';ac.appendChild(h2);
+    tl.slice(0,4).forEach(function(e){ac.appendChild(dline((e.time?e.time+' ':'')+e.title,e.child))});
+  }
+  v.appendChild(ac);
+
+  var pc=dcard('Elpris'),cs=currentSlot();
+  if(!PRICE||!cs)pc.appendChild(dline('Lägg till elpris under fliken Elpris.'));
+  else{
+    var pb=document.createElement('div');pb.className='big';pb.textContent=ore(cs.total)+' öre/kWh';pc.appendChild(pb);
+    pc.appendChild(dline(LV[cs.level]||''));
+    var tdp=PRICE.today||[];
+    if(tdp.length)pc.appendChild(dline('Billigast idag: '+cheapest(tdp,tdp.length>30?8:3)));
+  }
+  v.appendChild(pc);
+
+  var rc=dcard('Påminnelser');
+  var ups=notes.filter(function(n){return n.due&&n.need&&!n.ack&&!n.deleted&&!n.kind}).sort(function(a,b){return a.due-b.due}).slice(0,5);
+  if(!ups.length)rc.appendChild(dline('Inga väntande påminnelser'));
+  ups.forEach(function(n){rc.appendChild(dline(n.text.slice(0,90),fmt(n.due)))});
+  v.appendChild(rc);
+  tickClock();
+}
+$('dexit').onclick=function(){setView('home')};
+setInterval(tickClock,1000);
+setInterval(function(){if($('v-disp').classList.contains('on'))renderDisp()},30000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&$('v-disp').classList.contains('on'))wake(true)});
 
 render();check();setView('home');
 setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
