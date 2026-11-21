@@ -96,8 +96,6 @@ section.view{display:none}section.view.on{display:block}
   .tile{padding:18px}
   #list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-items:start}
   #list .note{margin-top:0}
-  #cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;align-items:start}
-  .day{min-width:0}
   #v-price,#v-set,#v-weather,#evform{max-width:760px}
   #sheet{max-width:720px}
 }
@@ -125,9 +123,27 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(12px + env(safe-area-i
 #evform{position:fixed;left:0;right:0;bottom:0;max-width:720px;margin:0 auto!important;z-index:6;border-radius:28px 28px 0 0;border-bottom:0;max-height:92%;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
 #evform .row:last-child button#evsave{margin-left:auto}
 .pen{flex:none;background:transparent;color:var(--muted);border:2px solid var(--line);min-height:40px;min-width:40px;padding:0;font-size:1.15rem;border-radius:50%}
-#cal .note{flex-wrap:wrap;align-items:center}
-#cal .note>div{flex:1 1 100%}
-#cal .note button{margin-left:0}
+.wtitle{font-size:1.15rem;font-weight:700;margin-top:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{min-height:40px;padding:6px 14px;background:transparent;color:var(--ink);border:2px solid var(--line)}
+.chip.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.cdot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+#cal{display:block;margin-top:10px}
+.dayrow{display:grid;grid-template-columns:130px 1fr;gap:12px;padding:12px 10px;border-top:2px solid var(--line);align-items:start}
+.dayrow:first-child{border-top:0}
+.dayrow.today{background:var(--card);border:2px solid var(--accent);border-radius:18px}
+.dnum{font-size:1.9rem;font-weight:800;line-height:1}
+.dname{font-size:.95rem;color:var(--muted)}
+.today .dnum{color:var(--accent)}
+.evs{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.ev{display:flex;align-items:center;gap:8px;flex:1 1 260px;max-width:460px;background:var(--card);border:2px solid var(--line);border-left:8px solid var(--line);border-radius:16px;padding:8px 10px}
+.today .ev{background:var(--bg)}
+.evb{flex:1;min-width:0}
+.evt{word-break:break-word}
+.pen.done{background:var(--mint);color:#1F2A44;border-color:var(--mint)}
+.dayrow.empty{padding:6px 10px;align-items:center;justify-items:start}
+.dayrow.empty .dnum{font-size:1.2rem}
+@media (max-width:699px){.dayrow{grid-template-columns:1fr;gap:6px}.dhead{display:flex;align-items:baseline;gap:10px}.dayrow.empty{grid-template-columns:150px 1fr;gap:8px}}
 </style>
 </head>
 <body>
@@ -177,10 +193,12 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(12px + env(safe-area-i
       <div class="row"><select id="evc" class="inp" aria-label="Vaikas"></select></div>
       <div class="row"><input type="date" class="inp" id="evd" aria-label="Data"><input type="time" class="inp" id="evtm" aria-label="Laikas"></div>
       <input type="text" class="inp" id="evp" placeholder="Vieta (neprivaloma)" style="margin-top:10px">
-      <div class="row"><label class="chk"><input type="checkbox" id="evw"> Kas savaitę</label><button class="soft" id="evclose" type="button">Uždaryti</button><button id="evsave" type="button" style="margin-left:auto">Išsaugoti</button></div>
+      <div class="row"><label class="chk"><input type="checkbox" id="evw"> Kas savaitę</label><button class="soft" id="evdel" type="button" style="display:none">Ištrinti</button><button class="soft" id="evclose" type="button">Uždaryti</button><button id="evsave" type="button" style="margin-left:auto">Išsaugoti</button></div>
     </div>
   <section class="view" id="v-cal">
     <div class="row" style="margin-top:0"><button class="soft" id="wprev" type="button">‹ Ankstesnė</button><button class="soft" id="wnow" type="button">Šiandien</button><button class="soft" id="wnext" type="button">Kita ›</button><button id="evnew" type="button" style="margin-left:auto">+ Veikla</button></div>
+    <div id="wtitle" class="wtitle"></div>
+    <div id="kidchips" class="chips"></div>
     <div id="cal"></div>
   </section>
   <section class="view" id="v-set">
@@ -206,7 +224,7 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(12px + env(safe-area-i
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 16</div></div>
+      <div class="meta">Versija 17</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -560,54 +578,76 @@ function dayList(d){
     .sort(function(a,b){return (a.time||'').localeCompare(b.time||'')});
 }
 function evCard(e,dk){
-  var c=document.createElement('div');c.className='card note';c.style.marginTop='8px';c.style.borderLeft='8px solid '+kidColor(e.child);
-  var box=document.createElement('div');
+  var c=document.createElement('div');c.className='ev';c.style.borderLeftColor=kidColor(e.child);
   var done=e.acks&&e.acks[dk];
-  var p=document.createElement('p');p.textContent=(e.time?e.time+' ':'')+e.title;if(done)p.style.textDecoration='line-through';
+  var body=document.createElement('div');body.className='evb';
+  var t=document.createElement('div');t.className='evt';
+  if(e.time){var tm=document.createElement('strong');tm.textContent=e.time+' ';t.appendChild(tm)}
+  t.appendChild(document.createTextNode(e.title));if(done)t.style.textDecoration='line-through';
   var m=document.createElement('div');m.className='meta';
   m.textContent=[e.child,e.place,e.weekly?'kas savaitę':''].filter(Boolean).join(' · ')+(done?' · ✓ '+done:'');
-  box.appendChild(p);box.appendChild(m);
-  var b=document.createElement('button');b.className=done?'soft':'';b.textContent=done?'Atšaukti':'Atlikta';
-  b.onclick=function(){
+  body.appendChild(t);body.appendChild(m);
+  var ck=document.createElement('button');ck.className='pen'+(done?' done':'');ck.textContent='✓';
+  ck.setAttribute('aria-label',done?'Atšaukti':'Atlikta');
+  ck.onclick=function(){
     e.acks=e.acks||{};
     if(done)delete e.acks[dk];else e.acks[dk]=(myName()?myName()+' ':'')+hhmm(Date.now());
-    touch(e);save();renderCal();renderHome();
+    touch(e);save();renderCal();renderHome();dispRefresh();
   };
-  var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ištrinti veiklą');
-  x.onclick=function(){
-    if(!confirm('Ištrinti „'+e.title+'“'+(e.weekly?' (visas savaites)':'')+'?'))return;
-    e.deleted=true;touch(e);save();renderCal();renderHome();
-  };
-  var pe=document.createElement('button');pe.className='x';pe.textContent='✎';pe.setAttribute('aria-label','Redaguoti veiklą');
+  var pe=document.createElement('button');pe.className='pen';pe.textContent='✎';pe.setAttribute('aria-label','Redaguoti veiklą');
   pe.onclick=function(){editEvent(e)};
-  c.appendChild(box);c.appendChild(b);c.appendChild(pe);c.appendChild(x);return c;
+  c.appendChild(body);c.appendChild(ck);c.appendChild(pe);return c;
 }
 function fillKids(){
   var sel=$('evc'),cur=sel.value;sel.innerHTML='<option value="">Visi / nėra</option>';
   cfgItem().children.forEach(function(k){var o=document.createElement('option');o.value=k.name;o.textContent=k.name;sel.appendChild(o)});
   sel.value=cur;
 }
+function isoWeek(d){
+  var t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),n=t.getUTCDay()||7;
+  t.setUTCDate(t.getUTCDate()+4-n);
+  var y=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil(((t-y)/864e5+1)/7);
+}
+var calKid='';
 function renderCal(){
-  var box=$('cal');box.innerHTML='';
   fillKids();
-  var base=new Date();base.setHours(0,0,0,0);base.setDate(base.getDate()+wOff);
+  var kids=cfgItem().children,chips=$('kidchips');chips.innerHTML='';
+  if(kids.length){
+    [{name:'',color:''}].concat(kids).forEach(function(k){
+      var b=document.createElement('button');b.type='button';b.className='chip'+(calKid===k.name?' on':'');
+      if(k.name){var dot=document.createElement('span');dot.className='cdot';dot.style.background=k.color;b.appendChild(dot)}
+      b.appendChild(document.createTextNode(k.name||'Visi'));
+      b.onclick=function(){calKid=k.name;renderCal()};
+      chips.appendChild(b);
+    });
+  }
+  var today=dkey(new Date());
+  var base=new Date();base.setHours(0,0,0,0);base.setDate(base.getDate()-((base.getDay()+6)%7)+wOff*7);
+  var end=new Date(base);end.setDate(end.getDate()+6);
+  var f=function(d){return d.toLocaleDateString('lt-LT',{month:'long',day:'numeric'})};
+  $('wtitle').textContent=isoWeek(base)+' savaitė · '+f(base)+' – '+f(end);
+  var box=$('cal');box.innerHTML='';
   for(var i=0;i<7;i++){
     var d=new Date(base);d.setDate(base.getDate()+i);
-    var dk=dkey(d),list=dayList(d);
-    var col=document.createElement('div');col.className='day';
-    var h=document.createElement('h3');h.style.margin='16px 0 6px';
-    h.textContent=d.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'short'});
-    col.appendChild(h);
-    if(!list.length){var em=document.createElement('div');em.className='meta';em.textContent='Nieko neplanuota';col.appendChild(em)}
-    else list.forEach(function(e){col.appendChild(evCard(e,dk))});
-    box.appendChild(col);
+    var dk=dkey(d),list=dayList(d).filter(function(e){return !calKid||e.child===calKid});
+    var row=document.createElement('div');row.className='dayrow'+(dk===today?' today':'')+(list.length?'':' empty');
+    var hd=document.createElement('div');hd.className='dhead';
+    var nm=document.createElement('div');nm.className='dnum';nm.textContent=d.getDate();
+    var wn=d.toLocaleDateString('lt-LT',{weekday:'long'});
+    var nn=document.createElement('div');nn.className='dname';nn.textContent=wn.charAt(0).toUpperCase()+wn.slice(1);
+    hd.appendChild(nm);hd.appendChild(nn);
+    var evs=document.createElement('div');evs.className='evs';
+    if(!list.length){var em=document.createElement('div');em.className='meta';em.textContent='Laisva';evs.appendChild(em)}
+    else list.forEach(function(e){evs.appendChild(evCard(e,dk))});
+    row.appendChild(hd);row.appendChild(evs);box.appendChild(row);
   }
 }
 var editingEv=null;
 function closeEv(){
   $('evform').style.display='none';
   ['evt','evtm','evp'].forEach(function(i){$(i).value=''});$('evw').checked=false;$('evd').value='';
-  editingEv=null;$('evsave').textContent='Išsaugoti';
+  editingEv=null;$('evsave').textContent='Išsaugoti';$('evdel').style.display='none';
 }
 function openNewEvent(){
   closeEv();fillKids();
@@ -617,7 +657,7 @@ function editEvent(e){
   closeEv();fillKids();editingEv=e.id;
   $('evt').value=e.title;$('evc').value=e.child||'';$('evd').value=e.date;$('evtm').value=e.time||'';
   $('evp').value=e.place||'';$('evw').checked=!!e.weekly;
-  $('evsave').textContent='Išsaugoti pakeitimus';$('evform').style.display='block';
+  $('evsave').textContent='Išsaugoti pakeitimus';$('evdel').style.display='inline-block';$('evform').style.display='block';
 }
 $('evnew').onclick=function(){if($('evform').style.display==='none')openNewEvent();else closeEv()};
 $('evsave').onclick=function(){
@@ -633,8 +673,13 @@ $('evsave').onclick=function(){
   renderCal();renderHome();dispRefresh();
 };
 $('evclose').onclick=closeEv;
-$('wprev').onclick=function(){wOff-=7;renderCal()};
-$('wnext').onclick=function(){wOff+=7;renderCal()};
+$('evdel').onclick=function(){
+  var e=notes.filter(function(q){return q.id===editingEv})[0];if(!e)return;
+  if(!confirm('Ištrinti „'+e.title+'“'+(e.weekly?' (visas savaites)':'')+'?'))return;
+  e.deleted=true;touch(e);save();closeEv();renderCal();renderHome();dispRefresh();
+};
+$('wprev').onclick=function(){wOff-=1;renderCal()};
+$('wnext').onclick=function(){wOff+=1;renderCal()};
 $('wnow').onclick=function(){wOff=0;renderCal()};
 
 function renderSet(){
