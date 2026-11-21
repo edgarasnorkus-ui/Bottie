@@ -144,6 +144,41 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(12px + env(safe-area-i
 .dayrow.empty{padding:6px 10px;align-items:center;justify-items:start}
 .dayrow.empty .dnum{font-size:1.2rem}
 @media (max-width:699px){.dayrow{grid-template-columns:1fr;gap:6px}.dhead{display:flex;align-items:baseline;gap:10px}.dayrow.empty{grid-template-columns:150px 1fr;gap:8px}}
+.seg{display:inline-flex;margin-top:12px;border:2px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border-radius:0;background:transparent;color:var(--ink);min-height:40px;padding:6px 18px}
+.seg button.on{background:var(--accent);color:var(--onaccent)}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.mhead{margin-top:12px;text-align:center;color:var(--muted);font-weight:700;font-size:.9rem}
+.mcell{background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:12px;min-height:64px;padding:4px;text-align:left;font-weight:400;display:flex;flex-direction:column;gap:3px;align-items:stretch;overflow:hidden}
+.mcell.out{opacity:.45}
+.mcell.today{border-color:var(--accent)}
+.mcell.today .mnum{color:var(--accent);font-weight:800}
+.mcell.sel{outline:3px solid var(--sun);outline-offset:-1px}
+.mnum{font-weight:700}
+.mdots{display:flex;gap:3px;flex-wrap:wrap}
+.mdot{width:9px;height:9px;border-radius:50%}
+.mevs{display:none}
+.mev{font-size:.78rem;border-left:4px solid var(--line);padding:1px 4px;background:var(--bg);border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mmore{font-size:.78rem;color:var(--muted)}
+#mcal .mgrid.cells{margin-top:4px}
+@media (min-width:700px){.mcell{min-height:104px}.mdots{display:none}.mevs{display:flex;flex-direction:column;gap:3px;min-width:0}}
+.pchart{margin-top:14px}
+.pbox{position:relative;padding:8px 0 0 46px}
+.pyax{position:absolute;left:0;top:8px;bottom:0;width:42px}
+.pyax span{position:absolute;right:4px;transform:translateY(-50%);font-size:.78rem;color:var(--muted)}
+.pplot{position:relative;height:200px;display:flex;align-items:flex-end;gap:2px;border-bottom:2px solid var(--line)}
+.pgrid{position:absolute;left:0;right:0;border-top:1px dashed var(--line)}
+.pbar{position:relative;flex:1;min-width:0;border-radius:3px 3px 0 0;cursor:pointer}
+.pbar.now{outline:3px solid var(--ink);outline-offset:1px;z-index:2}
+.pbar.sel{box-shadow:0 0 0 3px var(--ink);z-index:3}
+.pxax{display:flex;gap:2px;margin:4px 0 0 46px}
+.pxax span{flex:1;min-width:0;font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:visible}
+.pread{margin-top:10px;padding:10px 12px;background:var(--bg);border-radius:14px;font-weight:700}
+.pleg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.85rem;color:var(--muted)}
+.pleg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pstats>div{background:var(--bg);border-radius:14px;padding:8px 10px}
+.pstats .v{font-size:1.25rem;font-weight:800}
 </style>
 </head>
 <body>
@@ -197,9 +232,12 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(12px + env(safe-area-i
     </div>
   <section class="view" id="v-cal">
     <div class="row" style="margin-top:0"><button class="soft" id="wprev" type="button">‹ Ankstesnė</button><button class="soft" id="wnow" type="button">Šiandien</button><button class="soft" id="wnext" type="button">Kita ›</button><button id="evnew" type="button" style="margin-left:auto">+ Veikla</button></div>
+    <div class="seg" id="calmode"><button type="button" data-m="week">Savaitė</button><button type="button" data-m="month">Mėnuo</button></div>
     <div id="wtitle" class="wtitle"></div>
     <div id="kidchips" class="chips"></div>
     <div id="cal"></div>
+    <div id="mcal" style="display:none"></div>
+    <div id="mday" style="display:none"></div>
   </section>
   <section class="view" id="v-set">
     <div class="card"><h3 style="margin:0 0 6px">Bendra saugykla („Google Sheets“)</h3>
@@ -224,7 +262,7 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(12px + env(safe-area-i
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 17</div></div>
+      <div class="meta">Versija 18</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -487,6 +525,50 @@ function loadPrice(){
     renderPrice();
   });
 }
+var PDAY='today';
+function priceChart(list,curStart,wide){
+  var arr=list.map(function(x){return {t:x.startsAt,v:ore(x.total),l:x.level}}),n=arr.length;
+  var mn=arr[0],mx=arr[0],sum=0;
+  arr.forEach(function(x){if(x.v<mn.v)mn=x;if(x.v>mx.v)mx=x;sum+=x.v});
+  var top=Math.max(50,Math.ceil(mx.v/50)*50);
+  var wrap=document.createElement('div');wrap.className='pchart';
+  var box=document.createElement('div');box.className='pbox';
+  var y=document.createElement('div');y.className='pyax';
+  [top,Math.round(top/2),0].forEach(function(v,k){var sp=document.createElement('span');sp.textContent=v;sp.style.top=(k*50)+'%';y.appendChild(sp)});
+  var plot=document.createElement('div');plot.className='pplot';
+  [0,50].forEach(function(p){var g=document.createElement('div');g.className='pgrid';g.style.top=p+'%';plot.appendChild(g)});
+  var read=document.createElement('div');read.className='pread';read.setAttribute('aria-live','polite');
+  var bars=[],selIdx=-1;
+  function show(i){
+    if(selIdx>=0)bars[selIdx].classList.remove('sel');
+    selIdx=i;bars[i].classList.add('sel');
+    var x=arr[i];read.textContent=hhmm(x.t)+' · '+x.v+' öre/kWh · '+(LV[x.l]||'');
+  }
+  arr.forEach(function(x,i){
+    var b=document.createElement('div');b.className='pbar'+(x.t===curStart?' now':'');
+    b.style.height=Math.max(1,Math.max(0,x.v)/top*100)+'%';
+    b.style.background=/CHEAP/.test(x.l)?'var(--mint)':/EXPENSIVE/.test(x.l)?'var(--pink)':'var(--sun)';
+    b.setAttribute('aria-label',hhmm(x.t)+', '+x.v+' öre/kWh');
+    b.onclick=function(){show(i)};bars.push(b);plot.appendChild(b);
+  });
+  box.appendChild(y);box.appendChild(plot);wrap.appendChild(box);
+  var step=n>30?12:(wide?3:3),xa=document.createElement('div');xa.className='pxax';
+  arr.forEach(function(x,i){var sp=document.createElement('span');if(i%step===0)sp.textContent=hhmm(x.t).slice(0,2);xa.appendChild(sp)});
+  wrap.appendChild(xa);wrap.appendChild(read);
+  var leg=document.createElement('div');leg.className='pleg';
+  [['var(--mint)','Pigu'],['var(--sun)','Normalu'],['var(--pink)','Brangu']].forEach(function(p){
+    var sp=document.createElement('span'),i=document.createElement('i');i.style.background=p[0];sp.appendChild(i);sp.appendChild(document.createTextNode(p[1]));leg.appendChild(sp)});
+  wrap.appendChild(leg);
+  var st=document.createElement('div');st.className='pstats';
+  [['Pigiausia',mn.v+' öre',hhmm(mn.t)],['Vidurkis',Math.round(sum/n)+' öre',''],['Brangiausia',mx.v+' öre',hhmm(mx.t)]].forEach(function(p){
+    var d=document.createElement('div'),a=document.createElement('div'),v=document.createElement('div'),c=document.createElement('div');
+    a.className='meta';a.textContent=p[0];v.className='v';v.textContent=p[1];c.className='meta';c.textContent=p[2]||'\u00a0';
+    d.appendChild(a);d.appendChild(v);d.appendChild(c);st.appendChild(d)});
+  wrap.appendChild(st);
+  var ci=-1;arr.forEach(function(x,i){if(x.t===curStart)ci=i});
+  show(ci>=0?ci:arr.indexOf(mn));
+  return wrap;
+}
 function renderPrice(){
   var b=$('pbody');b.innerHTML='';
   $('ptok').placeholder=getTok()?'Raktas išsaugotas. Įklijuok naują, kad pakeistum.':'Įklijuok savo raktą';
@@ -500,21 +582,22 @@ function renderPrice(){
   var nt=document.createElement('div');nt.className='meta';
   nt.textContent='Su mokesčiais ir PVM pagal Tibber'+(EX()?' + '+Math.round(EX()*100)+' öre papildomo mokesčio.':'. Tinklo mokestis paprastai neįtrauktas.');
   c.appendChild(nt);
-  var td=PRICE.today||[];
-  if(td.length){
-    var mx=Math.max.apply(null,td.map(function(x){return x.total+EX()}))||1,ch=document.createElement('div');ch.className='chart';
-    ch.setAttribute('role','img');ch.setAttribute('aria-label','Elektros kaina šiandien');
-    td.forEach(function(x){
-      var d=document.createElement('div');d.style.height=Math.max(2,Math.max(0,x.total+EX())/mx*100)+'%';
-      d.style.background=/CHEAP/.test(x.level)?'var(--mint)':/EXPENSIVE/.test(x.level)?'var(--pink)':'var(--sun)';
-      if(cs.startsAt===x.startsAt)d.className='now';ch.appendChild(d);
+  var td=PRICE.today||[],tm=PRICE.tomorrow||[];
+  if(PDAY==='tomorrow'&&!tm.length)PDAY='today';
+  if(tm.length){
+    var seg=document.createElement('div');seg.className='seg';
+    [['today','Šiandien'],['tomorrow','Rytoj']].forEach(function(p){
+      var bt=document.createElement('button');bt.type='button';bt.textContent=p[1];if(PDAY===p[0])bt.className='on';
+      bt.onclick=function(){PDAY=p[0];renderPrice()};seg.appendChild(bt);
     });
-    c.appendChild(ch);
-    var ax=document.createElement('div');ax.className='axis';ax.innerHTML='<span></span><span></span>';
-    ax.children[0].textContent=hhmm(td[0].startsAt);ax.children[1].textContent='paros pabaiga';c.appendChild(ax);
-    var p=document.createElement('p');p.textContent='Pigiausia šiandien: '+cheapest(td,td.length>30?8:3);c.appendChild(p);
+    c.appendChild(seg);
   }
-  if((PRICE.tomorrow||[]).length){var q=document.createElement('p');q.textContent='Pigiausia rytoj: '+cheapest(PRICE.tomorrow,PRICE.tomorrow.length>30?8:3);c.appendChild(q)}
+  var list=PDAY==='tomorrow'?tm:td;
+  if(list.length){
+    c.appendChild(priceChart(list,PDAY==='today'?cs.startsAt:null,true));
+    var p=document.createElement('p');p.textContent=(PDAY==='tomorrow'?'Pigiausi laikai rytoj: ':'Pigiausi laikai šiandien: ')+cheapest(list,list.length>30?8:3);
+    c.appendChild(p);
+  }
 }
 $('psave').onclick=function(){
   var v=$('ptok').value.trim();
@@ -603,13 +686,66 @@ function fillKids(){
   cfgItem().children.forEach(function(k){var o=document.createElement('option');o.value=k.name;o.textContent=k.name;sel.appendChild(o)});
   sel.value=cur;
 }
+function renderMonth(){
+  var today=dkey(new Date()),sd=selDay||today;
+  var first=new Date();first.setHours(0,0,0,0);first.setDate(1);first.setMonth(first.getMonth()+mOff);
+  var mon=first.getMonth();
+  var tt=first.toLocaleDateString('lt-LT',{year:'numeric',month:'long'});
+  $('wtitle').textContent=tt.charAt(0).toUpperCase()+tt.slice(1);
+  var start=new Date(first);start.setDate(1-((first.getDay()+6)%7));
+  var box=$('mcal');box.innerHTML='';
+  var head=document.createElement('div');head.className='mgrid mhead';
+  ['Pr','An','Tr','Kt','Pn','Št','Sk'].forEach(function(n){var h=document.createElement('div');h.textContent=n;head.appendChild(h)});
+  box.appendChild(head);
+  var grid=document.createElement('div');grid.className='mgrid cells';
+  for(var i=0;i<42;i++){
+    var d=new Date(start);d.setDate(start.getDate()+i);
+    if(i>=35&&d.getMonth()!==mon)break;
+    var dk=dkey(d),list=dayList(d).filter(function(e){return !calKid||e.child===calKid});
+    var c=document.createElement('button');c.type='button';
+    c.className='mcell'+(d.getMonth()!==mon?' out':'')+(dk===today?' today':'')+(dk===sd?' sel':'');
+    var n=document.createElement('div');n.className='mnum';n.textContent=d.getDate();c.appendChild(n);
+    var dots=document.createElement('div');dots.className='mdots';
+    list.slice(0,4).forEach(function(e){
+      var o=document.createElement('span');o.className='mdot';o.style.background=kidColor(e.child);
+      if(e.acks&&e.acks[dk])o.style.opacity='.35';dots.appendChild(o);
+    });
+    c.appendChild(dots);
+    var evs=document.createElement('div');evs.className='mevs';
+    list.slice(0,3).forEach(function(e){
+      var o=document.createElement('div');o.className='mev';o.style.borderLeftColor=kidColor(e.child);
+      o.textContent=(e.time?e.time+' ':'')+e.title;if(e.acks&&e.acks[dk])o.style.textDecoration='line-through';
+      evs.appendChild(o);
+    });
+    if(list.length>3){var mm=document.createElement('div');mm.className='mmore';mm.textContent='+'+(list.length-3);evs.appendChild(mm)}
+    c.appendChild(evs);
+    c.setAttribute('aria-label',d.toLocaleDateString('lt-LT',{weekday:'long',month:'long',day:'numeric'})+', veiklų: '+list.length);
+    (function(k){c.onclick=function(){selDay=k;renderCal()}})(dk);
+    grid.appendChild(c);
+  }
+  box.appendChild(grid);
+  var md=$('mday');md.innerHTML='';
+  var sdd=dparse(sd),wn=sdd.toLocaleDateString('lt-LT',{weekday:'long',month:'long',day:'numeric'});
+  var h=document.createElement('h3');h.style.margin='16px 0 8px';h.textContent=wn.charAt(0).toUpperCase()+wn.slice(1);md.appendChild(h);
+  var sl=dayList(sdd).filter(function(e){return !calKid||e.child===calKid});
+  if(!sl.length){var em=document.createElement('div');em.className='meta';em.textContent='Laisva';md.appendChild(em)}
+  else{var ev=document.createElement('div');ev.className='evs';sl.forEach(function(e){ev.appendChild(evCard(e,sd))});md.appendChild(ev)}
+}
+function shiftCal(n){
+  if(calMode==='month'){
+    mOff+=n;var f=new Date();f.setDate(1);f.setMonth(f.getMonth()+mOff);
+    selDay=mOff===0?dkey(new Date()):dkey(f);
+  }else wOff+=n;
+  renderCal();
+}
+Array.prototype.forEach.call(document.querySelectorAll('#calmode button'),function(b){b.onclick=function(){calMode=b.getAttribute('data-m');renderCal()}});
 function isoWeek(d){
   var t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),n=t.getUTCDay()||7;
   t.setUTCDate(t.getUTCDate()+4-n);
   var y=new Date(Date.UTC(t.getUTCFullYear(),0,1));
   return Math.ceil(((t-y)/864e5+1)/7);
 }
-var calKid='';
+var calKid='',calMode='week',mOff=0,selDay=null;
 function renderCal(){
   fillKids();
   var kids=cfgItem().children,chips=$('kidchips');chips.innerHTML='';
@@ -622,6 +758,10 @@ function renderCal(){
       chips.appendChild(b);
     });
   }
+  Array.prototype.forEach.call(document.querySelectorAll('#calmode button'),function(b){b.classList.toggle('on',b.getAttribute('data-m')===calMode)});
+  var mo=calMode==='month';
+  $('cal').style.display=mo?'none':'block';$('mcal').style.display=mo?'block':'none';$('mday').style.display=mo?'block':'none';
+  if(mo){renderMonth();return}
   var today=dkey(new Date());
   var base=new Date();base.setHours(0,0,0,0);base.setDate(base.getDate()-((base.getDay()+6)%7)+wOff*7);
   var end=new Date(base);end.setDate(end.getDate()+6);
@@ -651,7 +791,7 @@ function closeEv(){
 }
 function openNewEvent(){
   closeEv();fillKids();
-  $('evd').value=dkey(new Date());$('evform').style.display='block';$('evt').focus();
+  $('evd').value=(calMode==='month'&&selDay&&$('v-cal').classList.contains('on'))?selDay:dkey(new Date());$('evform').style.display='block';$('evt').focus();
 }
 function editEvent(e){
   closeEv();fillKids();editingEv=e.id;
@@ -678,9 +818,9 @@ $('evdel').onclick=function(){
   if(!confirm('Ištrinti „'+e.title+'“'+(e.weekly?' (visas savaites)':'')+'?'))return;
   e.deleted=true;touch(e);save();closeEv();renderCal();renderHome();dispRefresh();
 };
-$('wprev').onclick=function(){wOff-=1;renderCal()};
-$('wnext').onclick=function(){wOff+=1;renderCal()};
-$('wnow').onclick=function(){wOff=0;renderCal()};
+$('wprev').onclick=function(){shiftCal(-1)};
+$('wnext').onclick=function(){shiftCal(1)};
+$('wnow').onclick=function(){wOff=0;mOff=0;selDay=null;renderCal()};
 
 function renderSet(){
   loadPrefUI();
