@@ -210,6 +210,15 @@ body.disp main{padding:10px 22px 48px}
 .dweek .dayrow.empty .dnum{font-size:1rem;display:inline}
 .dweek .dayrow.empty .dname{display:inline;margin-left:6px}
 #v-disp.on{gap:12px}
+.av{display:inline-block;flex:none;border-radius:50%;overflow:hidden;line-height:0;vertical-align:middle}
+.av svg{display:block;width:100%;height:100%}
+.chip .av{margin-right:6px}
+.aved{background:var(--bg);border-radius:16px;padding:12px;margin:8px 0}
+.avprev{width:96px;height:96px;margin:0 auto 8px}
+.avrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.avrow .meta{width:100%}
+.sw{width:30px;height:30px;min-height:30px;padding:0;border-radius:50%;border:3px solid transparent}
+.sw.on{border-color:var(--ink)}
 </style>
 </head>
 <body>
@@ -280,9 +289,9 @@ body.disp main{padding:10px 22px 48px}
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Mano vardas</h3>
       <input class="inp" type="text" id="myname" placeholder="Tavo vardas" autocomplete="off">
       <div class="meta">Rodoma, kai pažymi veiklą kaip atliktą.</div></div>
-    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Vaikai</h3>
+    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Šeima</h3>
       <div id="kids"></div>
-      <div class="row"><input class="inp" type="text" id="kname" placeholder="Vaiko vardas" autocomplete="off"><button id="kadd" type="button" style="flex:none">Pridėti</button></div></div>
+      <div class="row"><input class="inp" type="text" id="kname" placeholder="Vardas" autocomplete="off"><select id="ktype" class="inp" style="flex:none;width:auto" aria-label="Tipas"><option value="child">Vaikas</option><option value="adult">Suaugęs</option></select><button id="kadd" type="button" style="flex:none">Pridėti</button></div></div>
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Išvaizda</h3>
       <select id="pth" class="inp" aria-label="Tema">
         <option value="auto">Pagal pasirinktas valandas</option>
@@ -293,7 +302,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 19</div></div>
+      <div class="meta">Versija 20</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -687,6 +696,117 @@ function syncNow(){
     sstat(e&&e.message==='unauthorized'?'Neteisingas šeimos kodas.':'Nepavyko sinchronizuoti. Patikrink adresą ir ryšį.');
   }).then(function(){syncing=false;if(DIRTY)syncSoon()});
 }
+/* Avatarer och personer (vuxna + barn) */
+var AVN=0,avEdit=null;
+var SKIN=['#FFE0C7','#F8CDA6','#E8B28A','#C98B5E','#9C6440','#6B4228'];
+var HAIRC=['#2B2118','#5A3A22','#8A5A2B','#C99A3E','#E8D08A','#B5481F','#8C8C8C','#E9E9E9','#3B6FD4','#C2398A'];
+var AVMAX=[6,8,10,3,3,3,3];
+function hashStr(t){var h=0;for(var i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return h}
+function avDefault(name){var h=hashStr(name||'x');return [h%6,(h>>3)%8,(h>>6)%10,(h>>9)%5===0?1:0,0,(h>>12)%2,(h>>14)%3]}
+function avParse(code,name){
+  var a=(code||'').split(',').map(function(x){return parseInt(x,10)}),d=avDefault(name);
+  return d.map(function(v,i){return (a.length===7&&a[i]>=0&&a[i]<AVMAX[i])?a[i]:v});
+}
+function safeColor(c){return /^#[0-9a-fA-F]{6}$/.test(c||'')?c:'#8899AA'}
+function avSvg(a,color){
+  var id='avc'+(AVN++),sk=SKIN[a[0]],h=a[1],hc=HAIRC[a[2]],ink='#1F2A44',back='',front='',F=function(d,o){return '<path d="'+d+'" fill="'+hc+'"'+(o||'')+'/>'};
+  if(h===3)back+=F('M22 50Q18 14 50 14Q82 14 78 50Q80 72 74 86L26 86Q20 72 22 50Z');
+  if(h===5)back+='<ellipse cx="77" cy="36" rx="8" ry="14" fill="'+hc+'"/>';
+  if(h===6)back+='<circle cx="50" cy="13" r="9" fill="'+hc+'"/>';
+  if(h===4)[[30,34],[40,24],[50,21],[60,24],[70,34],[26,46],[74,46]].forEach(function(p){back+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="10" fill="'+hc+'"/>'});
+  if(h===1||h===5||h===6)front=F('M27 46Q24 18 50 19Q76 18 73 46Q70 32 50 31Q30 32 27 46Z');
+  if(h===2)front=F('M26 48Q22 16 52 17Q78 17 74 48Q72 34 56 30Q38 34 26 48Z');
+  if(h===3)front=F('M27 44Q30 24 50 24Q70 24 73 44Q60 32 50 32Q40 32 27 44Z');
+  if(h===4)[[38,30],[50,28],[62,30]].forEach(function(p){front+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="8" fill="'+hc+'"/>'});
+  if(h===7)front=F('M28 44Q26 22 50 22Q74 22 72 44Q70 30 50 30Q30 30 28 44Z',' opacity=".6"');
+  var brow=(h===0||h===7)?'#7a6a5a':hc;
+  var eyes=a[6]===0?'<circle cx="41" cy="49" r="2.8" fill="'+ink+'"/><circle cx="59" cy="49" r="2.8" fill="'+ink+'"/>'
+    :a[6]===1?'<circle cx="41" cy="49" r="5.2" fill="#fff"/><circle cx="59" cy="49" r="5.2" fill="#fff"/><circle cx="42" cy="50" r="3" fill="'+ink+'"/><circle cx="60" cy="50" r="3" fill="'+ink+'"/>'
+    :'<path d="M36.5 51Q41 44 45.5 51M54.5 51Q59 44 63.5 51" stroke="'+ink+'" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+  var gl=a[3]===1?'<circle cx="41" cy="49" r="8" fill="none" stroke="'+ink+'" stroke-width="2"/><circle cx="59" cy="49" r="8" fill="none" stroke="'+ink+'" stroke-width="2"/><path d="M49 49H51" stroke="'+ink+'" stroke-width="2"/>'
+    :a[3]===2?'<rect x="32" y="42.5" width="17" height="13" rx="3" fill="none" stroke="'+ink+'" stroke-width="2"/><rect x="51" y="42.5" width="17" height="13" rx="3" fill="none" stroke="'+ink+'" stroke-width="2"/><path d="M49 48H51" stroke="'+ink+'" stroke-width="2"/>':'';
+  var beard=a[4]===1?'<path d="M30 54Q50 82 70 54Q70 70 50 75Q30 70 30 54Z" fill="'+hc+'" opacity=".3"/>'
+    :a[4]===2?'<path d="M28 52Q28 82 50 84Q72 82 72 52Q66 63 50 63Q34 63 28 52Z" fill="'+hc+'"/>':'';
+  var mc=a[4]===2?'#F6C9C0':ink;
+  var mouth=a[5]===0?'<path d="M42 64Q50 71 58 64" stroke="'+mc+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+    :a[5]===1?'<path d="M41 63Q50 75 59 63Z" fill="#fff" stroke="'+mc+'" stroke-width="2" stroke-linejoin="round"/>'
+    :'<path d="M44 66H56" stroke="'+mc+'" stroke-width="2.4" stroke-linecap="round"/>';
+  return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><clipPath id="'+id+'"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#'+id+')">'
+    +'<rect width="100" height="100" fill="'+safeColor(color)+'"/>'
+    +'<path d="M10 100Q12 74 38 70L62 70Q88 74 90 100Z" fill="rgba(0,0,0,.28)"/>'
+    +back+'<rect x="42" y="58" width="16" height="16" rx="6" fill="'+sk+'"/><rect x="42" y="58" width="16" height="16" rx="6" fill="rgba(0,0,0,.12)"/>'
+    +'<circle cx="28" cy="49" r="4.5" fill="'+sk+'"/><circle cx="72" cy="49" r="4.5" fill="'+sk+'"/>'
+    +'<ellipse cx="50" cy="46" rx="22" ry="25" fill="'+sk+'"/>'
+    +'<path d="M36 41Q41 38 46 41M54 41Q59 38 64 41" stroke="'+brow+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+    +eyes+gl+'<path d="M50 51Q47 58 51 59" stroke="rgba(0,0,0,.28)" stroke-width="1.8" fill="none" stroke-linecap="round"/>'
+    +'<circle cx="34" cy="59" r="4" fill="#FF8FA3" opacity=".35"/><circle cx="66" cy="59" r="4" fill="#FF8FA3" opacity=".35"/>'
+    +beard+mouth+front+'</g></svg>';
+}
+function person(name){return cfgItem().children.filter(function(c){return c.name===name})[0]||null}
+function avEl(name,size){
+  var p=person(name);if(!p)return null;
+  var e=document.createElement('span');e.className='av';e.style.width=size+'px';e.style.height=size+'px';
+  e.innerHTML=avSvg(avParse(p.av,p.name),p.color);return e;
+}
+function swRow(label,list,idx){
+  var w=document.createElement('div');w.className='avrow';
+  var l=document.createElement('div');l.className='meta';l.textContent=label;w.appendChild(l);
+  list.forEach(function(c,j){
+    var b=document.createElement('button');b.type='button';b.className='sw'+(avEdit.a[idx]===j?' on':'');
+    b.style.background=c;b.setAttribute('aria-label',label+' '+(j+1));
+    b.onclick=function(){avEdit.a[idx]=j;renderPeople()};w.appendChild(b);
+  });
+  return w;
+}
+function selRow(label,opts,idx){
+  var w=document.createElement('div');w.className='avrow';
+  var l=document.createElement('div');l.className='meta';l.textContent=label;w.appendChild(l);
+  var s=document.createElement('select');s.className='inp';s.setAttribute('aria-label',label);
+  opts.forEach(function(o,j){var op=document.createElement('option');op.value=j;op.textContent=o;s.appendChild(op)});
+  s.value=avEdit.a[idx];s.onchange=function(){avEdit.a[idx]=+s.value;renderPeople()};
+  w.appendChild(s);return w;
+}
+function avEditor(ch){
+  var box=document.createElement('div');box.className='aved';
+  var pv=document.createElement('div');pv.className='avprev';pv.innerHTML=avSvg(avEdit.a,ch.color);box.appendChild(pv);
+  box.appendChild(swRow('Odos spalva',SKIN,0));
+  box.appendChild(selRow('Plaukai',['Be plaukų','Trumpi','Pusilgiai','Ilgi','Garbanoti','Surišti į uodegą','Kuokštas','Labai trumpi'],1));
+  box.appendChild(swRow('Plaukų spalva',HAIRC,2));
+  box.appendChild(selRow('Akiniai',['Be akinių','Apvalūs','Kampuoti'],3));
+  box.appendChild(selRow('Barzda',['Be barzdos','Šeriai','Barzda'],4));
+  box.appendChild(selRow('Akys',['Taškai','Didelės','Linksmos'],6));
+  box.appendChild(selRow('Burna',['Šypsena','Plati šypsena','Rimta'],5));
+  var cw=document.createElement('div');cw.className='avrow';
+  var cl=document.createElement('div');cl.className='meta';cl.textContent='Avataro kodas (galima įklijuoti)';cw.appendChild(cl);
+  var ci=document.createElement('input');ci.className='inp';ci.type='text';ci.value=avEdit.a.join(',');ci.setAttribute('aria-label','Avataro kodas');
+  ci.onchange=function(){avEdit.a=avParse(ci.value,ch.name);renderPeople()};cw.appendChild(ci);box.appendChild(cw);
+  var rw=document.createElement('div');rw.className='row';
+  var rnd=document.createElement('button');rnd.type='button';rnd.className='soft';rnd.textContent='Atsitiktinis';
+  rnd.onclick=function(){avEdit.a=AVMAX.map(function(m,i){return i===4&&Math.random()<.7?0:Math.floor(Math.random()*m)});renderPeople()};
+  var sv=document.createElement('button');sv.type='button';sv.textContent='Išsaugoti';
+  sv.onclick=function(){ch.av=avEdit.a.join(',');touch(cfgItem());avEdit=null;save();renderPeople();renderCal();renderHome();dispRefresh()};
+  var cn=document.createElement('button');cn.type='button';cn.className='soft';cn.textContent='Atšaukti';
+  cn.onclick=function(){avEdit=null;renderPeople()};
+  rw.appendChild(rnd);rw.appendChild(cn);rw.appendChild(sv);box.appendChild(rw);
+  return box;
+}
+function renderPeople(){
+  var k=$('kids');k.innerHTML='';
+  cfgItem().children.forEach(function(ch,i){
+    var r=document.createElement('div');r.className='fc';
+    var a=document.createElement('span');a.style.cssText='display:flex;align-items:center;gap:10px';
+    var av=avEl(ch.name,44);if(av)a.appendChild(av);
+    var tx=document.createElement('span');tx.textContent=ch.name+' · '+(ch.adult?'suaugęs':'vaikas');a.appendChild(tx);
+    var bx=document.createElement('span');bx.style.cssText='display:flex;gap:4px';
+    var ed=document.createElement('button');ed.className='x';ed.textContent='✎';ed.setAttribute('aria-label','Keisti avatarą: '+ch.name);
+    ed.onclick=function(){avEdit=(avEdit&&avEdit.i===i)?null:{i:i,a:avParse(ch.av,ch.name)};renderPeople()};
+    var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ištrinti '+ch.name);
+    x.style.marginLeft='0';
+    x.onclick=function(){var cf=cfgItem();cf.children.splice(i,1);touch(cf);avEdit=null;save();renderPeople();renderCal();dispRefresh()};
+    bx.appendChild(ed);bx.appendChild(x);r.appendChild(a);r.appendChild(bx);k.appendChild(r);
+    if(avEdit&&avEdit.i===i)k.appendChild(avEditor(ch));
+  });
+}
 function cfgItem(){
   var c=notes.filter(function(n){return n.id==='config'})[0];
   if(!c){c={id:'config',kind:'config',children:[],updated:0};notes.push(c)}
@@ -721,11 +841,18 @@ function evCard(e,dk){
   };
   var pe=document.createElement('button');pe.className='pen';pe.textContent='✎';pe.setAttribute('aria-label','Redaguoti veiklą');
   pe.onclick=function(){editEvent(e)};
+  var eav=avEl(e.child,34);if(eav)c.appendChild(eav);
   c.appendChild(body);c.appendChild(ck);c.appendChild(pe);return c;
 }
 function fillKids(){
   var sel=$('evc'),cur=sel.value;sel.innerHTML='<option value="">Visi / nėra</option>';
-  cfgItem().children.forEach(function(k){var o=document.createElement('option');o.value=k.name;o.textContent=k.name;sel.appendChild(o)});
+  var ppl=cfgItem().children;
+  [['Suaugusieji',true],['Vaikai',false]].forEach(function(g){
+    var list=ppl.filter(function(p){return !!p.adult===g[1]});if(!list.length)return;
+    var og=document.createElement('optgroup');og.label=g[0];
+    list.forEach(function(k){var o=document.createElement('option');o.value=k.name;o.textContent=k.name;og.appendChild(o)});
+    sel.appendChild(og);
+  });
   sel.value=cur;
 }
 function renderMonth(){
@@ -794,7 +921,7 @@ function renderCal(){
   if(kids.length){
     [{name:'',color:''}].concat(kids).forEach(function(k){
       var b=document.createElement('button');b.type='button';b.className='chip'+(calKid===k.name?' on':'');
-      if(k.name){var dot=document.createElement('span');dot.className='cdot';dot.style.background=k.color;b.appendChild(dot)}
+      if(k.name){var cav=avEl(k.name,24);if(cav)b.appendChild(cav)}
       b.appendChild(document.createTextNode(k.name||'Visi'));
       b.onclick=function(){calKid=k.name;renderCal()};
       chips.appendChild(b);
@@ -869,16 +996,7 @@ function renderSet(){
   var c=syncCfg()||{};
   $('surl').value=c.url||'';$('skey').value='';$('skey').placeholder=c.key?'Šeimos kodas išsaugotas':'Šeimos kodas';
   $('myname').value=myName();
-  var k=$('kids');k.innerHTML='';
-  cfgItem().children.forEach(function(ch,i){
-    var r=document.createElement('div');r.className='fc';
-    var a=document.createElement('span');
-    var dot=document.createElement('span');dot.style.cssText='display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;background:'+ch.color;
-    a.appendChild(dot);a.appendChild(document.createTextNode(ch.name));
-    var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ištrinti '+ch.name);
-    x.onclick=function(){var cf=cfgItem();cf.children.splice(i,1);touch(cf);save();renderSet()};
-    r.appendChild(a);r.appendChild(x);k.appendChild(r);
-  });
+  renderPeople();
 }
 $('ssave').onclick=function(){
   var u=$('surl').value.trim(),kk=$('skey').value.trim(),o=syncCfg()||{};
@@ -891,7 +1009,7 @@ $('soff').onclick=function(){try{localStorage.removeItem(SK)}catch(e){}sstat('At
 $('myname').onchange=function(){try{localStorage.setItem(NK,$('myname').value.trim())}catch(e){}};
 $('kadd').onclick=function(){
   var n=$('kname').value.trim();if(!n)return;
-  var cf=cfgItem();cf.children.push({name:n,color:PAL[cf.children.length%PAL.length]});
+  var cf=cfgItem();cf.children.push({name:n,color:PAL[cf.children.length%PAL.length],adult:$('ktype').value==='adult'});
   touch(cf);$('kname').value='';save();renderSet();
 };
 setInterval(syncNow,60000);
@@ -943,6 +1061,7 @@ function dEv(e,dk,compact){
   };
   var pen=document.createElement('button');pen.className='pen';pen.textContent='✎';pen.setAttribute('aria-label','Redaguoti veiklą');
   pen.onclick=function(ev){ev.stopPropagation();editEvent(e)};
+  var dav=avEl(e.child,32);if(dav)r.appendChild(dav);
   r.appendChild(bx);r.appendChild(pen);return r;
 }
 var dFresh=false;
