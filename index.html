@@ -117,8 +117,8 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(10px + env(safe-area-i
 .dl{padding:10px 12px;border-radius:14px;background:var(--bg);margin-top:8px;font-size:1.25rem;word-break:break-word}
 .dev{cursor:pointer}
 @media (min-width:900px) and (orientation:landscape){
-  #v-disp.on{grid-template-columns:1.5fr 1fr;grid-template-areas:"clock weather" "tasks weather" "week price" "week rem";align-items:start}
-  .dclockbox{grid-area:clock}.dweather{grid-area:weather}.dtasks{grid-area:tasks}.dweek{grid-area:week}.dprice{grid-area:price}.drem{grid-area:rem}
+  #v-disp.on{grid-template-columns:1.5fr 1fr;grid-template-areas:"clock weather" "tasks weather" "week price" "week budget" "week rem";align-items:start}
+  .dclockbox{grid-area:clock}.dweather{grid-area:weather}.dtasks{grid-area:tasks}.dweek{grid-area:week}.dprice{grid-area:price}.dbudget{grid-area:budget}.drem{grid-area:rem}
 }
 #evform{position:fixed;left:0;right:0;bottom:0;max-width:720px;margin:0 auto!important;z-index:6;border-radius:28px 28px 0 0;border-bottom:0;max-height:92%;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
 #evform .row:last-child button#evsave{margin-left:auto}
@@ -287,6 +287,25 @@ body.disp main{padding:10px 22px 48px}
 #bubble.show{opacity:1;transform:none}
 #logo{cursor:pointer}
 .bothop{animation:hop .6s ease}
+.bsum{margin-top:12px}
+.bbig{font-size:2.4rem;font-weight:800;line-height:1.1}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:12px}
+.bcat{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;text-align:left;font-weight:400;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;width:100%}
+.bcat .bn{font-weight:700}
+.bcat .bl{font-size:1.5rem;font-weight:800}
+.bbar{height:10px;border-radius:999px;background:var(--bg);overflow:hidden;margin:8px 0 4px}
+.bbar>i{display:block;height:100%;border-radius:999px;transition:width .4s}
+.bok{color:var(--accent)}.bwarn{color:#E0A100}.bover{color:#E5484D}
+.bbar>i.bok{background:var(--accent)}.bbar>i.bwarn{background:#F2B134}.bbar>i.bover{background:#E5484D}
+.bcat.bover{border-color:#E5484D}
+.bitems{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+.bit{display:flex;justify-content:space-between;gap:8px;font-size:.92rem;padding:2px 0}
+.dbudget{cursor:pointer}
+.dbud .dbl{font-size:1.9rem;font-weight:800;line-height:1.1}
+.dbud .dbr{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;margin-top:6px}
+.dbud .bbar{margin:3px 0 0;height:8px}
+.pinbox{max-width:360px;margin:24px auto;text-align:center}
+.pinbox input{text-align:center;font-size:1.6rem;letter-spacing:.4em}
 </style>
 </head>
 <body>
@@ -312,9 +331,10 @@ body.disp main{padding:10px 22px 48px}
 
   <div id="fabs"><button class="fab" id="fabAdd" aria-label="Naujas užrašas">+</button></div>
 
-  <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="tasks">Užduotys</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="set">Nustatymai</button><button data-v="disp">Ekranas</button></nav>
+  <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="tasks">Užduotys</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="budget">Biudžetas</button><button data-v="set">Nustatymai</button><button data-v="disp">Ekranas</button></nav>
   <section class="view" id="v-home"></section>
   <section class="view" id="v-weather"></section>
+  <section class="view" id="v-budget"></section>
   <section class="view" id="v-price">
     <div id="pbody"></div>
     <div class="card" style="margin-top:12px">
@@ -373,7 +393,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 35</div></div>
+      <div class="meta">Versija 37</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -641,6 +661,138 @@ function botClick(){
 $('logo').onclick=botClick;
 $('logo').onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();botClick()}};
 
+/* Biudžetas */
+var BU='bottie-budget-url',BK='bottie-budget-key',BC='bottie-budget-cache-',BP='bottie-budget-pin',BD='bottie-budget-disp',bMon=new Date().getMonth(),bOpen={},bLoading=false,bErr='',bUnlocked=false;
+function pinHash(p){var h=5381,t='bottie|'+p;for(var i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return String(h)}
+function bDataM(m){try{return JSON.parse(localStorage.getItem(BC+m)||'null')}catch(e){return null}}
+function bget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+function bset(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function fmtM(n){var r=Math.round(n);return (r<0?'−':'')+Math.abs(r).toLocaleString('lt-LT')+' SEK'}
+function bcls(p,a){if(a>p+0.5)return 'bover';if(p>0&&a/p>=0.85)return 'bwarn';return 'bok'}
+function bData(){return bDataM(bMon)}
+function loadBudget(fresh,mon0){
+  var u=bget(BU),k=bget(BK);if(!u||!k||bLoading)return;
+  var mon=(mon0===undefined)?bMon:mon0;
+  bLoading=true;bErr='';if($('v-budget').classList.contains('on'))renderBudget();
+  fetch(u+(u.indexOf('?')<0?'?':'&')+'key='+encodeURIComponent(k)+'&month='+mon+(fresh?'&fresh=1':''))
+    .then(function(r){return r.json()}).then(function(j){
+      bLoading=false;
+      if(j.error){bErr=j.error==='unauthorized'?'Neteisingas raktas':j.error}
+      else{j.at=Date.now();try{localStorage.setItem(BC+mon,JSON.stringify(j))}catch(e){}}
+      if($('v-budget').classList.contains('on'))renderBudget();
+      dispRefresh();
+    }).catch(function(){bLoading=false;bErr='Nepavyko gauti duomenų';if($('v-budget').classList.contains('on'))renderBudget()});
+}
+function budgetDispCard(){
+  if(bget(BD)==='0'||!bget(BU)||!bget(BK))return null;
+  var m=new Date().getMonth(),d=bDataM(m);
+  if(!d||d.error){if(!bLoading)loadBudget(false,m);return null}
+  if(!d.at||Date.now()-d.at>6e5){if(!bLoading)loadBudget(false,m)}
+  var MN=['Sausis','Vasaris','Kovas','Balandis','Gegužė','Birželis','Liepa','Rugpjūtis','Rugsėjis','Spalis','Lapkritis','Gruodis'];
+  var c=dcard('Biudžetas · '+MN[m]);c.classList.add('dbudget','dbud');
+  c.onclick=function(){setView('budget')};
+  var big=document.createElement('div');big.className='dbl '+(d.left<0?'bover':'bok');big.textContent=fmtM(d.left);c.appendChild(big);
+  var mt=document.createElement('div');mt.className='meta';mt.textContent='liko iki mėnesio pabaigos';c.appendChild(mt);
+  var cats=d.sections.map(function(s){return {n:s.n,left:s.p-s.a,r:s.p>0?s.a/s.p:(s.a>0?9:0),p:s.p,a:s.a}});
+  var over=cats.filter(function(x){return x.left<-0.5}).sort(function(x,y){return x.left-y.left});
+  var near=cats.filter(function(x){return x.left>0.5&&x.r>=0.6}).sort(function(x,y){return y.r-x.r});
+  var show=over.concat(near).slice(0,2);
+  if(!show.length){var ok=document.createElement('div');ok.className='meta';ok.style.marginTop='6px';ok.textContent='✓ Viskas pagal planą';c.appendChild(ok)}
+  show.forEach(function(x){
+    var k=bcls(x.p,x.a),row=document.createElement('div');
+    var l=document.createElement('div');l.className='dbr';
+    var a=document.createElement('span');a.textContent=x.n;var b=document.createElement('span');b.className=k;b.textContent=(x.left<0?'−':'')+fmtM(Math.abs(x.left)).replace('−','');
+    l.appendChild(a);l.appendChild(b);row.appendChild(l);
+    var bar=document.createElement('div');bar.className='bbar';var i=document.createElement('i');i.className=k;i.style.width=Math.min(100,x.p>0?x.a/x.p*100:(x.a>0?100:0))+'%';bar.appendChild(i);row.appendChild(bar);
+    c.appendChild(row);
+  });
+  return c;
+}
+function renderBudget(){
+  var v=$('v-budget');v.innerHTML='';
+  if(bget(BP)&&!bUnlocked){
+    var pb0=document.createElement('div');pb0.className='card pinbox';
+    var t0=document.createElement('h3');t0.style.margin='0 0 8px';t0.textContent='🔒 Biudžetas užrakintas';pb0.appendChild(t0);
+    var pi0=document.createElement('input');pi0.type='password';pi0.inputMode='numeric';pi0.autocomplete='off';pi0.className='inp';pi0.setAttribute('aria-label','PIN');pi0.placeholder='PIN';pb0.appendChild(pi0);
+    var go=function(){if(pinHash(pi0.value.trim())===bget(BP)){bUnlocked=true;renderBudget()}else{toast('Neteisingas PIN');pi0.value='';pi0.focus()}};
+    var rw0=document.createElement('div');rw0.className='row';rw0.style.justifyContent='center';
+    var b0=document.createElement('button');b0.type='button';b0.textContent='Atrakinti';b0.onclick=go;rw0.appendChild(b0);pb0.appendChild(rw0);
+    pi0.onkeydown=function(e){if(e.key==='Enter')go()};
+    v.appendChild(pb0);setTimeout(function(){try{pi0.focus()}catch(e){}},50);return;
+  }
+  var MN=['Sausis','Vasaris','Kovas','Balandis','Gegužė','Birželis','Liepa','Rugpjūtis','Rugsėjis','Spalis','Lapkritis','Gruodis'];
+  var nav=document.createElement('div');nav.className='row';nav.style.marginTop='0';
+  [['‹ Ankstesnis',-1],['Šis mėnuo',0],['Kitas ›',1]].forEach(function(p){
+    var b=document.createElement('button');b.type='button';b.className='soft';b.textContent=p[0];
+    b.onclick=function(){bMon=p[1]===0?new Date().getMonth():(bMon+p[1]+12)%12;renderBudget();loadBudget(false)};nav.appendChild(b);
+  });
+  var rf=document.createElement('button');rf.type='button';rf.style.marginLeft='auto';rf.textContent=bLoading?'Kraunama…':'↻ Atnaujinti';rf.disabled=bLoading;rf.onclick=function(){loadBudget(true)};nav.appendChild(rf);
+  v.appendChild(nav);
+  var tt=document.createElement('div');tt.className='wtitle';tt.textContent=MN[bMon]+' · biudžetas';v.appendChild(tt);
+  if(bErr){var er=document.createElement('div');er.className='card';er.style.marginTop='12px';er.textContent='⚠ '+bErr;v.appendChild(er)}
+  var d=bData();
+  if(!d||d.error){
+    if(!bget(BU)||!bget(BK)){
+      var h=document.createElement('div');h.className='card';h.style.marginTop='12px';
+      h.textContent='Įklijuok savo biudžeto scenarijaus adresą ir raktą apačioje, tada čia atsiras kategorijų apžvalga.';v.appendChild(h);
+    }else if(!bLoading&&!bErr&&d&&d.error){var e2=document.createElement('div');e2.className='card';e2.style.marginTop='12px';e2.textContent=d.error;v.appendChild(e2)}
+  }else{
+    var sm=document.createElement('div');sm.className='card bsum';
+    var l1=document.createElement('div');l1.className='meta';l1.textContent='Liko iki mėnesio pabaigos';sm.appendChild(l1);
+    var big=document.createElement('div');big.className='bbig '+(d.left<0?'bover':'bok');big.textContent=fmtM(d.left);sm.appendChild(big);
+    var spent=d.actual,base=d.income-d.savings,pb=document.createElement('div');pb.className='bbar';
+    var pi=document.createElement('i');pi.className=bcls(base,spent);pi.style.width=Math.min(100,base>0?spent/base*100:0)+'%';pb.appendChild(pi);sm.appendChild(pb);
+    var l2=document.createElement('div');l2.className='meta';
+    l2.textContent='Pajamos '+fmtM(d.income)+(d.savings?' · Taupymas '+fmtM(d.savings):'')+' · Išleista '+fmtM(d.actual)+' · Suplanuota '+fmtM(d.planned);sm.appendChild(l2);
+    if(d.at){var l3=document.createElement('div');l3.className='meta';l3.textContent='Atnaujinta '+hhmm(d.at);sm.appendChild(l3)}
+    v.appendChild(sm);
+    var g=document.createElement('div');g.className='bgrid';
+    d.sections.forEach(function(sc){
+      var left=sc.p-sc.a,c=bcls(sc.p,sc.a),open=!!bOpen[sc.n];
+      var b=document.createElement('button');b.type='button';b.className='bcat'+(c==='bover'?' bover':'');
+      b.setAttribute('aria-expanded',open?'true':'false');
+      var n=document.createElement('div');n.className='bn';n.textContent=sc.n;b.appendChild(n);
+      var lf=document.createElement('div');lf.className='bl '+c;lf.textContent=(left<0?'Viršyta ':'Liko ')+fmtM(Math.abs(left)).replace('−','');b.appendChild(lf);
+      var bar=document.createElement('div');bar.className='bbar';var bi=document.createElement('i');bi.className=c;bi.style.width=Math.min(100,sc.p>0?sc.a/sc.p*100:(sc.a>0?100:0))+'%';bar.appendChild(bi);b.appendChild(bar);
+      var mt=document.createElement('div');mt.className='meta';mt.textContent='Išleista '+fmtM(sc.a)+' iš '+fmtM(sc.p);b.appendChild(mt);
+      if(open){
+        var it=document.createElement('div');it.className='bitems';
+        sc.items.forEach(function(x){
+          var r=document.createElement('div');r.className='bit';var lx=x.p-x.a;
+          var a1=document.createElement('span');a1.textContent=x.n;var a2=document.createElement('span');
+          a2.textContent=fmtM(lx);if(lx<-0.5)a2.className='bover';
+          r.appendChild(a1);r.appendChild(a2);it.appendChild(r);
+        });
+        b.appendChild(it);
+      }
+      b.onclick=function(){bOpen[sc.n]=!bOpen[sc.n];renderBudget()};
+      g.appendChild(b);
+    });
+    v.appendChild(g);
+  }
+  var cf=document.createElement('div');cf.className='card';cf.style.marginTop='12px';
+  var m1=document.createElement('div');m1.className='meta';m1.textContent='Biudžeto scenarijaus adresas (https://…/exec) ir raktas, saugoma tik šiame įrenginyje';cf.appendChild(m1);
+  var iu=document.createElement('input');iu.type='text';iu.autocomplete='off';iu.autocapitalize='off';iu.spellcheck=false;iu.className='inp';iu.placeholder='https://script.google.com/macros/s/…/exec';iu.value=bget(BU);iu.setAttribute('aria-label','Scenarijaus adresas');cf.appendChild(iu);
+  var ik=document.createElement('input');ik.type='password';ik.autocomplete='off';ik.autocapitalize='off';ik.spellcheck=false;ik.className='inp';ik.style.marginTop='8px';ik.placeholder='Raktas (BUDGET_KEY)';ik.value=bget(BK);ik.setAttribute('aria-label','Raktas');cf.appendChild(ik);
+  var rw=document.createElement('div');rw.className='row';
+  var sv=document.createElement('button');sv.type='button';sv.textContent='Išsaugoti ir gauti';sv.onclick=function(){
+    var u=iu.value.trim(),k=ik.value.trim();
+    if(u.indexOf('https://')!==0){toast('Adresas turi prasidėti https://');return}
+    bset(BU,u);bset(BK,k);loadBudget(true);
+  };
+  var dl=document.createElement('button');dl.type='button';dl.className='soft';dl.textContent='Ištrinti';dl.onclick=function(){bset(BU,'');bset(BK,'');for(var q=0;q<12;q++)bset(BC+q,'');bErr='';renderBudget()};
+  rw.appendChild(sv);rw.appendChild(dl);cf.appendChild(rw);v.appendChild(cf);
+  var of=document.createElement('div');of.className='card';of.style.marginTop='12px';
+  var lb=document.createElement('label');lb.className='chk';var ck=document.createElement('input');ck.type='checkbox';ck.checked=bget(BD)!=='0';
+  ck.onchange=function(){bset(BD,ck.checked?'1':'0');dispRefresh()};lb.appendChild(ck);lb.appendChild(document.createTextNode(' Rodyti biudžeto suvestinę ekrano režime'));of.appendChild(lb);
+  var pm=document.createElement('div');pm.className='meta';pm.style.marginTop='8px';pm.textContent=bget(BP)?'PIN įjungtas: šis skirtukas užrakinamas kaskart išėjus iš jo. Ekrano režimo suvestinė PIN neapsaugota.':'PIN neįjungtas. Su PIN šis skirtukas užsirakina kaskart išėjus iš jo.';of.appendChild(pm);
+  var pr=document.createElement('div');pr.className='row';
+  var pb1=document.createElement('button');pb1.type='button';pb1.className='soft';pb1.textContent=bget(BP)?'Pakeisti PIN':'Nustatyti PIN';
+  pb1.onclick=function(){var p=prompt('Naujas PIN (4–6 skaitmenys)');if(p===null)return;p=p.trim();if(!/^\d{4,6}$/.test(p)){toast('PIN turi būti 4–6 skaitmenys');return}bset(BP,pinHash(p));bUnlocked=true;toast('PIN išsaugotas');renderBudget()};
+  pr.appendChild(pb1);
+  if(bget(BP)){var pb2=document.createElement('button');pb2.type='button';pb2.className='soft';pb2.textContent='Išjungti PIN';pb2.onclick=function(){bset(BP,'');renderBudget()};pr.appendChild(pb2)}
+  of.appendChild(pr);v.appendChild(of);
+}
 /* Dashboard */
 var WX={place:'Tibro',at:'2026-11-17',now:{t:0.1,c:'Daugiausia debesuota'},days:[['Šiandien',1.0,-0.5,10],['Tr',0.1,-2.9,25],['Kt',-1.8,-3.3,5],['Pn',0.0,-2.8,25],['Št',1.6,-2.7,5],['Sk',1.4,-2.0,0],['Pr',0.4,-3.5,10],['An',-0.8,-4.1,10]]};
 function deg(n){return String(n).replace('.',',').replace('-','−')+'°'}
@@ -694,16 +846,18 @@ function renderWeather(){
   var n=document.createElement('p');n.className='meta';n.textContent=WX.live?'Tiesioginė prognozė iš Open-Meteo, gauta '+WX.at+'.':'Rodoma išsaugota prognozė, gauta '+WX.at+'. Šiuo metu nėra ryšio.';w.appendChild(n);
 }
 function setView(v){
-  ['home','cal','tasks','notes','weather','price','set','disp'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
+  ['home','cal','tasks','notes','weather','price','budget','set','disp'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
   Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
   document.body.classList.toggle('notes',v==='notes');
   if(v!=='tasks'&&v!=='disp')cameFromDisp=false;
   if(v!=='tasks')chEdit=false;
+  if(v!=='budget')bUnlocked=false;
   document.body.classList.toggle('disp',v==='disp');wake(v==='disp');
   if(v!=='notes')closeSheet();
   if(v==='home')renderHome();
   if(v==='price'){renderPrice();if(getTok())loadPrice()}
   if(v==='cal')renderCal();
+  if(v==='budget'){renderBudget();loadBudget(false)}
   if(v==='tasks')renderChores();
   if(v==='set')renderSet();
   if(v==='disp'){dFresh=true;renderDisp();dFresh=false}
@@ -1574,6 +1728,7 @@ function renderDisp(){
     if(dFresh&&!matchMedia('(prefers-reduced-motion:reduce)').matches)countUp(pn,ore(cs.total));
   }
   v.appendChild(pc);
+  var bc=budgetDispCard();if(bc)v.appendChild(bc);
 
   var rc=dcard('Priminimai',function(){openSheet();setTimeout(function(){$('txt').focus()},260)},'Naujas užrašas');rc.classList.add('drem');
   var ups=notes.filter(function(n){return n.due&&n.need&&!n.ack&&!n.deleted&&!n.kind}).sort(function(a,b){return a.due-b.due}).slice(0,3);
