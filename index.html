@@ -373,7 +373,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 34</div></div>
+      <div class="meta">Versija 35</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -1198,9 +1198,11 @@ function myName(){try{return localStorage.getItem(NK)||''}catch(e){return ''}}
 function dkey(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
 function dparse(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
 var MISSFROM=(function(){try{var v=localStorage.getItem('bottie-missfrom');if(!v){v=dkey(new Date());localStorage.setItem('bottie-missfrom',v)}return v}catch(e){return dkey(new Date())}})();
+var MISSFLOOR=(function(){var d=dparse(MISSFROM);d.setDate(d.getDate()-7);return dkey(d)})();
 function missed(e,dk){
   if(e.acks&&e.acks[dk])return false;
-  var start=e.created||MISSFROM;if(dk<start)return false;
+  if(dk<MISSFLOOR)return false;
+  if(e.weekly&&e.created&&dk<e.created)return false;
   var now=new Date(),td=dkey(now);
   if(dk<td)return true;if(dk>td)return false;
   if(!e.time)return false;
@@ -1372,9 +1374,9 @@ $('evsave').onclick=function(){
   var t=$('evt').value.trim(),d=$('evd').value;if(!t||!d){$('evt').focus();return}
   if(editingEv!==null){
     var e=notes.filter(function(q){return q.id===editingEv})[0];
-    if(e){e.title=t;e.child=$('evc').value;e.date=d;e.time=$('evtm').value;e.place=$('evp').value.trim();e.weekly=$('evw').checked;touch(e)}
+    if(e){e.title=t;e.child=$('evc').value;e.date=d;e.time=$('evtm').value;e.place=$('evp').value.trim();e.weekly=$('evw').checked;if(e.created&&d<e.created)e.created=d;touch(e)}
   }else{
-    var n={id:nid(),kind:'event',title:t,child:$('evc').value,date:d,time:$('evtm').value,place:$('evp').value.trim(),weekly:$('evw').checked,acks:{},created:dkey(new Date())};
+    var n={id:nid(),kind:'event',title:t,child:$('evc').value,date:d,time:$('evtm').value,place:$('evp').value.trim(),weekly:$('evw').checked,acks:{},created:(d<dkey(new Date())?d:dkey(new Date()))};
     touch(n);notes.push(n);
   }
   save();closeEv();
