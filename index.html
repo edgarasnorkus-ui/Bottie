@@ -363,7 +363,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 29</div></div>
+      <div class="meta">Versija 30</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -607,7 +607,7 @@ function botSay(text,speak,cheer){
   try{
     var ss=window.speechSynthesis;if(!ss)return;
     loadVoices();
-    var parts=speakable(text).split(/(?<=[.!?])\s+/).filter(function(x){return x});
+    var sp=speakable(text),parts=(sp.match(/[^.!?]+[.!?]*/g)||[sp]).map(function(x){return x.trim()}).filter(function(x){return x});
     var go=function(){
       try{ss.resume()}catch(e){}
       parts.forEach(function(p){
