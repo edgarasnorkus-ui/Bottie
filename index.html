@@ -128,7 +128,9 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(10px + env(safe-area-i
 .dweather>.wfx{position:absolute;inset:0;z-index:0;pointer-events:none}
 .dweather .big{font-size:2rem;line-height:1.1}
 .dweather .meta{font-size:.95rem!important}
-.dweather .fc{padding:3px 0;font-size:.9rem}
+.dweather{display:grid;grid-template-columns:repeat(3,1fr);column-gap:10px}
+.dweather>*:not(.fc):not(.wfx){grid-column:1/-1}
+.dweather .fc{padding:6px 0 0;font-size:.9rem;display:flex!important;flex-direction:column;gap:2px;align-items:flex-start;border-top:1px solid var(--line);margin-top:6px}
 .dweather h3{margin-bottom:4px}
 .wfx i{position:absolute;top:-20px;display:block;will-change:transform}
 .wfx.rain i{width:1px;height:14px;background:var(--muted);opacity:.35;animation:wrain linear infinite}
@@ -142,7 +144,11 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(10px + env(safe-area-i
 .dl{padding:10px 12px;border-radius:14px;background:var(--bg);margin-top:8px;font-size:1.25rem;word-break:break-word}
 .dev{cursor:pointer}
 @media (min-width:900px) and (orientation:landscape){
-  #v-disp.on{grid-template-columns:1.5fr 1fr;grid-template-areas:"clock weather" "tasks weather" "week price" "week budget" "week rem";align-items:start}
+  #v-disp.on{grid-template-columns:1.5fr 1fr;grid-template-areas:"clock weather" "tasks rem" "week price" "week budget";align-items:stretch;grid-template-columns:1.5fr 1fr}
+  #v-disp.on{height:calc(100vh - 62px);grid-template-rows:auto auto auto minmax(0,1fr)}
+  .dweek{align-self:start}
+  .dbudget{align-self:stretch;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .dbudget .dbscroll{flex:1;min-height:0;max-height:none}
   .dclockbox{grid-area:clock}.dweather{grid-area:weather}.dtasks{grid-area:tasks}.dweek{grid-area:week}.dprice{grid-area:price}.dbudget{grid-area:budget}.drem{grid-area:rem}
 }
 #evform{position:fixed;left:0;right:0;bottom:0;max-width:720px;margin:0 auto!important;z-index:6;border-radius:28px 28px 0 0;border-bottom:0;max-height:92%;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
@@ -397,6 +403,11 @@ body.disp main{padding:10px 22px 48px}
     <div class="card" style="margin-top:12px">
     <div class="row"><button class="soft" id="perm" type="button">Įjungti pranešimus</button><span class="meta" id="permInfo"></span></div>
     </div>
+    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Push (programa uždaryta)</h3>
+      <div class="meta">„OneSignal“ programos ID. Naudojamas to paties „Apps Script“ adresas ir raktas kaip skiltyje Biudžetas.</div>
+      <input class="inp" type="text" id="papp" placeholder="OneSignal App ID" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:8px">
+      <div class="row"><button id="papps" type="button">Išsaugoti</button><button class="soft" id="ptest" type="button">Siųsti bandomąjį</button></div>
+      <div class="meta" id="pushstat" aria-live="polite"></div></div>
     <h2 class="sethead">☁️ Sinchronizacija</h2>
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Bendra saugykla („Google Sheets“)</h3>
       <div class="meta">Jūsų „Google“ scenarijaus adresas ir šeimos kodas. Saugoma tik šiame įrenginyje.</div>
@@ -429,7 +440,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 48</div></div>
+      <div class="meta">Versija 50</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -464,7 +475,7 @@ var $=function(i){return document.getElementById(i)};
 var notes=[];
 try{notes=JSON.parse(localStorage.getItem('bottie-notes')||'[]')||[]}catch(e){notes=[]}
 function persist(){try{localStorage.setItem('bottie-notes',JSON.stringify(notes))}catch(e){}}
-function save(){persist();if(DIRTY)syncSoon()}
+function save(){persist();if(DIRTY)syncSoon();try{pushSoon(false)}catch(e){}}
 function live(){return notes.filter(function(n){return !n.deleted&&!n.kind})}
 
 function fmt(t){return new Date(t).toLocaleString('lt-LT',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
@@ -512,12 +523,13 @@ $('add').onclick=function(){
 function permInfo(){
   var g=('Notification' in window)?Notification.permission:'none',b=$('perm');
   var t=g==='none'?'Naršyklė nepalaiko pranešimų, Bottie rodo priminimus programoje.':
-    g==='granted'?'Pranešimai įjungti: jie rodo užrašų ir veiklų priminimus. Norėdamas išjungti: telefone Nustatymai › Pranešimai › Bottie.':
+    g==='granted'?(pushOn()?'Push įjungtas: pranešimai ateina ir kai programa uždaryta. ':'')+'Pranešimai įjungti: jie rodo užrašų ir veiklų priminimus. Norėdamas išjungti: telefone Nustatymai › Pranešimai › Bottie.':
     g==='denied'?'Pranešimai išjungti. Norėdamas įjungti: telefone Nustatymai › Pranešimai › Bottie.':'Pranešimai naudojami priminimams apie užrašus ir veiklas.';
   $('permInfo').textContent=t;
-  b.textContent=g==='granted'?'✓ Pranešimai įjungti':'Įjungti pranešimus';b.disabled=(g==='granted'||g==='denied'||g==='none');
+  b.textContent=(g==='granted'&&(pushOn()||!bget(PA)))?'✓ Pranešimai įjungti':'Įjungti pranešimus';b.disabled=((g==='granted'&&(pushOn()||!bget(PA)))||g==='denied'||g==='none');
 }
 $('perm').onclick=function(){
+  if(pushAsk())return;
   try{if('Notification' in window)Notification.requestPermission().then(permInfo)}catch(e){}
   permInfo();
 };
@@ -545,7 +557,7 @@ function beep(){
 function nudge(n){
   beep();
   try{
-    if('Notification' in window&&Notification.permission==='granted'&&document.hidden){
+    if(!pushOn()&&'Notification' in window&&Notification.permission==='granted'&&document.hidden){
       new Notification('Bottie primena',{body:n.text,tag:'bottie-'+n.id,requireInteraction:true});
     }
   }catch(e){}
@@ -719,7 +731,7 @@ function pinHash(p){var h=5381,t='bottie|'+p;for(var i=0;i<t.length;i++)h=((h<<5
 function bDataM(m){try{return JSON.parse(localStorage.getItem(BC+m)||'null')}catch(e){return null}}
 function bget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
 function bset(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-function fmtM(n){var r=Math.round(n);return (r<0?'−':'')+Math.abs(r).toLocaleString('lt-LT')+' SEK'}
+function fmtM(n){var r=Math.round(n*100)/100;return (r<0?'−':'')+Math.abs(r).toLocaleString('lt-LT',{minimumFractionDigits:2,maximumFractionDigits:2})+' SEK'}
 function bcls(p,a){if(a>p+0.5)return 'bover';if(p>0&&a/p>=0.85)return 'bwarn';return 'bok'}
 /* Flik-id i ditt budgetblad, januari–december: Sausis, Vasaris, Kovas, Balandis (apr), Gegužė (maj), Birželis, Liepa, Rugpjūtis, Rugsėjis, Spalis, Lapkritis, Gruodis */
 var BGID=[354157010,68639062,496172472,958997428,321306508,1545877209,1546012294,1852020911,1538372618,790411974,177554643,1321849417];
@@ -799,7 +811,7 @@ function budgetDispCard(){
   var big=document.createElement('div');big.className='dbl '+(d.left<0?'bover':'bok');big.textContent=fmtM(d.left);c.appendChild(big);
   var mt=document.createElement('div');mt.className='meta';mt.textContent='liko iki mėnesio pabaigos';c.appendChild(mt);
   var cats=d.sections.map(function(s){return {n:s.n,left:s.p-s.a,r:s.p>0?s.a/s.p:(s.a>0?9:0),p:s.p,a:s.a}});
-  var all=cats.slice().sort(function(x,y){var ox=x.left<-0.5?1:0,oy=y.left<-0.5?1:0;if(ox!==oy)return oy-ox;return y.r-x.r});
+  var all=cats;
   var sc=document.createElement('div');sc.className='dbscroll';c.appendChild(sc);
   all.forEach(function(x){
     var k=bcls(x.p,x.a),row=document.createElement('div');
@@ -2155,6 +2167,85 @@ function renderChores(){
 render();check();setView('home');
 setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)check()});
+/* Push (OneSignal) */
+var PA='bottie-push-app',PH='bottie-push-hash',PS='bottie-push-stat',pushT=0,pushBusy=false,pushLoaded=false;
+function pushBase(){return location.pathname.replace(/[^\/]*$/,'')}
+function pushCfg(){var u=bget(BU),k=bget(BK),a=bget(PA);return(a&&u&&k&&u.indexOf('https://')===0&&!bIsPub(u))?{app:a,url:u,key:k}:null}
+function pushOn(){return bget('bottie-push-on')==='1'}
+function pushStat(t){bset(PS,t);var e=$('pushstat');if(e)e.textContent=t}
+function pushInit(){
+  var c=bget(PA);if(!c||pushLoaded)return;pushLoaded=true;
+  window.OneSignalDeferred=window.OneSignalDeferred||[];
+  window.OneSignalDeferred.push(async function(O){
+    try{
+      await O.init({appId:c,serviceWorkerPath:pushBase()+'sw.js',serviceWorkerParam:{scope:pushBase()},allowLocalhostAsSecureOrigin:true});
+      var upd=function(){try{bset('bottie-push-on',O.User.PushSubscription.optedIn?'1':'0')}catch(e){}permInfo()};
+      try{O.User.PushSubscription.addEventListener('change',upd)}catch(e){}
+      upd();
+    }catch(e){pushStat('OneSignal klaida: '+(e&&e.message||e))}
+  });
+  var sc=document.createElement('script');sc.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';sc.defer=true;document.head.appendChild(sc);
+}
+function pushAsk(cb){
+  if(!window.OneSignalDeferred||!bget(PA)){return false}
+  window.OneSignalDeferred.push(async function(O){try{await O.Notifications.requestPermission()}catch(e){}try{bset('bottie-push-on',O.User.PushSubscription.optedIn?'1':'0')}catch(e){}permInfo();pushSoon(true)});
+  return true;
+}
+function pushWanted(){
+  var out=[],now=Date.now(),lim=now+28*864e5;
+  notes.forEach(function(n){
+    if(n.deleted||n.kind)return;
+    if(n.due&&n.need&&!n.ack&&n.due>now+30000&&n.due<lim){
+      [0,10,30].forEach(function(m){out.push({k:'n:'+n.id+':'+n.due+':'+m,at:n.due+m*60000,t:'Bottie primena',b:(m?'⏰ ':'')+String(n.text||'').slice(0,120)})});
+    }
+  });
+  var d0=new Date();d0.setHours(0,0,0,0);
+  for(var i=0;i<29;i++){
+    var d=new Date(d0);d.setDate(d.getDate()+i);var dk=dkey(d);
+    notes.forEach(function(e){
+      if(e.kind!=='event'||e.deleted||!e.time||!occurs(e,d))return;
+      if(e.acks&&e.acks[dk])return;
+      var tp=String(e.time).split(':');var at=new Date(d.getFullYear(),d.getMonth(),d.getDate(),+tp[0]||0,+tp[1]||0).getTime();
+      if(at>now+30000&&at<lim)out.push({k:'e:'+e.id+':'+dk,at:at,t:'Bottie'+(e.child?' · '+e.child:''),b:e.time+' '+e.title});
+    });
+  }
+  return out;
+}
+function pushPost(body){
+  var c=pushCfg();if(!c)return Promise.reject(new Error('nėra nustatymų'));
+  body.key=c.key;body.app=c.app;body.link=location.origin+pushBase();
+  return fetch(c.url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).then(function(r){return r.json()});
+}
+function pushSoon(force){
+  clearTimeout(pushT);pushT=setTimeout(function(){pushRun(force)},force?500:4000);
+}
+function pushRun(force){
+  if(!pushCfg()||pushBusy)return;
+  if(!pushOn()&&!force)return;
+  var items=pushWanted(),h=JSON.stringify(items.map(function(x){return x.k+x.at+x.t+x.b}));
+  var last=bget(PH),lt=+bget(PH+'-t')||0;
+  if(!force&&last===h&&Date.now()-lt<12*36e5)return;
+  pushBusy=true;
+  pushPost({op:'push',items:items}).then(function(r){
+    pushBusy=false;
+    if(r&&r.error){pushStat('Klaida: '+r.error);return}
+    var rest=(r&&r.remaining)||0;
+    if(!rest){bset(PH,h);bset(PH+'-t',String(Date.now()))}else setTimeout(function(){pushRun(true)},60000);
+    pushStat('Push sinchronizuota '+hhmm(Date.now())+': suplanuota '+((r&&r.total)||0)+(r&&r.created?', nauji '+r.created:'')+(r&&r.cancelled?', atšaukti '+r.cancelled:'')+(rest?' (liko '+rest+')':''));
+  }).catch(function(e){pushBusy=false;pushStat('Push nepavyko: '+(e&&e.message||e))});
+}
+(function(){
+  var a=$('papp');if(!a)return;
+  a.value=bget(PA);
+  var st=$('pushstat');if(st)st.textContent=bget(PS);
+  $('papps').onclick=function(){bset(PA,a.value.trim());bset(PH,'');pushStat(a.value.trim()?'Išsaugota. Spausk „Įjungti pranešimus“.':'Push išjungtas.');if(a.value.trim())pushInit();permInfo()};
+  $('ptest').onclick=function(){
+    if(!pushCfg()){pushStat('Reikia App ID ir biudžeto skripto adreso bei rakto (Biudžetas).');return}
+    pushStat('Siunčiama…');pushPost({op:'test'}).then(function(r){pushStat(r&&r.error?'Klaida: '+r.error:'Bandomasis išsiųstas, jis turi atkeliauti per kelias sekundes.')}).catch(function(e){pushStat('Nepavyko: '+(e&&e.message||e))});
+  };
+  pushInit();setTimeout(function(){pushRun(false)},6000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)pushSoon(false)});
+})();
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 </script>
 </body>
