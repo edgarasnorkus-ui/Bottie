@@ -28,6 +28,12 @@ main{max-width:560px;margin:0 auto;padding:18px 16px 150px}
 header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 header svg{width:64px;height:64px;flex:none}
 h1{font-size:2rem;margin:0;line-height:1}
+#gear{margin-left:auto;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:40px;width:40px;padding:0;font-size:1.4rem;opacity:.6;border-radius:50%}
+#gear.on{opacity:1;color:var(--fg,inherit)}
+#gear:active{opacity:1}
+body.disp #gear{display:none}
+.sethead{font-size:1.05rem;margin:22px 0 0;color:var(--muted)}
+.sethead:first-child{margin-top:4px}
 header p{margin:2px 0 0;color:var(--muted);font-size:.95rem}
 .card{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px}
 textarea,input[type=datetime-local]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
@@ -329,7 +335,7 @@ body.disp main{padding:10px 22px 48px}
 <main>
   <header>
     <svg id="logo" viewBox="0 0 100 100" role="button" tabindex="0" aria-label="Bottie"></svg>
-    <div><h1>Bottie</h1><p>Užsirašyk, o Bottie primins, kol patvirtinsi.</p></div>
+    <button id="gear" type="button" aria-label="Nustatymai" title="Nustatymai">⚙</button>
   </header>
 
   <section class="card" id="sheet" aria-label="Naujas užrašas">
@@ -343,28 +349,16 @@ body.disp main{padding:10px 22px 48px}
       <label class="chk"><input type="checkbox" id="need" checked> Reikalauti patvirtinimo</label>
       <button id="add" style="margin-left:auto">Išsaugoti užrašą</button>
     </div>
-    <div class="row"><button class="soft" id="perm" type="button">Įjungti pranešimus</button><span class="meta" id="permInfo"></span></div>
   </section>
 
   <div id="fabs"><button class="fab" id="fabAdd" aria-label="Naujas užrašas">+</button></div>
 
-  <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="tasks">Užduotys</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="budget">Biudžetas</button><button data-v="set">Nustatymai</button><button data-v="disp">Ekranas</button></nav>
+  <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="tasks">Užduotys</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="budget">Biudžetas</button><button data-v="disp">Ekranas</button></nav>
   <section class="view" id="v-home"></section>
   <section class="view" id="v-weather"></section>
   <section class="view" id="v-budget"></section>
   <section class="view" id="v-price">
     <div id="pbody"></div>
-    <div class="card" style="margin-top:12px">
-      <div class="meta">Papildomas mokestis (öre už kWh), pvz., tinklo mokestis su PVM</div>
-      <input type="text" id="pex" inputmode="decimal" autocomplete="off" aria-label="Papildomas mokestis öre už kWh" placeholder="0">
-      <div class="row"><button class="soft" id="pexsave" type="button">Išsaugoti mokestį</button></div>
-    </div>
-    <div class="card" style="margin-top:12px">
-      <div class="meta">Tibber raktas arba tarpinio serverio adresas, prasidedantis https:// (saugoma tik šiame įrenginyje)</div>
-      <input type="password" id="ptok" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Tibber raktas" placeholder="Įklijuok savo raktą">
-      <div class="row"><button id="psave">Išsaugoti ir gauti</button><button class="soft" id="pdel">Ištrinti raktą</button></div>
-      <div class="meta" id="pstat" aria-live="polite"></div>
-    </div>
   </section>
   <div id="bubble" role="status" aria-live="polite"></div>
   <button id="dexit" type="button">✕ Uždaryti ekraną</button>
@@ -388,18 +382,39 @@ body.disp main{padding:10px 22px 48px}
     <div id="mday" style="display:none"></div>
   </section>
   <section class="view" id="v-set">
-    <div class="card"><h3 style="margin:0 0 6px">Bendra saugykla („Google Sheets“)</h3>
-      <div class="meta">Jūsų „Google“ scenarijaus adresas ir šeimos kodas. Saugoma tik šiame įrenginyje.</div>
-      <input class="inp" type="text" id="surl" placeholder="https://script.google.com/macros/s/…/exec" style="margin-top:8px" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <input class="inp" type="password" id="skey" placeholder="Šeimos kodas" style="margin-top:8px" autocomplete="off">
-      <div class="row"><button id="ssave" type="button">Išsaugoti ir sinchronizuoti</button><button class="soft" id="soff" type="button">Atjungti</button></div>
-      <div class="meta" id="sstat" aria-live="polite"></div></div>
+    <h2 class="sethead">👪 Šeima</h2>
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Mano vardas</h3>
       <input class="inp" type="text" id="myname" placeholder="Tavo vardas" autocomplete="off">
       <div class="meta">Rodoma, kai pažymi veiklą kaip atliktą.</div></div>
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Šeima</h3>
       <div id="kids"></div>
       <div class="row"><input class="inp" type="text" id="kname" placeholder="Vardas" autocomplete="off"><select id="ktype" class="inp" style="flex:none;width:auto" aria-label="Tipas"><option value="child">Vaikas</option><option value="adult">Suaugęs</option><option value="pet">Augintinis</option></select><button id="kadd" type="button" style="flex:none">Pridėti</button></div></div>
+    <h2 class="sethead">🔔 Pranešimai</h2>
+    <div class="card" style="margin-top:12px">
+    <div class="row"><button class="soft" id="perm" type="button">Įjungti pranešimus</button><span class="meta" id="permInfo"></span></div>
+    </div>
+    <h2 class="sethead">☁️ Sinchronizacija</h2>
+    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Bendra saugykla („Google Sheets“)</h3>
+      <div class="meta">Jūsų „Google“ scenarijaus adresas ir šeimos kodas. Saugoma tik šiame įrenginyje.</div>
+      <input class="inp" type="text" id="surl" placeholder="https://script.google.com/macros/s/…/exec" style="margin-top:8px" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <input class="inp" type="password" id="skey" placeholder="Šeimos kodas" style="margin-top:8px" autocomplete="off">
+      <div class="row"><button id="ssave" type="button">Išsaugoti ir sinchronizuoti</button><button class="soft" id="soff" type="button">Atjungti</button></div>
+      <div class="meta" id="sstat" aria-live="polite"></div></div>
+    <h2 class="sethead">⚡ Elektra</h2>
+    <div class="card" style="margin-top:12px">
+      <div class="meta">Papildomas mokestis (öre už kWh), pvz., tinklo mokestis su PVM</div>
+      <input type="text" id="pex" inputmode="decimal" autocomplete="off" aria-label="Papildomas mokestis öre už kWh" placeholder="0">
+      <div class="row"><button class="soft" id="pexsave" type="button">Išsaugoti mokestį</button></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="meta">Tibber raktas arba tarpinio serverio adresas, prasidedantis https:// (saugoma tik šiame įrenginyje)</div>
+      <input type="password" id="ptok" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Tibber raktas" placeholder="Įklijuok savo raktą">
+      <div class="row"><button id="psave">Išsaugoti ir gauti</button><button class="soft" id="pdel">Ištrinti raktą</button></div>
+      <div class="meta" id="pstat" aria-live="polite"></div>
+    </div>
+    <h2 class="sethead">💶 Biudžetas</h2>
+    <div id="bset"></div>
+    <h2 class="sethead">🎨 Išvaizda</h2>
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Išvaizda</h3>
       <select id="pth" class="inp" aria-label="Tema">
         <option value="auto">Pagal pasirinktas valandas</option>
@@ -410,10 +425,9 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 43</div></div>
+      <div class="meta">Versija 47</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
-  <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
 </main>
 
 <div id="alert" role="alertdialog" aria-modal="true" aria-labelledby="atitle">
@@ -692,6 +706,7 @@ function offDay(d){
 }
 function payDay(y,m){var d=new Date(y,m,25);while(offDay(d))d.setDate(d.getDate()-1);return d}
 function bCurMon(){var n=new Date(),t=new Date(n.getFullYear(),n.getMonth(),n.getDate()),pd=payDay(n.getFullYear(),n.getMonth());return t>=pd?(n.getMonth()+1)%12:n.getMonth()}
+$('gear').onclick=toggleSet;
 var BU='bottie-budget-url',BK='bottie-budget-key',BC='bottie-budget-cache-',BP='bottie-budget-pin',BD='bottie-budget-disp',bMon=bCurMon(),bOpen={},bLoading=false,bErr='',bUnlocked=false;
 function pinHash(p){var h=5381,t='bottie|'+p;for(var i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return String(h)}
 function bDataM(m){try{return JSON.parse(localStorage.getItem(BC+m)||'null')}catch(e){return null}}
@@ -815,7 +830,7 @@ function renderBudget(){
   if(!d||d.error){
     if(!bReady()){
       var h=document.createElement('div');h.className='card';h.style.marginTop='12px';
-      h.textContent='Įklijuok paskelbtos biudžeto lentelės nuorodą apačioje, tada čia atsiras kategorijų apžvalga.';v.appendChild(h);
+      h.textContent='Įvesk biudžeto nuorodą nustatymuose (⚙ › Biudžetas), tada čia atsiras kategorijų apžvalga.';v.appendChild(h);
     }else if(!bLoading&&!bErr&&d&&d.error){var e2=document.createElement('div');e2.className='card';e2.style.marginTop='12px';e2.textContent=d.error;v.appendChild(e2)}
   }else{
     var sm=document.createElement('div');sm.className='card bsum';
@@ -852,6 +867,8 @@ function renderBudget(){
     });
     v.appendChild(g);
   }
+}
+function budgetCfg(v,re){
   var cf=document.createElement('div');cf.className='card';cf.style.marginTop='12px';
   var m1=document.createElement('div');m1.className='meta';m1.textContent='Paskelbtos lentelės nuoroda (Failas › Bendrinti › Paskelbti internete). Saugoma tik šiame įrenginyje. Kiekvienas, turintis nuorodą, gali matyti biudžetą.';cf.appendChild(m1);
   var iu=document.createElement('input');iu.type='text';iu.autocomplete='off';iu.autocapitalize='off';iu.spellcheck=false;iu.className='inp';iu.placeholder='https://docs.google.com/spreadsheets/d/e/…/pubhtml';iu.value=bget(BU);iu.setAttribute('aria-label','Scenarijaus adresas');cf.appendChild(iu);
@@ -863,7 +880,7 @@ function renderBudget(){
     if(!bIsPub(u)&&!k){toast('Reikia rakto arba paskelbtos lentelės nuorodos');return}
     bset(BU,u);bset(BK,k);for(var q=0;q<12;q++)bset(BC+q,'');loadBudget(true);
   };
-  var dl=document.createElement('button');dl.type='button';dl.className='soft';dl.textContent='Ištrinti';dl.onclick=function(){bset(BU,'');bset(BK,'');for(var q=0;q<12;q++)bset(BC+q,'');bErr='';renderBudget()};
+  var dl=document.createElement('button');dl.type='button';dl.className='soft';dl.textContent='Ištrinti';dl.onclick=function(){bset(BU,'');bset(BK,'');for(var q=0;q<12;q++)bset(BC+q,'');bErr='';re()};
   rw.appendChild(sv);rw.appendChild(dl);cf.appendChild(rw);v.appendChild(cf);
   var of=document.createElement('div');of.className='card';of.style.marginTop='12px';
   var lb=document.createElement('label');lb.className='chk';var ck=document.createElement('input');ck.type='checkbox';ck.checked=bget(BD)!=='0';
@@ -871,9 +888,9 @@ function renderBudget(){
   var pm=document.createElement('div');pm.className='meta';pm.style.marginTop='8px';pm.textContent=bget(BP)?'PIN įjungtas: šis skirtukas užrakinamas kaskart išėjus iš jo. Ekrano režimo suvestinė PIN neapsaugota.':'PIN neįjungtas. Su PIN šis skirtukas užsirakina kaskart išėjus iš jo.';of.appendChild(pm);
   var pr=document.createElement('div');pr.className='row';
   var pb1=document.createElement('button');pb1.type='button';pb1.className='soft';pb1.textContent=bget(BP)?'Pakeisti PIN':'Nustatyti PIN';
-  pb1.onclick=function(){var p=prompt('Naujas PIN (4–6 skaitmenys)');if(p===null)return;p=p.trim();if(!/^\d{4,6}$/.test(p)){toast('PIN turi būti 4–6 skaitmenys');return}bset(BP,pinHash(p));bUnlocked=true;toast('PIN išsaugotas');renderBudget()};
+  pb1.onclick=function(){var p=prompt('Naujas PIN (4–6 skaitmenys)');if(p===null)return;p=p.trim();if(!/^\d{4,6}$/.test(p)){toast('PIN turi būti 4–6 skaitmenys');return}bset(BP,pinHash(p));bUnlocked=true;toast('PIN išsaugotas');re()};
   pr.appendChild(pb1);
-  if(bget(BP)){var pb2=document.createElement('button');pb2.type='button';pb2.className='soft';pb2.textContent='Išjungti PIN';pb2.onclick=function(){bset(BP,'');renderBudget()};pr.appendChild(pb2)}
+  if(bget(BP)){var pb2=document.createElement('button');pb2.type='button';pb2.className='soft';pb2.textContent='Išjungti PIN';pb2.onclick=function(){bset(BP,'');re()};pr.appendChild(pb2)}
   of.appendChild(pr);v.appendChild(of);
 }
 /* Dashboard */
@@ -928,13 +945,15 @@ function renderWeather(){
   c.appendChild(box);w.appendChild(c);
   var n=document.createElement('p');n.className='meta';n.textContent=WX.live?'Tiesioginė prognozė iš Open-Meteo, gauta '+WX.at+'.':'Rodoma išsaugota prognozė, gauta '+WX.at+'. Šiuo metu nėra ryšio.';w.appendChild(n);
 }
+function toggleSet(){setView($('v-set').classList.contains('on')?'home':'set')}
 function setView(v){
+  var gg=$('gear');if(gg)gg.classList.toggle('on',v==='set');
   ['home','cal','tasks','notes','weather','price','budget','set','disp'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
   Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
   document.body.classList.toggle('notes',v==='notes');
   if(v!=='tasks'&&v!=='disp')cameFromDisp=false;
   if(v!=='tasks')chEdit=false;
-  if(v!=='budget')bUnlocked=false;
+  if(v!=='budget'&&v!=='set')bUnlocked=false;
   document.body.classList.toggle('disp',v==='disp');wake(v==='disp');
   if(v!=='notes')closeSheet();
   if(v==='home')renderHome();
@@ -1484,7 +1503,7 @@ function fillKids(){
   });
   sel.value=cur;petChips();
 }
-var PETIDEAS=['🧹 Valyti narvelį','🥜 Šviežias maistas ir vanduo','🏃 Žaidimo laikas','🩺 Veterinaras','⚖️ Pasverti Ozzy'];
+var PETIDEAS=['🧹 Valyti narvelį','🥜 Šviežias maistas ir vanduo','🏃 Žaidimo laikas','🥬 Šviežios daržovės','🛏️ Pakeisti pakratus'];
 function petChips(){
   var bx=$('evpet'),p=person($('evc').value);
   if(!p||!p.pet){bx.style.display='none';return}
@@ -1635,6 +1654,9 @@ function renderSet(){
   $('surl').value=c.url||'';$('skey').value='';$('skey').placeholder=c.key?'Šeimos kodas išsaugotas':'Šeimos kodas';
   $('myname').value=myName();
   renderPeople();
+  var bs=$('bset');bs.innerHTML='';
+  if(bget(BP)&&!bUnlocked){var lk=document.createElement('div');lk.className='card';lk.style.marginTop='12px';lk.innerHTML='<div class="meta">🔒 Biudžeto nustatymai užrakinti PIN.</div>';var ub=document.createElement('button');ub.type='button';ub.textContent='Atrakinti';ub.onclick=function(){var p=prompt('PIN');if(p!==null&&pinHash(p.trim())===bget(BP)){bUnlocked=true;renderSet()}else if(p!==null)toast('Neteisingas PIN')};lk.appendChild(ub);bs.appendChild(lk)}
+  else budgetCfg(bs,renderSet);
 }
 $('ssave').onclick=function(){
   var u=$('surl').value.trim(),kk=$('skey').value.trim(),o=syncCfg()||{};
