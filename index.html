@@ -143,13 +143,15 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(10px + env(safe-area-i
 
 .dl{padding:10px 12px;border-radius:14px;background:var(--bg);margin-top:8px;font-size:1.25rem;word-break:break-word}
 .dev{cursor:pointer}
+.dleft,.dright,.dtr{display:contents}
+.dclockbox{order:-2}.dweather{order:-1}
 @media (min-width:900px) and (orientation:landscape){
-  #v-disp.on{grid-template-columns:.8fr .8fr 1fr;grid-template-areas:"clock clock weather" "tasks rem price" "week week budget";align-items:stretch}
-  .dclockbox{grid-area:clock}.dweather{grid-area:weather}.dtasks{grid-area:tasks}.dweek{grid-area:week}.dprice{grid-area:price}.dbudget{grid-area:budget}.drem{grid-area:rem}
-  .dweek,.dbudget{align-self:start}
-  .dbudget .dbscroll{max-height:max(200px,calc(100vh - 560px))}
+  #v-disp.on{grid-template-columns:1.6fr 1fr;align-items:start;gap:12px}
+  .dleft,.dright{display:flex;flex-direction:column;gap:12px;min-width:0}
+  .dtr{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .dclockbox,.dweather{order:0}
+  .dbudget .dbscroll{max-height:max(200px,calc(100vh - 520px))}
   .dtasks .dkids{flex-direction:column;align-items:stretch}
-  .dclockbox{grid-area:clock}.dweather{grid-area:weather}.dtasks{grid-area:tasks}.dweek{grid-area:week}.dprice{grid-area:price}.dbudget{grid-area:budget}.drem{grid-area:rem}
 }
 #evform{position:fixed;left:0;right:0;bottom:0;max-width:720px;margin:0 auto!important;z-index:6;border-radius:28px 28px 0 0;border-bottom:0;max-height:92%;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
 #evform .row:last-child button#evsave{margin-left:auto}
@@ -440,7 +442,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 51</div></div>
+      <div class="meta">Versija 52</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1887,6 +1889,15 @@ function renderDisp(){
     r.appendChild(b);r.appendChild(pn);r.appendChild(k);rc.appendChild(r);
   });
   v.appendChild(rc);
+  (function(){
+    var q=function(c){return v.querySelector('.'+c)};
+    var L=document.createElement('div');L.className='dleft';var R=document.createElement('div');R.className='dright';
+    var T=document.createElement('div');T.className='dtr';
+    [q('dtasks'),q('drem')].forEach(function(x){if(x)T.appendChild(x)});
+    if(q('dclockbox'))L.appendChild(q('dclockbox'));L.appendChild(T);if(q('dweek'))L.appendChild(q('dweek'));
+    ['dweather','dprice','dbudget'].forEach(function(c){if(q(c))R.appendChild(q(c))});
+    v.innerHTML='';v.appendChild(L);v.appendChild(R);
+  })();
   tickClock();
 }
 $('dexit').onclick=function(){setView('home')};
