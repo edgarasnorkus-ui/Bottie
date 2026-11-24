@@ -393,7 +393,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 39</div></div>
+      <div class="meta">Versija 40</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -798,6 +798,7 @@ function renderBudget(){
     var l2=document.createElement('div');l2.className='meta';
     l2.textContent='Pajamos '+fmtM(d.income)+(d.savings?' · Taupymas '+fmtM(d.savings):'')+' · Išleista '+fmtM(d.actual)+' · Suplanuota '+fmtM(d.planned);sm.appendChild(l2);
     if(d.at){var l3=document.createElement('div');l3.className='meta';l3.textContent='Atnaujinta '+hhmm(d.at)+(d.src==='excel'?' · šaltinis: Excel failas':d.src==='google'?' · šaltinis: Google lapas'+(d.why?' (Excel nepavyko)':''):'');sm.appendChild(l3)}
+    if(d.why){var l4=document.createElement('div');l4.className='meta bover';l4.style.marginTop='4px';l4.textContent='Excel nepavyko: '+d.why;sm.appendChild(l4)}
     v.appendChild(sm);
     var g=document.createElement('div');g.className='bgrid';
     d.sections.forEach(function(sc){
