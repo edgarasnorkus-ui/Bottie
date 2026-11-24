@@ -143,6 +143,11 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(10px + env(safe-area-i
 
 .dl{padding:10px 12px;border-radius:14px;background:var(--bg);margin-top:8px;font-size:1.25rem;word-break:break-word}
 .dev{cursor:pointer}
+.dclockbox{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.dcall{display:flex;gap:12px;padding-top:6px}
+.dcallb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:92px;padding:12px 16px;border-radius:22px;background:var(--card);border:2px solid var(--line);color:var(--fg,inherit);text-decoration:none;font-weight:800;font-size:1.05rem}
+.dcallb .ci{font-size:1.8rem;line-height:1}
+.dcallb:active{transform:scale(.96)}
 .dleft,.dright,.dtr{display:contents}
 .dclockbox{order:-2}.dweather{order:-1}
 @media (min-width:900px) and (orientation:landscape){
@@ -398,6 +403,10 @@ body.disp main{padding:10px 22px 48px}
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Mano vardas</h3>
       <input class="inp" type="text" id="myname" placeholder="Tavo vardas" autocomplete="off">
       <div class="meta">Rodoma, kai pažymi veiklą kaip atliktą.</div></div>
+    <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Skambučiai (FaceTime)</h3>
+      <div class="meta">Telefono numeris arba „Apple ID“ el. paštas. Rodomas ekrane kaip skambinimo mygtukas.</div>
+      <input class="inp" type="text" id="callmama" placeholder="Mamos numeris arba el. paštas" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:8px">
+      <input class="inp" type="text" id="calltevas" placeholder="Tėčio numeris arba el. paštas" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:8px"></div>
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Šeima</h3>
       <div id="kids"></div>
       <div class="row"><input class="inp" type="text" id="kname" placeholder="Vardas" autocomplete="off"><select id="ktype" class="inp" style="flex:none;width:auto" aria-label="Tipas"><option value="child">Vaikas</option><option value="adult">Suaugęs</option><option value="pet">Augintinis</option></select><button id="kadd" type="button" style="flex:none">Pridėti</button></div></div>
@@ -442,7 +451,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 52</div></div>
+      <div class="meta">Versija 53</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1678,7 +1687,7 @@ function renderSet(){
   loadPrefUI();
   var c=syncCfg()||{};
   $('surl').value=c.url||'';$('skey').value='';$('skey').placeholder=c.key?'Šeimos kodas išsaugotas':'Šeimos kodas';
-  $('myname').value=myName();
+  $('myname').value=myName();$('callmama').value=callVal('mama');$('calltevas').value=callVal('tevas');
   renderPeople();
   var bs=$('bset');bs.innerHTML='';
   if(bget(BP)&&!bUnlocked){var lk=document.createElement('div');lk.className='card';lk.style.marginTop='12px';lk.innerHTML='<div class="meta">🔒 Biudžeto nustatymai užrakinti PIN.</div>';var ub=document.createElement('button');ub.type='button';ub.textContent='Atrakinti';ub.onclick=function(){var p=prompt('PIN');if(p!==null&&pinHash(p.trim())===bget(BP)){bUnlocked=true;renderSet()}else if(p!==null)toast('Neteisingas PIN')};lk.appendChild(ub);bs.appendChild(lk)}
@@ -1692,6 +1701,10 @@ $('ssave').onclick=function(){
   $('skey').value='';DIRTY=true;syncNow();
 };
 $('soff').onclick=function(){try{localStorage.removeItem(SK)}catch(e){}sstat('Atjungta. Duomenys liko šiame įrenginyje.');renderSet()};
+function callVal(k){var c=cfgItem().call||{};return c[k]||''}
+function callSave(k,v){var c=cfgItem();c.call=c.call||{};c.call[k]=v.replace(/\s+/g,'');touch(c);save();dispRefresh()}
+$('callmama').onchange=function(){callSave('mama',this.value.trim())};
+$('calltevas').onchange=function(){callSave('tevas',this.value.trim())};
 $('myname').onchange=function(){try{localStorage.setItem(NK,$('myname').value.trim())}catch(e){}};
 $('kadd').onclick=function(){
   var n=$('kname').value.trim();if(!n)return;
@@ -1769,7 +1782,15 @@ function renderDisp(){
   var dt=document.createElement('div');dt.className='ddate';
   var ds=now.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});
   dt.textContent=ds.charAt(0).toUpperCase()+ds.slice(1);
-  cl.appendChild(big);cl.appendChild(dt);v.appendChild(cl);
+  var cltx=document.createElement('div');cltx.appendChild(big);cltx.appendChild(dt);cl.appendChild(cltx);
+  var cs0=cfgItem().call||{},cb=document.createElement('div');cb.className='dcall';
+  [['mama','Mama'],['tevas','Tėtis']].forEach(function(x){
+    var val=(cs0[x[0]]||'').replace(/[^0-9a-zA-Z@.+_\-]/g,'');if(!val)return;
+    var a=document.createElement('a');a.href='facetime:'+val;a.className='dcallb';
+    a.innerHTML='<span class="ci">📹</span><span>'+x[1]+'</span>';cb.appendChild(a);
+  });
+  if(cb.children.length)cl.appendChild(cb);
+  v.appendChild(cl);
 
   var tk=kidsList();
   var tcard=null;
