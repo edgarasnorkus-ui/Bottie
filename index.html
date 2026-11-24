@@ -393,7 +393,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 37</div></div>
+      <div class="meta">Versija 39</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -669,22 +669,75 @@ function bget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
 function bset(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function fmtM(n){var r=Math.round(n);return (r<0?'−':'')+Math.abs(r).toLocaleString('lt-LT')+' SEK'}
 function bcls(p,a){if(a>p+0.5)return 'bover';if(p>0&&a/p>=0.85)return 'bwarn';return 'bok'}
+/* Flik-id i ditt budgetblad, januari–december: Sausis, Vasaris, Kovas, Balandis (apr), Gegužė (maj), Birželis, Liepa, Rugpjūtis, Rugsėjis, Spalis, Lapkritis, Gruodis */
+var BGID=[354157010,68639062,496172472,958997428,321306508,1545877209,1546012294,1852020911,1538372618,790411974,177554643,1321849417];
+function bIsPub(u){return /docs\.google\.com\/spreadsheets\/d\/e\//.test(u||'')}
+function bPubId(u){var m=/\/d\/e\/([^\/?#]+)/.exec(u||'');return m?m[1]:''}
+function bReady(){var u=bget(BU);return !!u&&(bIsPub(u)||!!bget(BK))}
+function bNum(v){
+  if(typeof v==='number')return v;if(v===''||v==null)return 0;
+  var t=String(v).replace(/[−–]/g,'-').replace(/SEK|kr/gi,'').replace(/[\s  ]/g,'').replace(',','.'),n=parseFloat(t);
+  return isNaN(n)?0:n;
+}
+function bRound(n){return Math.round(n*100)/100}
+function bCsv(t){
+  var rows=[],r=[],f='',q=false,i=0,c;
+  for(;i<t.length;i++){c=t[i];
+    if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true;
+    else if(c===','){r.push(f);f=''}
+    else if(c==='\n'){r.push(f);rows.push(r);r=[];f=''}
+    else if(c!=='\r')f+=c;
+  }
+  if(f!==''||r.length){r.push(f);rows.push(r)}
+  return rows;
+}
+function bParse(vals){
+  var secs=[],cur=null,tot=[];
+  for(var i=0;i<vals.length;i++){
+    var r=vals[i],a=String(r[0]==null?'':r[0]).trim(),nx=vals[i+1];
+    var onlyA=a!==''&&r.slice(1,10).every(function(c){return c===''||c==null});
+    if(!cur&&onlyA&&nx&&String(nx[5]||'').indexOf('Suplanuotos')===0){cur={n:a,items:[]};i++;continue}
+    if(a==='VISO:'){
+      if(cur){cur.p=bRound(cur.items.reduce(function(s,x){return s+x.p},0));cur.a=bRound(cur.items.reduce(function(s,x){return s+x.a},0));secs.push(cur);cur=null}
+      else tot.push(bNum(r[5]));
+      continue;
+    }
+    if(cur&&a!==''&&a!=='-')cur.items.push({n:a,p:bNum(r[5]),a:bNum(r[7])});
+  }
+  var pl=bRound(secs.reduce(function(s,x){return s+x.p},0)),ac=bRound(secs.reduce(function(s,x){return s+x.a},0));
+  var inc=tot.length?tot[0]:0,sav=tot.length>1?tot[1]:0;
+  return {income:inc,savings:sav,planned:pl,actual:ac,left:bRound(inc-sav-ac),sections:secs};
+}
 function bData(){return bDataM(bMon)}
 function loadBudget(fresh,mon0){
-  var u=bget(BU),k=bget(BK);if(!u||!k||bLoading)return;
+  var u=bget(BU),k=bget(BK);if(!bReady()||bLoading)return;
   var mon=(mon0===undefined)?bMon:mon0;
   bLoading=true;bErr='';if($('v-budget').classList.contains('on'))renderBudget();
+  var done=function(j){
+    bLoading=false;
+    if(j.error){bErr=j.error==='unauthorized'?'Neteisingas raktas':j.error}
+    else{j.at=Date.now();try{localStorage.setItem(BC+mon,JSON.stringify(j))}catch(e){}}
+    if($('v-budget').classList.contains('on'))renderBudget();
+    dispRefresh();
+  };
+  var fail=function(m){bLoading=false;bErr=m||'Nepavyko gauti duomenų';if($('v-budget').classList.contains('on'))renderBudget()};
+  if(bIsPub(u)){
+    var id=bPubId(u);
+    fetch('https://docs.google.com/spreadsheets/d/e/'+id+'/pub?gid='+BGID[mon]+'&single=true&output=csv')
+      .then(function(r){if(!r.ok)throw new Error('http');return r.text()}).then(function(t){
+        if(/^\s*</.test(t)){fail('Lentelė nepaskelbta arba adresas neteisingas');return}
+        var d=bParse(bCsv(t));
+        if(!d.sections.length){fail('Šiame mėnesio lape nerasta kategorijų');return}
+        d.month=mon;done(d);
+      }).catch(function(){fail('Nepavyko gauti duomenų. Patikrink, ar lentelė paskelbta internete.')});
+    return;
+  }
   fetch(u+(u.indexOf('?')<0?'?':'&')+'key='+encodeURIComponent(k)+'&month='+mon+(fresh?'&fresh=1':''))
-    .then(function(r){return r.json()}).then(function(j){
-      bLoading=false;
-      if(j.error){bErr=j.error==='unauthorized'?'Neteisingas raktas':j.error}
-      else{j.at=Date.now();try{localStorage.setItem(BC+mon,JSON.stringify(j))}catch(e){}}
-      if($('v-budget').classList.contains('on'))renderBudget();
-      dispRefresh();
-    }).catch(function(){bLoading=false;bErr='Nepavyko gauti duomenų';if($('v-budget').classList.contains('on'))renderBudget()});
+    .then(function(r){return r.json()}).then(done).catch(function(){fail()});
 }
 function budgetDispCard(){
-  if(bget(BD)==='0'||!bget(BU)||!bget(BK))return null;
+  if(bget(BD)==='0'||!bReady())return null;
   var m=new Date().getMonth(),d=bDataM(m);
   if(!d||d.error){if(!bLoading)loadBudget(false,m);return null}
   if(!d.at||Date.now()-d.at>6e5){if(!bLoading)loadBudget(false,m)}
@@ -732,9 +785,9 @@ function renderBudget(){
   if(bErr){var er=document.createElement('div');er.className='card';er.style.marginTop='12px';er.textContent='⚠ '+bErr;v.appendChild(er)}
   var d=bData();
   if(!d||d.error){
-    if(!bget(BU)||!bget(BK)){
+    if(!bReady()){
       var h=document.createElement('div');h.className='card';h.style.marginTop='12px';
-      h.textContent='Įklijuok savo biudžeto scenarijaus adresą ir raktą apačioje, tada čia atsiras kategorijų apžvalga.';v.appendChild(h);
+      h.textContent='Įklijuok paskelbtos biudžeto lentelės nuorodą apačioje, tada čia atsiras kategorijų apžvalga.';v.appendChild(h);
     }else if(!bLoading&&!bErr&&d&&d.error){var e2=document.createElement('div');e2.className='card';e2.style.marginTop='12px';e2.textContent=d.error;v.appendChild(e2)}
   }else{
     var sm=document.createElement('div');sm.className='card bsum';
@@ -744,7 +797,7 @@ function renderBudget(){
     var pi=document.createElement('i');pi.className=bcls(base,spent);pi.style.width=Math.min(100,base>0?spent/base*100:0)+'%';pb.appendChild(pi);sm.appendChild(pb);
     var l2=document.createElement('div');l2.className='meta';
     l2.textContent='Pajamos '+fmtM(d.income)+(d.savings?' · Taupymas '+fmtM(d.savings):'')+' · Išleista '+fmtM(d.actual)+' · Suplanuota '+fmtM(d.planned);sm.appendChild(l2);
-    if(d.at){var l3=document.createElement('div');l3.className='meta';l3.textContent='Atnaujinta '+hhmm(d.at);sm.appendChild(l3)}
+    if(d.at){var l3=document.createElement('div');l3.className='meta';l3.textContent='Atnaujinta '+hhmm(d.at)+(d.src==='excel'?' · šaltinis: Excel failas':d.src==='google'?' · šaltinis: Google lapas'+(d.why?' (Excel nepavyko)':''):'');sm.appendChild(l3)}
     v.appendChild(sm);
     var g=document.createElement('div');g.className='bgrid';
     d.sections.forEach(function(sc){
@@ -771,14 +824,15 @@ function renderBudget(){
     v.appendChild(g);
   }
   var cf=document.createElement('div');cf.className='card';cf.style.marginTop='12px';
-  var m1=document.createElement('div');m1.className='meta';m1.textContent='Biudžeto scenarijaus adresas (https://…/exec) ir raktas, saugoma tik šiame įrenginyje';cf.appendChild(m1);
-  var iu=document.createElement('input');iu.type='text';iu.autocomplete='off';iu.autocapitalize='off';iu.spellcheck=false;iu.className='inp';iu.placeholder='https://script.google.com/macros/s/…/exec';iu.value=bget(BU);iu.setAttribute('aria-label','Scenarijaus adresas');cf.appendChild(iu);
-  var ik=document.createElement('input');ik.type='password';ik.autocomplete='off';ik.autocapitalize='off';ik.spellcheck=false;ik.className='inp';ik.style.marginTop='8px';ik.placeholder='Raktas (BUDGET_KEY)';ik.value=bget(BK);ik.setAttribute('aria-label','Raktas');cf.appendChild(ik);
+  var m1=document.createElement('div');m1.className='meta';m1.textContent='Paskelbtos lentelės nuoroda (Failas › Bendrinti › Paskelbti internete). Saugoma tik šiame įrenginyje. Kiekvienas, turintis nuorodą, gali matyti biudžetą.';cf.appendChild(m1);
+  var iu=document.createElement('input');iu.type='text';iu.autocomplete='off';iu.autocapitalize='off';iu.spellcheck=false;iu.className='inp';iu.placeholder='https://docs.google.com/spreadsheets/d/e/…/pubhtml';iu.value=bget(BU);iu.setAttribute('aria-label','Scenarijaus adresas');cf.appendChild(iu);
+  var ik=document.createElement('input');ik.type='password';ik.autocomplete='off';ik.autocapitalize='off';ik.spellcheck=false;ik.className='inp';ik.style.marginTop='8px';ik.placeholder='Raktas (tik jei naudoji scenarijų)';ik.value=bget(BK);ik.setAttribute('aria-label','Raktas');cf.appendChild(ik);
   var rw=document.createElement('div');rw.className='row';
   var sv=document.createElement('button');sv.type='button';sv.textContent='Išsaugoti ir gauti';sv.onclick=function(){
     var u=iu.value.trim(),k=ik.value.trim();
     if(u.indexOf('https://')!==0){toast('Adresas turi prasidėti https://');return}
-    bset(BU,u);bset(BK,k);loadBudget(true);
+    if(!bIsPub(u)&&!k){toast('Reikia rakto arba paskelbtos lentelės nuorodos');return}
+    bset(BU,u);bset(BK,k);for(var q=0;q<12;q++)bset(BC+q,'');loadBudget(true);
   };
   var dl=document.createElement('button');dl.type='button';dl.className='soft';dl.textContent='Ištrinti';dl.onclick=function(){bset(BU,'');bset(BK,'');for(var q=0;q<12;q++)bset(BC+q,'');bErr='';renderBudget()};
   rw.appendChild(sv);rw.appendChild(dl);cf.appendChild(rw);v.appendChild(cf);
