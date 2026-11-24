@@ -304,6 +304,7 @@ body.disp main{padding:10px 22px 48px}
 .dbud .dbl{font-size:1.9rem;font-weight:800;line-height:1.1}
 .dbud .dbr{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;margin-top:6px}
 .dbud .bbar{margin:3px 0 0;height:8px}
+.dbscroll{max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-top:6px;padding-right:6px}
 .pinbox{max-width:360px;margin:24px auto;text-align:center}
 .pinbox input{text-align:center;font-size:1.6rem;letter-spacing:.4em}
 </style>
@@ -393,7 +394,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 40</div></div>
+      <div class="meta">Versija 41</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -747,17 +748,15 @@ function budgetDispCard(){
   var big=document.createElement('div');big.className='dbl '+(d.left<0?'bover':'bok');big.textContent=fmtM(d.left);c.appendChild(big);
   var mt=document.createElement('div');mt.className='meta';mt.textContent='liko iki mėnesio pabaigos';c.appendChild(mt);
   var cats=d.sections.map(function(s){return {n:s.n,left:s.p-s.a,r:s.p>0?s.a/s.p:(s.a>0?9:0),p:s.p,a:s.a}});
-  var over=cats.filter(function(x){return x.left<-0.5}).sort(function(x,y){return x.left-y.left});
-  var near=cats.filter(function(x){return x.left>0.5&&x.r>=0.6}).sort(function(x,y){return y.r-x.r});
-  var show=over.concat(near).slice(0,2);
-  if(!show.length){var ok=document.createElement('div');ok.className='meta';ok.style.marginTop='6px';ok.textContent='✓ Viskas pagal planą';c.appendChild(ok)}
-  show.forEach(function(x){
+  var all=cats.slice().sort(function(x,y){var ox=x.left<-0.5?1:0,oy=y.left<-0.5?1:0;if(ox!==oy)return oy-ox;return y.r-x.r});
+  var sc=document.createElement('div');sc.className='dbscroll';c.appendChild(sc);
+  all.forEach(function(x){
     var k=bcls(x.p,x.a),row=document.createElement('div');
     var l=document.createElement('div');l.className='dbr';
     var a=document.createElement('span');a.textContent=x.n;var b=document.createElement('span');b.className=k;b.textContent=(x.left<0?'−':'')+fmtM(Math.abs(x.left)).replace('−','');
     l.appendChild(a);l.appendChild(b);row.appendChild(l);
     var bar=document.createElement('div');bar.className='bbar';var i=document.createElement('i');i.className=k;i.style.width=Math.min(100,x.p>0?x.a/x.p*100:(x.a>0?100:0))+'%';bar.appendChild(i);row.appendChild(bar);
-    c.appendChild(row);
+    sc.appendChild(row);
   });
   return c;
 }
