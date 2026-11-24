@@ -114,6 +114,22 @@ body.disp #dexit{display:block;position:fixed;bottom:calc(10px + env(safe-area-i
 .dclock{font-size:clamp(4.5rem,16vw,12rem);font-weight:800;line-height:1}
 .ddate{font-size:clamp(1.3rem,3.2vw,2.4rem);color:var(--muted)}
 .dcard h3{margin:0 0 8px;font-size:1.1rem;color:var(--muted)}
+.dweather{position:relative;overflow:hidden}
+.dweather>*{position:relative;z-index:1}
+.dweather>.wfx{position:absolute;inset:0;z-index:0;pointer-events:none}
+.dweather .big{font-size:2rem;line-height:1.1}
+.dweather .meta{font-size:.95rem!important}
+.dweather .fc{padding:3px 0;font-size:.9rem}
+.dweather h3{margin-bottom:4px}
+.wfx i{position:absolute;top:-20px;display:block;will-change:transform}
+.wfx.rain i{width:1px;height:14px;background:var(--muted);opacity:.35;animation:wrain linear infinite}
+.wfx.snow i{width:5px;height:5px;border-radius:50%;background:var(--muted);opacity:.5;animation:wsnow linear infinite}
+.wfx.fog{background:linear-gradient(90deg,transparent,rgba(150,160,170,.18),transparent);background-size:200% 100%;animation:wfog 18s ease-in-out infinite alternate}
+@keyframes wrain{to{transform:translateY(260px) translateX(-10px)}}
+@keyframes wsnow{0%{transform:translate(0,0)}50%{transform:translate(14px,130px)}100%{transform:translate(-6px,260px)}}
+@keyframes wfog{from{background-position:0 0}to{background-position:100% 0}}
+@media (prefers-reduced-motion:reduce){.wfx{display:none}}
+
 .dl{padding:10px 12px;border-radius:14px;background:var(--bg);margin-top:8px;font-size:1.25rem;word-break:break-word}
 .dev{cursor:pointer}
 @media (min-width:900px) and (orientation:landscape){
@@ -394,7 +410,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 42</div></div>
+      <div class="meta">Versija 43</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
   <p class="meta" style="margin-top:22px">Priminimai veikia, kol Bottie atidaryta naršyklėje. Užrašai saugomi šiame įrenginyje.</p>
@@ -1726,7 +1742,7 @@ function renderDisp(){
     tcard.appendChild(rowk);
   }
   var w=dcard('Orai · '+WX.place);w.classList.add('dweather');
-  var wt=document.createElement('div');wt.className='big';wt.textContent='☁️ '+deg(WX.now.t);w.appendChild(wt);
+  var wt=document.createElement('div');wt.className='big';wt.textContent=(/Snieg/.test(WX.now.c)?'❄️':/Perkūn/.test(WX.now.c)?'⛈️':/Liet|Liūt|Dulks/.test(WX.now.c)?'🌧️':/Rūk/.test(WX.now.c)?'🌫️':/^Giedra/.test(WX.now.c)?'☀️':/Daugiausia giedra/.test(WX.now.c)?'🌤️':'☁️')+' '+deg(WX.now.t);w.appendChild(wt);
   var wc=document.createElement('div');wc.className='meta';wc.style.fontSize='1.1rem';wc.textContent=WX.now.c;w.appendChild(wc);
   if(WX.alerts&&WX.alerts.length){
     w.appendChild(alertsBox(WX.alerts.slice(0,1),true));
@@ -1740,6 +1756,18 @@ function renderDisp(){
     var b=document.createElement('strong');b.textContent=deg(d[1])+' / '+deg(d[2]);
     r.appendChild(a);r.appendChild(b);w.appendChild(r);
   });
+  (function(){
+    var t=WX.now.c||'',k=/Snieg/.test(t)?'snow':/Liet|Liūt|Dulks|Perkūn/.test(t)?'rain':/Rūk/.test(t)?'fog':'';
+    if(!k)return;
+    var f=document.createElement('div');f.className='wfx '+k;
+    if(k!=='fog'){var n=k==='snow'?16:20;for(var q=0;q<n;q++){var i=document.createElement('i');
+      i.style.left=(Math.random()*100)+'%';
+      var du=k==='snow'?(7+Math.random()*6):(1.1+Math.random()*.8);
+      i.style.animationDuration=du+'s';i.style.animationDelay=(-Math.random()*du)+'s';
+      if(k==='snow'){var z=3+Math.random()*3;i.style.width=i.style.height=z+'px'}
+      f.appendChild(i)}}
+    w.insertBefore(f,w.firstChild);
+  })();
   v.appendChild(w);
   if(tcard)v.appendChild(tcard);
 
