@@ -455,7 +455,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 61</div></div>
+      <div class="meta">Versija 62</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1252,10 +1252,18 @@ function syncNow(){
     var loc={};notes.forEach(function(n){loc[n.id]=n});
     var first=bget('bottie-synced')!=='1';
     var out=j.items.map(function(s){var l=loc[s.id];
-      if(first&&l&&s.id==='config'){ /* första synk på denna enhet: slå ihop profiler efter namn så inget försvinner */
+      if(l&&s.id==='config'){ /* profiler slås alltid ihop efter namn, borttagna profiler följer med i "removed" */
         var nw=(l.updated||0)>(s.updated||0)?l:s,od=nw===l?s:l,seenN={},ch=[];
-        (nw.children||[]).concat(od.children||[]).forEach(function(c){if(c&&c.name&&!seenN[c.name]){seenN[c.name]=1;ch.push(c)}});
-        var m=JSON.parse(JSON.stringify(nw));m.children=ch;m.call=Object.assign({},od.call||{},nw.call||{});m.updated=Math.max(l.updated||0,s.updated||0)+1;return m;
+        var rm=(nw.removed||[]).concat(od.removed||[]),have={};
+        (nw.children||[]).forEach(function(c){if(c&&c.name)have[c.name]=1});
+        (nw.children||[]).concat(od.children||[]).forEach(function(c){
+          if(!c||!c.name||seenN[c.name])return;
+          if(rm.indexOf(c.name)>=0&&!have[c.name])return;
+          seenN[c.name]=1;ch.push(c)});
+        var m=JSON.parse(JSON.stringify(nw));m.children=ch;m.removed=rm.filter(function(q){return !have[q]});
+        m.call=Object.assign({},od.call||{},nw.call||{});
+        var same=JSON.stringify(m.children)===JSON.stringify(nw.children)&&JSON.stringify(m.removed)===JSON.stringify(nw.removed||[]);
+        m.updated=same?(nw.updated||0):Math.max(l.updated||0,s.updated||0)+1;return m;
       }
       return(l&&(l.updated||0)>(s.updated||0))?l:s});
     var seen={};out.forEach(function(s){seen[s.id]=1});
@@ -1484,7 +1492,7 @@ function renderPeople(){
     ed.onclick=function(){avEdit=(avEdit&&avEdit.i===i)?null:newAvEdit(ch,i);renderPeople()};
     var x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Ištrinti '+ch.name);
     x.style.marginLeft='0';
-    x.onclick=function(){var cf=cfgItem();cf.children.splice(i,1);touch(cf);avEdit=null;save();renderPeople();renderCal();dispRefresh()};
+    x.onclick=function(){var cf=cfgItem();var gone=cf.children.splice(i,1)[0];if(gone)cf.removed=(cf.removed||[]).filter(function(q){return q!==gone.name}).concat([gone.name]);touch(cf);avEdit=null;save();renderPeople();renderCal();dispRefresh()};
     bx.appendChild(ed);bx.appendChild(x);r.appendChild(a);r.appendChild(bx);k.appendChild(r);
     if(avEdit&&avEdit.i===i)k.appendChild(avEditor(ch));
   });
@@ -1719,7 +1727,7 @@ $('calltevas').onchange=function(){callSave('tevas',this.value.trim())};
 $('myname').onchange=function(){try{localStorage.setItem(NK,$('myname').value.trim())}catch(e){}};
 $('kadd').onclick=function(){
   var n=$('kname').value.trim();if(!n)return;
-  var cf=cfgItem();cf.children.push({name:n,color:PAL[cf.children.length%PAL.length],adult:$('ktype').value==='adult',pet:$('ktype').value==='pet'});
+  var cf=cfgItem();cf.removed=(cf.removed||[]).filter(function(q){return q!==n});cf.children.push({name:n,color:PAL[cf.children.length%PAL.length],adult:$('ktype').value==='adult',pet:$('ktype').value==='pet'});
   touch(cf);$('kname').value='';save();renderSet();
 };
 setInterval(syncNow,60000);
