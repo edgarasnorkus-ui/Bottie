@@ -444,6 +444,9 @@ body.disp main{padding:10px 22px 48px}
     <div class="card" style="margin-top:12px"><div class="meta">Išsaugo visas nuorodas, raktus ir nustatymus į failą. Failas turi slaptų raktų, laikyk jį privačiai.</div>
       <div class="row"><button id="bkexp" type="button">Eksportuoti</button><button class="soft" id="bkimp" type="button">Importuoti</button></div>
       <input type="file" id="bkfile" accept=".txt,text/plain" style="display:none"><div class="meta" id="bkstat" aria-live="polite"></div></div>
+    <h2 class="sethead">🔄 Programa</h2>
+    <div class="card" style="margin-top:12px"><div class="meta">Jei programa rodo seną versiją, paspausk. Išvalo talpyklą ir įkelia naujausią versiją. Duomenys nedingsta.</div>
+      <div class="row"><button id="updapp" type="button">Atnaujinti programą</button></div><div class="meta" id="updstat"></div></div>
     <h2 class="sethead">🎨 Išvaizda</h2>
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Išvaizda</h3>
       <select id="pth" class="inp" aria-label="Tema">
@@ -455,7 +458,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 62</div></div>
+      <div class="meta">Versija 63</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -2220,6 +2223,14 @@ function renderChores(){
 render();check();setView('home');
 setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)check()});
+$('updapp').onclick=function(){
+  var st=$('updstat');st.textContent='Atnaujinama…';
+  var base=location.pathname.replace(/[^\/]*$/,'');
+  var p=[];
+  try{if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.filter(function(r){return new URL(r.scope).pathname===base}).map(function(r){return r.unregister()}))}))}catch(e){}
+  try{if(window.caches)p.push(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x.indexOf('bottie')===0}).map(function(x){return caches.delete(x)}))}))}catch(e){}
+  Promise.all(p).catch(function(){}).then(function(){location.replace(base+'?r='+Date.now())});
+};
 /* Atsarginė kopija */
 var BKEYS=[['Sinchronizacija','Sinchronizacija (skriptas ir šeimos kodas)',SK],['Biudžetas','Biudžeto skripto adresas',BU],['Biudžetas','Biudžeto raktas',BK],['Biudžetas','Biudžeto PIN (kodas, ne pats PIN)',BP],['Biudžetas','Rodyti biudžetą ekrane',BD],['Elektra','Tibber raktas',TT],['Elektra','Papildomas mokestis',EXK],['Push','OneSignal App ID','bottie-push-app'],['Kita','Vardas',NK],['Kita','Išvaizda ir nustatymai','bottie-prefs'],['Kita','Vieta','bottie-loc']];
 function bkBuild(){
