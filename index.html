@@ -472,7 +472,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 69</div></div>
+      <div class="meta">Versija 70</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1517,7 +1517,7 @@ refreshWeather();setInterval(refreshWeather,1800000);
 
 /* Elpris (Tibber) */
 var TT='bottie-tibber-token',TC='bottie-tibber-cache';
-function getTok(){try{return localStorage.getItem(TT)||''}catch(e){return ''}}
+function getTok(){try{return (localStorage.getItem(TT)||'').replace(/[^\x21-\x7E]/g,'')}catch(e){return ''}}
 var PRICE=null;try{PRICE=JSON.parse(localStorage.getItem(TC)||'null')}catch(e){}
 var LV={VERY_CHEAP:'Labai pigu',CHEAP:'Pigu',NORMAL:'Normalu',EXPENSIVE:'Brangu',VERY_EXPENSIVE:'Labai brangu'};
 var EXK='bottie-extra';
