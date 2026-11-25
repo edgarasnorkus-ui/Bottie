@@ -124,7 +124,7 @@ section.view{display:none}section.view.on{display:block}
 #dexit{display:none}
 body.disp header,body.disp #tabs,body.disp main>p.meta{display:none}
 body.disp main{max-width:none;padding:18px 22px}
-body.disp #dexit{display:block;position:fixed;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:12px;z-index:5;min-height:36px;padding:4px 14px;font-size:.9rem;background:transparent;color:var(--muted);border:2px solid var(--line)}
+body.disp #dexit{display:flex;position:fixed;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:12px;z-index:5;min-height:36px;width:36px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%;opacity:.55;background:transparent;color:var(--muted);border:2px solid var(--line)}
 #v-disp.on{display:grid;grid-template-columns:1fr;gap:16px}
 .dclock{font-size:clamp(4.5rem,16vw,12rem);font-weight:800;line-height:1}
 .ddate{font-size:clamp(1.3rem,3.2vw,2.4rem);color:var(--muted)}
@@ -386,7 +386,7 @@ body.disp main{padding:10px 22px 48px}
 
   <div id="fabs"><button class="fab" id="fabAdd" aria-label="Naujas užrašas">+</button></div>
 
-  <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="tasks">Užduotys</button><button data-v="school">Mokykla</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="budget">Biudžetas</button><button data-v="disp">Ekranas</button></nav>
+  <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="tasks">Užduotys</button><button data-v="school">Mokykla</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="budget">Biudžetas</button><button data-v="disp" aria-label="Ekranas" title="Ekranas"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></button></nav>
   <section class="view" id="v-home"></section>
   <section class="view" id="v-weather"></section>
   <section class="view" id="v-budget"></section>
@@ -395,7 +395,7 @@ body.disp main{padding:10px 22px 48px}
     <div id="pbody"></div>
   </section>
   <div id="bubble" role="status" aria-live="polite"></div>
-  <button id="dexit" type="button">✕ Uždaryti ekraną</button>
+  <button id="dexit" type="button" aria-label="Uždaryti ekraną" title="Uždaryti ekraną"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M9 7.5l6 5M15 7.5l-6 5"/></svg></button>
   <section class="view" id="v-disp"></section>
   <div class="card" id="evform" style="display:none">
       <input type="text" class="inp" id="evt" placeholder="Veikla, pvz., futbolas" aria-label="Veikla">
@@ -472,7 +472,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 68</div></div>
+      <div class="meta">Versija 69</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1344,6 +1344,12 @@ function schoolFor(dk,kid){
     r.children[n].forEach(function(x){if(x.d===dk)o.push(x)})});
   return o;
 }
+function schoolCard(x){
+  var c=document.createElement('div');c.className='sch-it '+x.type;c.style.cursor='pointer';c.onclick=function(){setView('school')};
+  var b=document.createElement('b');b.textContent=(x.type==='a'?'📝 ':'🎓 ')+(x.t?x.t+' ':'')+x.title;c.appendChild(b);
+  if(x.course){var m=document.createElement('div');m.className='meta';m.textContent=x.course;c.appendChild(m)}
+  return c;
+}
 var schoolLoading=false,schoolErr='';
 function loadSchool(fresh){
   var c=schoolCfg();if(!c||schoolLoading)return;
@@ -2018,8 +2024,9 @@ function renderMonth(){
   var sdd=dparse(sd),wn=sdd.toLocaleDateString('lt-LT',{weekday:'long',month:'long',day:'numeric'});
   var h=document.createElement('h3');h.style.margin='16px 0 8px';h.textContent=wn.charAt(0).toUpperCase()+wn.slice(1);md.appendChild(h);
   var sl=dayList(sdd).filter(function(e){return !calKid||e.child===calKid});
-  if(!sl.length){var em=document.createElement('div');em.className='meta';em.textContent='Laisva';md.appendChild(em)}
-  else{var ev=document.createElement('div');ev.className='evs';sl.forEach(function(e){ev.appendChild(evCard(e,sd))});md.appendChild(ev)}
+  var ssc=schoolFor(sd,calKid);
+  if(!sl.length&&!ssc.length){var em=document.createElement('div');em.className='meta';em.textContent='Laisva';md.appendChild(em)}
+  else{var ev=document.createElement('div');ev.className='evs';sl.forEach(function(e){ev.appendChild(evCard(e,sd))});ssc.forEach(function(x){ev.appendChild(schoolCard(x))});md.appendChild(ev)}
 }
 function shiftCal(n){
   if(calMode==='month'){
@@ -2067,10 +2074,12 @@ function renderCal(){
     var wn=d.toLocaleDateString('lt-LT',{weekday:'long'});
     var nn=document.createElement('div');nn.className='dname';nn.textContent=wn.charAt(0).toUpperCase()+wn.slice(1);
     hd.appendChild(nm);hd.appendChild(nn);
-    var sc=schoolFor(dk,calKid);if(sc.length){var sb=document.createElement('span');sb.className='sch-badge';sb.textContent='🎓 '+sc.length;sb.title=sc.map(function(x){return x.title}).join('\n');sb.onclick=function(){setView('school')};hd.appendChild(sb)}
     var evs=document.createElement('div');evs.className='evs';
-    if(!list.length){var em=document.createElement('div');em.className='meta';em.textContent='Laisva';evs.appendChild(em)}
+    var sc=schoolFor(dk,calKid);
+    if(!list.length&&!sc.length){var em=document.createElement('div');em.className='meta';em.textContent='Laisva';evs.appendChild(em)}
     else list.forEach(function(e){evs.appendChild(evCard(e,dk))});
+    sc.forEach(function(x){evs.appendChild(schoolCard(x))});
+    if(sc.length)row.classList.remove('empty');
     row.appendChild(hd);row.appendChild(evs);box.appendChild(row);
   }
 }
