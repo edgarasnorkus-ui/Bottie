@@ -451,7 +451,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 54</div></div>
+      <div class="meta">Versija 55</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -2280,7 +2280,7 @@ function pushRun(force){
   pushInit();setTimeout(function(){pushRun(false)},6000);
   document.addEventListener('visibilitychange',function(){if(!document.hidden)pushSoon(false)});
 })();
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){if(!bget(PA))navigator.serviceWorker.register('sw.js').catch(function(){})})}
 </script>
 </body>
 </html>
