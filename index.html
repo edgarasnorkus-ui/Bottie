@@ -28,7 +28,12 @@ main{max-width:560px;margin:0 auto;padding:18px 16px 150px}
 header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 header svg{width:64px;height:64px;flex:none}
 h1{font-size:2rem;margin:0;line-height:1}
-#gear{margin-left:auto;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:40px;width:40px;padding:0;font-size:1.4rem;opacity:.45;border-radius:50%;display:flex;align-items:center;justify-content:center}
+#updapp{margin-left:auto;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:40px;width:40px;padding:0;opacity:.45;border-radius:50%;display:flex;align-items:center;justify-content:center}
+#updapp svg{width:19px;height:19px}
+#updapp.spin svg{animation:uspin .8s linear infinite}
+@keyframes uspin{to{transform:rotate(360deg)}}
+body.disp #updapp{display:none}
+#gear{margin-left:0;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:40px;width:40px;padding:0;font-size:1.4rem;opacity:.45;border-radius:50%;display:flex;align-items:center;justify-content:center}
 #gear svg{width:20px;height:20px}
 #gear.on{opacity:1;color:var(--fg,inherit)}
 #gear:active{opacity:1}
@@ -326,6 +331,9 @@ body.disp main{padding:10px 22px 48px}
 #logo{cursor:pointer}
 .bothop{animation:hop .6s ease}
 .bsum{margin-top:12px}
+.bstats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.bst{background:rgba(255,255,255,.05);border-radius:12px;padding:8px 10px}
+.bsv{font-size:1.1rem;font-weight:800;margin-top:2px}
 .bbig{font-size:2.4rem;font-weight:800;line-height:1.1}
 .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:12px}
 .bcat{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;text-align:left;font-weight:400;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;width:100%}
@@ -352,6 +360,7 @@ body.disp main{padding:10px 22px 48px}
   <header>
     <svg id="logo" viewBox="0 0 100 100" role="button" tabindex="0" aria-label="Bottie"></svg>
     <h1 id="hname">Bottie</h1>
+    <button id="updapp" type="button" aria-label="Atnaujinti programą" title="Atnaujinti programą"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
     <button id="gear" type="button" aria-label="Nustatymai" title="Nustatymai"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
 
@@ -444,9 +453,6 @@ body.disp main{padding:10px 22px 48px}
     <div class="card" style="margin-top:12px"><div class="meta">Išsaugo visas nuorodas, raktus ir nustatymus į failą. Failas turi slaptų raktų, laikyk jį privačiai.</div>
       <div class="row"><button id="bkexp" type="button">Eksportuoti</button><button class="soft" id="bkimp" type="button">Importuoti</button></div>
       <input type="file" id="bkfile" accept=".txt,text/plain" style="display:none"><div class="meta" id="bkstat" aria-live="polite"></div></div>
-    <h2 class="sethead">🔄 Programa</h2>
-    <div class="card" style="margin-top:12px"><div class="meta">Jei programa rodo seną versiją, paspausk. Išvalo talpyklą ir įkelia naujausią versiją. Duomenys nedingsta.</div>
-      <div class="row"><button id="updapp" type="button">Atnaujinti programą</button></div><div class="meta" id="updstat"></div></div>
     <h2 class="sethead">🎨 Išvaizda</h2>
     <div class="card" style="margin-top:12px"><h3 style="margin:0 0 6px">Išvaizda</h3>
       <select id="pth" class="inp" aria-label="Tema">
@@ -458,7 +464,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 65</div></div>
+      <div class="meta">Versija 66</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -623,41 +629,372 @@ $('close').onclick=closeSheet;
 function localInput(ms){var d=new Date(ms-new Date(ms).getTimezoneOffset()*60000);return d.toISOString().slice(0,16)}
 
 /* Bottie pratar */
-var DATEFACTS={
-'01-01':['Šiandien Naujųjų metų diena.'],
-'01-06':['Šiandien Trys karaliai – tradiciškai tuo baigiasi Kalėdų laikotarpis.'],
-'01-13':['Sausio 13-ąją Lietuvoje minima Laisvės gynėjų diena.'],
-'02-14':['Šiandien Valentino diena – draugystės ir meilės šventė.'],
-'02-16':['1918 metų vasario 16-ąją buvo pasirašytas Lietuvos Nepriklausomybės aktas.'],
-'02-29':['Vasario 29-oji pasitaiko tik keliamaisiais metais – maždaug kas ketverius metus.'],
-'03-11':['1990 metų kovo 11-ąją buvo atkurta Lietuvos nepriklausomybė.'],
-'03-14':['Šiandien Pi diena: skaičius π yra maždaug 3,14.'],
-'04-01':['Šiandien balandžio 1-oji – Juokų diena!'],
-'04-12':['1961 metų balandžio 12-ąją Jurijus Gagarinas tapo pirmuoju žmogumi kosmose.'],
-'04-22':['Šiandien Žemės diena – primename, kaip svarbu rūpintis gamta.'],
-'04-23':['Šiandien Pasaulinė knygos diena.'],
-'05-01':['2004 metų gegužės 1-ąją Lietuva tapo Europos Sąjungos nare.'],
-'05-15':['Šiandien Tarptautinė šeimos diena.'],
-'06-01':['Šiandien Tarptautinė vaikų gynimo diena.'],
-'06-05':['Šiandien Pasaulinė aplinkos apsaugos diena.'],
-'06-06':['Šiandien Švedijos nacionalinė diena.'],
-'06-21':['Apie šią dieną Šiaurės pusrutulyje būna vasaros saulėgrįža – ilgiausia metų diena.'],
-'07-06':['Šiandien Valstybės diena – minimas karaliaus Mindaugo karūnavimas 1253 metais.'],
-'07-20':['1969 metų liepos 20-ąją Apollo 11 astronautai pirmą kartą nusileido Mėnulyje.'],
-'08-15':['Šiandien Žolinė – Lietuvoje tradiciškai šventinamos žolės ir gėlės.'],
-'08-23':['1989 metų rugpjūčio 23-iąją milijonai žmonių sudarė Baltijos kelią per Lietuvą, Latviją ir Estiją.'],
-'09-23':['Apie šią dieną būna rudens lygiadienis: diena ir naktis beveik vienodo ilgio.'],
-'10-04':['1957 metų spalio 4-ąją buvo paleistas pirmasis dirbtinis Žemės palydovas „Sputnik 1“.'],
-'11-09':['1989 metų lapkričio 9-ąją buvo atvertas Berlyno mūras.'],
-'11-20':['Šiandien Pasaulinė vaikų teisių diena.'],
-'12-06':['Šiandien Šv. Mikalojaus diena – vaikai laukia dovanų.'],
-'12-13':['Šiandien Švedijoje švenčiama Liucijos diena – šviesos šventė.'],
-'12-17':['1903 metų gruodžio 17-ąją broliai Raitai atliko pirmąjį valdomą skrydį lėktuvu.'],
-'12-21':['Apie šią dieną Šiaurės pusrutulyje būna žiemos saulėgrįža – trumpiausia metų diena.'],
-'12-24':['Šiandien Kūčios – lietuviai laikosi tradicijos ant stalo dėti dvylika patiekalų.'],
-'12-25':['Šiandien Kalėdos.'],
-'12-31':['Šiandien paskutinė metų diena.']
-};
+var DATEFACTS={"01-01":"Šiandien Naujųjų metų diena. 1863 m. šią dieną JAV prezidentas Linkolnas paskelbė vergų emancipacijos proklamaciją.",
+"01-02":"1959 m. sausio 2 d. SSRS paleido zondą „Luna 1“ – pirmąjį, praskridusį pro Mėnulį.",
+"01-03":"1959 m. sausio 3 d. Aliaska tapo 49-ąja JAV valstija.",
+"01-04":"1643 m. sausio 4 d. gimė Isaacas Niutonas, visuotinės traukos dėsnio autorius.",
+"01-05":"1933 m. sausio 5 d. prasidėjo Auksinių vartų tilto Kalifornijoje statyba.",
+"01-06":"Šiandien Trys karaliai – tradiciškai tuo baigiasi Kalėdų laikotarpis.",
+"01-07":"1610 m. sausio 7 d. Galilėjus atrado keturis didžiausius Jupiterio palydovus.",
+"01-08":"1642 m. sausio 8 d. mirė Galileo Galilėjus, astronomijos tėvas.",
+"01-09":"2007 m. sausio 9 d. Steve'as Jobsas pristatė pirmąjį „iPhone“.",
+"01-10":"1946 m. sausio 10 d. Londone įvyko pirmasis Jungtinių Tautų Generalinės Asamblėjos posėdis.",
+"01-11":"1922 m. sausio 11 d. pirmą kartą žmogui buvo suleistas insulinas – tai išgelbėjo milijonus diabetu sergančių žmonių.",
+"01-12":"1932 m. sausio 12 d. Hattie Caraway tapo pirmąja moterimi, išrinkta į JAV Senatą.",
+"01-13":"Sausio 13-ąją Lietuvoje minima Laisvės gynėjų diena.",
+"01-14":"2005 m. sausio 14 d. zondas „Huygens“ nusileido ant Saturno mėnulio Titano.",
+"01-15":"2001 m. sausio 15 d. pradėjo veikti Vikipedija.",
+"01-16":"1969 m. sausio 16 d. erdvėlaiviai „Sojuz 4“ ir „Sojuz 5“ susijungė kosmose, o kosmonautai persikėlė iš vieno į kitą.",
+"01-17":"1706 m. sausio 17 d. gimė Benjaminas Franklinas – mokslininkas, išradėjas ir vienas JAV įkūrėjų.",
+"01-18":"1689 m. sausio 18 d. gimė prancūzų filosofas Monteskjė, valdžių padalijimo idėjos autorius.",
+"01-19":"1736 m. sausio 19 d. gimė Džeimsas Vatas, kurio patobulinti garo varikliai pakeitė pasaulį.",
+"01-20":"1265 m. sausio 20 d. susirinko vienas pirmųjų Anglijos parlamentų.",
+"01-21":"Sausio 21-ąją 1954 m. buvo nuleistas į vandenį pirmasis branduolinis povandeninis laivas „Nautilus“.",
+"01-22":"1506 m. sausio 22 d. į Vatikaną atvyko pirmieji Šveicarijos gvardiečiai – jie saugo popiežių iki šiol.",
+"01-23":"1849 m. sausio 23 d. Elizabeth Blackwell tapo pirmąja moterimi JAV, gavusia gydytojos diplomą.",
+"01-24":"1984 m. sausio 24 d. pristatytas pirmasis „Apple Macintosh“ kompiuteris.",
+"01-25":"1924 m. sausio 25 d. Šamoni mieste (Prancūzija) prasidėjo pirmosios žiemos olimpinės žaidynės.",
+"01-26":"1788 m. sausio 26 d. Sidnėjuje nusileido Pirmasis laivynas – taip prasidėjo europiečių gyvenvietė Australijoje.",
+"01-27":"1756 m. sausio 27 d. Zalcburge gimė kompozitorius Volfgangas Amadėjus Mocartas.",
+"01-28":"1813 m. sausio 28 d. buvo išleistas Džein Ostin romanas „Puikybė ir prietarai“.",
+"01-29":"1860 m. sausio 29 d. gimė rašytojas Antonas Čechovas.",
+"01-30":"1969 m. sausio 30 d. „The Beatles“ surengė paskutinį viešą koncertą ant Londono pastato stogo.",
+"01-31":"1958 m. sausio 31 d. JAV paleido pirmąjį savo dirbtinį palydovą „Explorer 1“.",
+"02-01":"1884 m. vasario 1 d. išleista pirmoji Oksfordo anglų kalbos žodyno dalis.",
+"02-02":"1887 m. vasario 2 d. Pensilvanijoje pirmą kartą paminėta Kurmio diena – kurmis ar murkis spėja, ar ilgai dar bus žiema.",
+"02-03":"1966 m. vasario 3 d. SSRS stotis „Luna 9“ pirmoji sėkmingai nusileido ant Mėnulio.",
+"02-04":"2004 m. vasario 4 d. buvo įkurtas „Facebook“.",
+"02-05":"1971 m. vasario 5 d. nusileido „Apollo 14“ – trečioji misija, kurios astronautai vaikščiojo Mėnulyje.",
+"02-06":"1840 m. vasario 6 d. Naujojoje Zelandijoje pasirašyta Vaitangio sutartis.",
+"02-07":"1812 m. vasario 7 d. gimė rašytojas Čarlzas Dikensas, „Oliverio Tvisto“ autorius.",
+"02-08":"1828 m. vasario 8 d. gimė Žiulis Vernas, nuotykių ir mokslinės fantastikos klasikas.",
+"02-09":"1964 m. vasario 9 d. „The Beatles“ pirmą kartą pasirodė JAV televizijoje – juos matė apie 70 milijonų žmonių.",
+"02-10":"1996 m. vasario 10 d. kompiuteris „Deep Blue“ pirmą kartą laimėjo šachmatų partiją prieš pasaulio čempioną Garį Kasparovą.",
+"02-11":"1990 m. vasario 11 d. iš kalėjimo paleistas Nelsonas Mandela, praleidęs jame 27 metus.",
+"02-12":"1809 m. vasario 12 d. gimė Čarlzas Darvinas, evoliucijos teorijos kūrėjas.",
+"02-13":"1633 m. vasario 13 d. Galilėjus atvyko į Romą, kad atsakytų už savo knygą apie Kopernikaus sistemą.",
+"02-14":"Šiandien Valentino diena – draugystės ir meilės šventė.",
+"02-15":"1564 m. vasario 15 d. gimė Galileo Galilėjus.",
+"02-16":"1918 metų vasario 16-ąją buvo pasirašytas Lietuvos Nepriklausomybės aktas.",
+"02-17":"1904 m. vasario 17 d. Milane pirmą kartą pastatyta Pučinio opera „Madam Baterflai“.",
+"02-18":"1930 m. vasario 18 d. Klaidas Tombo atrado Plutoną.",
+"02-19":"1473 m. vasario 19 d. gimė Mikalojus Kopernikas, įrodęs, kad Žemė sukasi aplink Saulę.",
+"02-20":"1962 m. vasario 20 d. Džonas Glenas tapo pirmuoju amerikiečiu, apskridusiu Žemę orbitoje.",
+"02-21":"1925 m. vasario 21 d. išleistas pirmasis žurnalo „The New Yorker“ numeris.",
+"02-22":"1732 m. vasario 22 d. gimė Džordžas Vašingtonas, pirmasis JAV prezidentas.",
+"02-23":"1685 m. vasario 23 d. gimė kompozitorius Georgas Frydrichas Hendelis.",
+"02-24":"1582 m. vasario 24 d. popiežius Grigaliaus XIII paskelbė naująjį – Grigaliaus kalendorių, kuriuo naudojamės iki šiol.",
+"02-25":"1964 m. vasario 25 d. Kasijus Klėjus, vėliau žinomas kaip Muhammadas Ali, tapo sunkiasvorių boksininkų pasaulio čempionu.",
+"02-26":"1802 m. vasario 26 d. gimė rašytojas Viktoras Hugo, „Vargdienių“ autorius.",
+"02-27":"1932 m. vasario 27 d. Džeimsas Čedvikas atrado neutroną.",
+"02-28":"1953 m. vasario 28 d. Kembridže Frensis Krikas ir Džeimsas Votsonas pranešė atradę DNR dvigubą spiralę.",
+"02-29":"Vasario 29-oji pasitaiko tik keliamaisiais metais – maždaug kas ketverius metus.",
+"03-01":"1896 m. kovo 1 d. Anri Bekerelis atrado radioaktyvumą.",
+"03-02":"1969 m. kovo 2 d. pirmą kartą pakilo viršgarsinis keleivinis lėktuvas „Concorde“.",
+"03-03":"1847 m. kovo 3 d. gimė Aleksandras Grahamas Bellas, telefono išradėjas.",
+"03-04":"1791 m. kovo 4 d. Vermontas tapo 14-ąja JAV valstija.",
+"03-05":"1512 m. kovo 5 d. gimė kartografas Gerardas Merkatorius, sukūręs garsiąją pasaulio žemėlapio projekciją.",
+"03-06":"1475 m. kovo 6 d. gimė Mikelandželas Buonarotis.",
+"03-07":"1876 m. kovo 7 d. Aleksandras Grahamas Bellas gavo telefono patentą.",
+"03-08":"Šiandien Tarptautinė moters diena.",
+"03-09":"1934 m. kovo 9 d. gimė Jurijus Gagarinas, pirmasis žmogus kosmose.",
+"03-10":"1876 m. kovo 10 d. Bellas pirmą kartą telefonu pasakė žodžius savo padėjėjui: „Pone Vatsonai, ateikite čia.“",
+"03-11":"1990 metų kovo 11-ąją buvo atkurta Lietuvos nepriklausomybė.",
+"03-12":"1989 m. kovo 12 d. Timas Bernersas-Li pasiūlė idėją, iš kurios išaugo pasaulinis tinklas (WWW).",
+"03-13":"1781 m. kovo 13 d. Viljamas Heršelis atrado planetą Uraną.",
+"03-14":"Šiandien Pi diena: skaičius π yra maždaug 3,14. 1879 m. šią dieną gimė ir Albertas Einšteinas.",
+"03-15":"Kovo idos: 44 m. pr. Kr. šią dieną Romoje nužudytas Julijus Cezaris.",
+"03-16":"1926 m. kovo 16 d. Robertas Goddardas paleido pirmąją pasaulyje skystojo kuro raketą.",
+"03-17":"Šiandien Šv. Patriko diena – Airijos nacionalinė šventė, kai viskas nusidažo žaliai.",
+"03-18":"1965 m. kovo 18 d. Aleksejus Leonovas pirmasis žmogus išėjo į atvirą kosmosą.",
+"03-19":"1918 m. kovo 19 d. JAV priėmė įstatymą dėl vasaros laiko.",
+"03-20":"Apie šią dieną būna pavasario lygiadienis: diena ir naktis beveik vienodo ilgio.",
+"03-21":"1685 m. kovo 21 d. gimė kompozitorius Johanas Sebastianas Bachas.",
+"03-22":"Šiandien Pasaulinė vandens diena.",
+"03-23":"1857 m. kovo 23 d. Niujorke įrengtas pirmasis keleivinis liftas.",
+"03-24":"1882 m. kovo 24 d. Robertas Kochas paskelbė atradęs tuberkuliozės sukėlėją.",
+"03-25":"1807 m. kovo 25 d. Britanijos parlamentas uždraudė vergų prekybą.",
+"03-26":"1827 m. kovo 26 d. mirė kompozitorius Liudvigas van Bethovenas.",
+"03-27":"1845 m. kovo 27 d. gimė Vilhelmas Rentgenas, atradęs rentgeno spindulius.",
+"03-28":"1930 m. kovo 28 d. oficialiai pradėtas vartoti Stambulo pavadinimas vietoj Konstantinopolio.",
+"03-29":"1974 m. kovo 29 d. Kinijoje valstiečiai aptiko Terakotos armiją – tūkstančius molinių karių.",
+"03-30":"1853 m. kovo 30 d. gimė dailininkas Vincentas van Gogas.",
+"03-31":"1889 m. kovo 31 d. Paryžiuje oficialiai atidarytas Eifelio bokštas.",
+"04-01":"Šiandien balandžio 1-oji – Juokų diena!",
+"04-02":"1805 m. balandžio 2 d. gimė pasakų autorius Hansas Kristianas Andersenas.",
+"04-03":"1973 m. balandžio 3 d. Martinas Cooperis paskambino pirmu mobiliuoju telefonu.",
+"04-04":"1949 m. balandžio 4 d. buvo pasirašyta Šiaurės Atlanto sutartis – taip įkurta NATO.",
+"04-05":"1722 m. balandžio 5 d. (per Velykas) olandas Rogevenas atrado Velykų salą.",
+"04-06":"1896 m. balandžio 6 d. Atėnuose prasidėjo pirmosios šiuolaikinės olimpinės žaidynės.",
+"04-07":"Šiandien Pasaulinė sveikatos diena.",
+"04-08":"1911 m. balandžio 8 d. Heike Kamerlingas Onesas atrado superlaidumą.",
+"04-09":"1959 m. balandžio 9 d. NASA pristatė pirmuosius septynis savo astronautus.",
+"04-10":"1912 m. balandžio 10 d. „Titanikas“ pradėjo pirmąją ir paskutinę kelionę iš Sauthemptono.",
+"04-11":"1970 m. balandžio 11 d. startavo „Apollo 13“ – misija, kuri vėliau tapo garsi dėl sėkmingo grįžimo namo.",
+"04-12":"1961 metų balandžio 12-ąją Jurijus Gagarinas tapo pirmuoju žmogumi kosmose.",
+"04-13":"1743 m. balandžio 13 d. gimė Tomas Džefersonas, trečiasis JAV prezidentas.",
+"04-14":"1912 m. balandžio 14 d. vakare „Titanikas“ atsitrenkė į ledkalnį.",
+"04-15":"1452 m. balandžio 15 d. gimė Leonardas da Vinčis.",
+"04-16":"1867 m. balandžio 16 d. gimė Vilbūras Raitas, vienas iš lėktuvo išradėjų brolių.",
+"04-17":"1970 m. balandžio 17 d. „Apollo 13“ ekipažas saugiai grįžo į Žemę.",
+"04-18":"1955 m. balandžio 18 d. mirė Albertas Einšteinas.",
+"04-19":"1770 m. balandžio 19 d. Džeimso Kuko ekspedicija pirmą kartą pamatė rytinę Australijos pakrantę.",
+"04-20":"1902 m. balandžio 20 d. Marie ir Pierre'as Kiuri išskyrė gryną radį.",
+"04-21":"Pagal tradiciją 753 m. pr. Kr. balandžio 21 d. buvo įkurta Roma.",
+"04-22":"Šiandien Žemės diena – primename, kaip svarbu rūpintis gamta.",
+"04-23":"Šiandien Pasaulinė knygos diena – ji minima ir dėl Šekspyro bei Servanteso mirties metinių.",
+"04-24":"1990 m. balandžio 24 d. į orbitą pakeltas Hablo kosminis teleskopas.",
+"04-25":"1953 m. balandžio 25 d. žurnale „Nature“ paskelbtas DNR struktūros atradimas.",
+"04-26":"1564 m. balandžio 26 d. buvo pakrikštytas Viljamas Šekspyras.",
+"04-27":"1791 m. balandžio 27 d. gimė Samuelis Morzė, telegrafo ir Morzės abėcėlės kūrėjas.",
+"04-28":"1789 m. balandžio 28 d. laive „Bounty“ prasidėjo garsusis maištas.",
+"04-29":"1899 m. balandžio 29 d. gimė džiazo kompozitorius Dukas Elingtonas.",
+"04-30":"1789 m. balandžio 30 d. Džordžas Vašingtonas prisiekė tapti pirmuoju JAV prezidentu.",
+"05-01":"2004 metų gegužės 1-ąją Lietuva tapo Europos Sąjungos nare.",
+"05-02":"1519 m. gegužės 2 d. mirė Leonardas da Vinčis.",
+"05-03":"1791 m. gegužės 3 d. Lenkijos ir Lietuvos valstybė priėmė Gegužės 3-iosios konstituciją – vieną pirmųjų Europoje.",
+"05-04":"1904 m. gegužės 4 d. JAV pradėjo Panamos kanalo statybą.",
+"05-05":"1961 m. gegužės 5 d. Alanas Shepardas tapo pirmuoju amerikiečiu kosmose.",
+"05-06":"1856 m. gegužės 6 d. gimė Sigmundas Froidas, psichoanalizės pradininkas.",
+"05-07":"1904 m. gegužės 7 d. Lietuvoje buvo panaikintas lietuviškos spaudos lotyniškais rašmenimis draudimas.",
+"05-08":"1886 m. gegužės 8 d. Atlantoje pirmą kartą pardavinėtas „Coca-Cola“ gėrimas.",
+"05-09":"Šiandien Europos diena – minima 1950 m. Roberto Šumano deklaracija, davusi pradžią Europos integracijai.",
+"05-10":"1869 m. gegužės 10 d. susijungė rytinė ir vakarinė JAV transkontinentinio geležinkelio atkarpos.",
+"05-11":"1997 m. gegužės 11 d. kompiuteris „Deep Blue“ laimėjo visą šachmatų rungtynių seriją prieš Kasparovą.",
+"05-12":"1820 m. gegužės 12 d. gimė Florence Nightingale, šiuolaikinės slaugos pradininkė.",
+"05-13":"1888 m. gegužės 13 d. Brazilija panaikino vergovę.",
+"05-14":"1796 m. gegužės 14 d. Edvardas Dženeris atliko pirmąjį skiepijimą nuo raupų.",
+"05-15":"Šiandien Tarptautinė šeimos diena.",
+"05-16":"1929 m. gegužės 16 d. Holivude įteiktos pirmosios „Oskaro“ statulėlės.",
+"05-17":"1902 m. gegužės 17 d. Graikijoje rastas Antikiteros mechanizmas – senovinis „kompiuteris“ dangaus kūnų judėjimui skaičiuoti.",
+"05-18":"Šiandien Tarptautinė muziejų diena.",
+"05-19":"1780 m. gegužės 19 d. Naujojoje Anglijoje dieną staiga sutemo – šią „Tamsiąją dieną“ lėmė miškų gaisrų dūmai.",
+"05-20":"1927 m. gegužės 20 d. Čarlzas Lindbergas pakilo iš Niujorko į pirmąjį vienišo žmogaus skrydį per Atlantą.",
+"05-21":"1927 m. gegužės 21 d. Čarlzas Lindbergas nusileido Paryžiuje, baigęs pirmąjį vieno žmogaus skrydį per Atlantą.",
+"05-22":"1859 m. gegužės 22 d. gimė Arturas Konanas Doilis, Šerloko Holmso kūrėjas.",
+"05-23":"1707 m. gegužės 23 d. gimė Karlas Linėjus, mokslinės augalų ir gyvūnų klasifikacijos pradininkas.",
+"05-24":"1844 m. gegužės 24 d. Samuelis Morzė išsiuntė pirmąją telegramą tarp Vašingtono ir Baltimorės.",
+"05-25":"1977 m. gegužės 25 d. pasirodė pirmasis „Žvaigždžių karų“ filmas.",
+"05-26":"1897 m. gegužės 26 d. buvo išleistas Brameno Stokerio romanas „Drakula“.",
+"05-27":"1703 m. gegužės 27 d. Petras I pradėjo statyti Sankt Peterburgą.",
+"05-28":"1937 m. gegužės 28 d. Auksinių vartų tiltas San Franciske atidarytas automobiliams.",
+"05-29":"1953 m. gegužės 29 d. Edmundas Hilaris ir Tenzingas Norgajus pirmieji pasiekė Everesto viršūnę.",
+"05-30":"1911 m. gegužės 30 d. vyko pirmosios „Indianapolio 500“ lenktynės.",
+"05-31":"1859 m. gegužės 31 d. pradėjo veikti Londono laikrodis „Big Benas“.",
+"06-01":"Šiandien Tarptautinė vaikų gynimo diena.",
+"06-02":"1953 m. birželio 2 d. karūnuota Elžbieta II, ilgiausiai valdžiusi Britanijos monarchė.",
+"06-03":"1965 m. birželio 3 d. Edas Vaitas tapo pirmuoju amerikiečiu, išėjusiu į atvirą kosmosą.",
+"06-04":"1783 m. birželio 4 d. broliai Montgolfier Prancūzijoje viešai paleido pirmąjį oro balioną.",
+"06-05":"Šiandien Pasaulinė aplinkos apsaugos diena.",
+"06-06":"Šiandien Švedijos nacionalinė diena.",
+"06-07":"1494 m. birželio 7 d. Ispanija ir Portugalija pasirašė Tordesiljo sutartį, kuria pasidalijo naujai atrastas žemes.",
+"06-08":"Šiandien Pasaulinė vandenynų diena.",
+"06-09":"1934 m. birželio 9 d. pirmą kartą ekrane pasirodė Antis Donaldas.",
+"06-10":"1977 m. birželio 10 d. pradėtas pardavinėti kompiuteris „Apple II“.",
+"06-11":"1770 m. birželio 11 d. Džeimso Kuko laivas „Endeavour“ užplaukė ant Didžiojo barjerinio rifo.",
+"06-12":"1929 m. birželio 12 d. gimė Anne Frank.",
+"06-13":"1983 m. birželio 13 d. zondas „Pioneer 10“ tapo pirmuoju žmogaus sukurtu objektu, išskridusiu už planetų ribų.",
+"06-14":"Šiandien Pasaulinė kraujo donorų diena.",
+"06-15":"1215 m. birželio 15 d. Anglijos karalius Jonas patvirtino Didžiąją laisvių chartiją (Magna Carta).",
+"06-16":"1963 m. birželio 16 d. Valentina Tereškova tapo pirmąja moterimi kosmose.",
+"06-17":"1885 m. birželio 17 d. į Niujorką atplaukė Laisvės statulos dalys iš Prancūzijos.",
+"06-18":"1815 m. birželio 18 d. prie Vaterlo buvo galutinai sutriuškintas Napoleonas.",
+"06-19":"1623 m. birželio 19 d. gimė Blezas Paskalis – matematikas, fizikas ir vienas pirmųjų skaičiavimo mašinos kūrėjų.",
+"06-20":"1837 m. birželio 20 d. į sostą įžengė karalienė Viktorija.",
+"06-21":"Apie šią dieną Šiaurės pusrutulyje būna vasaros saulėgrįža – ilgiausia metų diena.",
+"06-22":"1633 m. birželio 22 d. Galilėjus buvo priverstas viešai atsisakyti savo pažiūrų, kad Žemė sukasi aplink Saulę.",
+"06-23":"1912 m. birželio 23 d. gimė Alanas Turingas, šiuolaikinės kompiuterijos pradininkas.",
+"06-24":"Šiandien Joninės (Rasos) – vasaros saulėgrįžos šventė su laužais ir vainikais.",
+"06-25":"1678 m. birželio 25 d. Elena Piskopija Padujoje tapo pirmąja moterimi, gavusia universitetinį laipsnį.",
+"06-26":"1997 m. birželio 26 d. išleista pirmoji knyga apie Harį Poterį.",
+"06-27":"1880 m. birželio 27 d. gimė Helen Keller – kurčia ir akla rašytoja bei aktyvistė.",
+"06-28":"1491 m. birželio 28 d. gimė Anglijos karalius Henrikas VIII.",
+"06-29":"1900 m. birželio 29 d. gimė Antuanas de Sent Egziuperi, „Mažojo princo“ autorius.",
+"06-30":"1908 m. birželio 30 d. virš Sibiro sprogo Tunguskos kūnas – tai didžiausias žinomas kosminio kūno sprogimas istorijoje. Šiandien Tarptautinė asteroidų diena.",
+"07-01":"1847 m. liepos 1 d. JAV išleisti pirmieji pašto ženklai.",
+"07-02":"1900 m. liepos 2 d. pirmą kartą pakilo grafo Cepelino dirižablis LZ 1.",
+"07-03":"1886 m. liepos 3 d. Karlas Bencas viešai išbandė pirmąjį automobilį su benzininiu varikliu.",
+"07-04":"1776 m. liepos 4 d. buvo priimta JAV Nepriklausomybės deklaracija.",
+"07-05":"1996 m. liepos 5 d. gimė avis Dolly – pirmasis klonuotas žinduolis.",
+"07-06":"Šiandien Valstybės diena – minimas karaliaus Mindaugo karūnavimas 1253 metais.",
+"07-07":"1928 m. liepos 7 d. JAV pirmą kartą parduotas jau supjaustytas duonos kepalas.",
+"07-08":"1497 m. liepos 8 d. Vasco da Gama išplaukė iš Lisabonos ieškoti jūrų kelio į Indiją.",
+"07-09":"1816 m. liepos 9 d. Argentina paskelbė nepriklausomybę.",
+"07-10":"1856 m. liepos 10 d. gimė išradėjas Nikola Tesla.",
+"07-11":"1960 m. liepos 11 d. išleistas Harper Lee romanas „Nenušauk strazdo giesmininko“.",
+"07-12":"1817 m. liepos 12 d. gimė rašytojas Henris Deividas Toro.",
+"07-13":"1985 m. liepos 13 d. vyko didžiulis labdaros koncertas „Live Aid“, kurį žiūrėjo apie pusė milijardo žmonių.",
+"07-14":"1789 m. liepos 14 d. Paryžiuje paimtas Bastilijos kalėjimas – prasidėjo Prancūzijos revoliucija.",
+"07-15":"1606 m. liepos 15 d. gimė dailininkas Rembrantas.",
+"07-16":"1969 m. liepos 16 d. startavo „Apollo 11“ – misija, nuskraidinusi žmones į Mėnulį.",
+"07-17":"1955 m. liepos 17 d. Kalifornijoje atidarytas pirmasis „Disneilendas“.",
+"07-18":"1918 m. liepos 18 d. gimė Nelsonas Mandela.",
+"07-19":"1900 m. liepos 19 d. atidarytas Paryžiaus metropolitenas.",
+"07-20":"1969 metų liepos 20-ąją Apollo 11 astronautai pirmą kartą nusileido Mėnulyje.",
+"07-21":"1969 m. liepos 21 d. (pagal Grinvičo laiką) Neilas Armstrongas žengė pirmąjį žingsnį Mėnulyje.",
+"07-22":"1933 m. liepos 22 d. Viliis Postas pirmasis vienas apskriejo Žemę lėktuvu.",
+"07-23":"1829 m. liepos 23 d. amerikietis Viljamas Bertas gavo patentą savo išrastai spausdinimo mašinai – vienai pirmųjų rašomųjų mašinėlių.",
+"07-24":"1911 m. liepos 24 d. Hiramas Binghamas atrado inkų miestą Maču Pikču.",
+"07-25":"1978 m. liepos 25 d. Anglijoje gimė Louise Brown – pirmoji „mėgintuvėlio kūdikė“.",
+"07-26":"1856 m. liepos 26 d. gimė dramaturgas Džordžas Bernardas Šo.",
+"07-27":"1940 m. liepos 27 d. pirmą kartą pasirodė animacinis triušis Baksas Banis.",
+"07-28":"1866 m. liepos 28 d. gimė rašytoja ir iliustratorė Beatrix Poter, „Triušio Petro“ kūrėja.",
+"07-29":"1958 m. liepos 29 d. buvo įkurta JAV kosmoso agentūra NASA.",
+"07-30":"1930 m. liepos 30 d. Urugvajuje vyko pirmasis pasaulio futbolo čempionatas – laimėjo Urugvajus.",
+"07-31":"1971 m. liepos 31 d. „Apollo 15“ astronautai pirmą kartą Mėnulyje važiavo Mėnulio automobiliu.",
+"08-01":"1774 m. rugpjūčio 1 d. Džozefas Pristlis atrado deguonį.",
+"08-02":"1932 m. rugpjūčio 2 d. Karlas Andersonas atrado pozitroną – pirmąją antimaterijos dalelę.",
+"08-03":"1492 m. rugpjūčio 3 d. Kristupas Kolumbas išplaukė iš Ispanijos į savo pirmąją kelionę per Atlantą.",
+"08-04":"1901 m. rugpjūčio 4 d. gimė džiazo trimitininkas Luisas Armstrongas.",
+"08-05":"1930 m. rugpjūčio 5 d. gimė Neilas Armstrongas, pirmasis žmogus Mėnulyje.",
+"08-06":"1991 m. rugpjūčio 6 d. Timas Bernersas-Li paskelbė pirmąją interneto svetainę.",
+"08-07":"1974 m. rugpjūčio 7 d. Filipas Petitas ištiesta lyna perėjo tarp Pasaulio prekybos centro dangoraižių Niujorke.",
+"08-08":"Šiandien Tarptautinė kačių diena.",
+"08-09":"1173 m. rugpjūčio 9 d. pradėtas statyti Pizos bokštas – jis pradėjo svirti dar statybų metu.",
+"08-10":"1675 m. rugpjūčio 10 d. buvo padėtas Grinvičo observatorijos pamatų akmuo.",
+"08-11":"1999 m. rugpjūčio 11 d. Europoje buvo matomas visiškas Saulės užtemimas.",
+"08-12":"1981 m. rugpjūčio 12 d. buvo pristatytas pirmasis „IBM PC“ asmeninis kompiuteris.",
+"08-13":"Šiandien Tarptautinė kairiarankių diena.",
+"08-14":"1947 m. rugpjūčio 14 d. nepriklausomybę paskelbė Pakistanas.",
+"08-15":"Šiandien Žolinė – Lietuvoje tradiciškai šventinamos žolės ir gėlės.",
+"08-16":"1896 m. rugpjūčio 16 d. Klondaike (Kanadoje) rastas auksas – prasidėjo Aukso karštinė.",
+"08-17":"1978 m. rugpjūčio 17 d. balionas „Double Eagle II“ pirmą kartą perskrido Atlantą.",
+"08-18":"1587 m. rugpjūčio 18 d. gimė Virginija Dar – pirmoji anglų vaikas, gimęs Šiaurės Amerikoje.",
+"08-19":"Šiandien Pasaulinė fotografijos diena – 1839 m. buvo paskelbtas dagerotipijos išradimas.",
+"08-20":"1977 m. rugpjūčio 20 d. paleistas zondas „Voyager 2“, kuris aplankė keturias išorines planetas.",
+"08-21":"1911 m. rugpjūčio 21 d. iš Luvro buvo pavogta Mona Liza – vėliau ji rasta ir grąžinta.",
+"08-22":"1485 m. rugpjūčio 22 d. Bosvorto mūšis baigė Rožių karus Anglijoje.",
+"08-23":"1989 metų rugpjūčio 23-iąją milijonai žmonių sudarė Baltijos kelią per Lietuvą, Latviją ir Estiją.",
+"08-24":"2006 m. rugpjūčio 24 d. Plutonas buvo priskirtas nykštukinėms planetoms.",
+"08-25":"2012 m. rugpjūčio 25 d. „Voyager 1“ tapo pirmuoju žmogaus sukurtu objektu, išskridusiu į tarpžvaigždinę erdvę.",
+"08-26":"1743 m. rugpjūčio 26 d. gimė Antuanas Lavuazjė, šiuolaikinės chemijos pradininkas.",
+"08-27":"1962 m. rugpjūčio 27 d. paleistas zondas „Mariner 2“, pirmasis sėkmingai aplankęs kitą planetą – Venerą.",
+"08-28":"1963 m. rugpjūčio 28 d. Martinas Lutheris Kingas Vašingtone pasakė kalbą „Aš turiu svajonę“.",
+"08-29":"1885 m. rugpjūčio 29 d. Gotlybas Daimleris gavo patentą savo išrastam motociklui.",
+"08-30":"1797 m. rugpjūčio 30 d. gimė Mary Shelley, romano „Frankenšteinas“ autorė.",
+"08-31":"1897 m. rugpjūčio 31 d. Tomas Edisonas gavo patentą savo kinetoskopui – vienam pirmųjų judančių vaizdų aparatų.",
+"09-01":"Šiandien Rugsėjo 1-oji – mokslo ir žinių diena.",
+"09-02":"1666 m. rugsėjo 2 d. Londone prasidėjo Didysis gaisras.",
+"09-03":"1783 m. rugsėjo 3 d. Paryžiaus sutartimi buvo pripažinta JAV nepriklausomybė.",
+"09-04":"1998 m. rugsėjo 4 d. buvo įkurta „Google“.",
+"09-05":"1977 m. rugsėjo 5 d. buvo paleistas zondas „Voyager 1“ – tolimiausias žmogaus sukurtas objektas.",
+"09-06":"1522 m. rugsėjo 6 d. į Ispaniją grįžo Magelano ekspedicijos laivas „Victoria“ – pirmoji kelionė aplink pasaulį baigėsi.",
+"09-07":"1822 m. rugsėjo 7 d. Brazilija paskelbė nepriklausomybę nuo Portugalijos.",
+"09-08":"1966 m. rugsėjo 8 d. televizijoje parodytas pirmasis serialo „Žvaigždžių kelias“ epizodas.",
+"09-09":"1956 m. rugsėjo 9 d. Elvisas Preslis pirmą kartą pasirodė didžiojoje JAV televizijos laidoje.",
+"09-10":"2008 m. rugsėjo 10 d. buvo paleistas Didysis hadronų priešpriešinių srautų greitintuvas Ženevoje.",
+"09-11":"1297 m. rugsėjo 11 d. škotai prie Stirlingo tilto sumušė stipresnę anglų kariuomenę.",
+"09-12":"1958 m. rugsėjo 12 d. Džekas Kilbis parodė pirmąją integrinę schemą – šiuolaikinių lustų pradžią.",
+"09-13":"1985 m. rugsėjo 13 d. Japonijoje išleistas žaidimas „Super Mario Bros.“.",
+"09-14":"1959 m. rugsėjo 14 d. zondas „Luna 2“ pirmasis pasiekė Mėnulį.",
+"09-15":"1835 m. rugsėjo 15 d. Čarlzo Darvino laivas „Beagle“ atplaukė prie Galapagų salų.",
+"09-16":"1620 m. rugsėjo 16 d. laivas „Mayflower“ su kolonistais išplaukė iš Anglijos į Ameriką.",
+"09-17":"1787 m. rugsėjo 17 d. buvo pasirašyta JAV Konstitucija.",
+"09-18":"1851 m. rugsėjo 18 d. išleistas pirmasis „The New York Times“ numeris.",
+"09-19":"1783 m. rugsėjo 19 d. Versalyje karaliaus akivaizdoje pakilo oro balionas su avimi, antimi ir gaidžiu.",
+"09-20":"1519 m. rugsėjo 20 d. Magelano ekspedicija išplaukė iš Ispanijos aplink pasaulį.",
+"09-21":"1937 m. rugsėjo 21 d. išleista Dž. R. R. Tolkino knyga „Hobitas“.",
+"09-22":"1791 m. rugsėjo 22 d. gimė Maiklas Faradėjus, elektromagnetizmo tyrinėtojas.",
+"09-23":"Apie šią dieną būna rudens lygiadienis: diena ir naktis beveik vienodo ilgio.",
+"09-24":"1852 m. rugsėjo 24 d. Anri Žifaras pirmą kartą pakilo garo varikliu valdomu dirižabliu.",
+"09-25":"1513 m. rugsėjo 25 d. Vasko Nunjesas de Balboa pirmasis europietis pamatė Ramųjį vandenyną iš Amerikos.",
+"09-26":"Šiandien Europos kalbų diena.",
+"09-27":"1822 m. rugsėjo 27 d. Žanas Fransua Šampolionas paskelbė iššifravęs Egipto hieroglifus.",
+"09-28":"1066 m. rugsėjo 28 d. Viljamas Užkariautojas su kariuomene išsilaipino Anglijoje. 1928 m. šią dieną Aleksandras Flemingas pastebėjo penicilino poveikį.",
+"09-29":"1829 m. rugsėjo 29 d. gatvėse pasirodė pirmieji Londono policininkai.",
+"09-30":"Šiandien Tarptautinė vertėjų diena.",
+"10-01":"1908 m. spalio 1 d. pristatytas „Ford Model T“ – automobilis, padaręs mašinas prieinamas daugeliui.",
+"10-02":"1869 m. spalio 2 d. gimė Mahatma Gandis.",
+"10-03":"1990 m. spalio 3 d. susivienijo Vakarų ir Rytų Vokietija.",
+"10-04":"1957 metų spalio 4-ąją buvo paleistas pirmasis dirbtinis Žemės palydovas „Sputnik 1“.",
+"10-05":"Šiandien Tarptautinė mokytojų diena.",
+"10-06":"1927 m. spalio 6 d. premjerą turėjo „Džiazo dainininkas“ – pirmasis pilnametražis filmas su garsu.",
+"10-07":"1885 m. spalio 7 d. gimė fizikas Nilsas Boras.",
+"10-08":"1871 m. spalio 8 d. prasidėjo Didysis Čikagos gaisras.",
+"10-09":"1604 m. spalio 9 d. astronomai pamatė naują ryškią žvaigždę – ją išsamiai tyrė Johanesas Kepleris.",
+"10-10":"1813 m. spalio 10 d. gimė kompozitorius Džuzepė Verdis.",
+"10-11":"1984 m. spalio 11 d. Kathryn Sullivan tapo pirmąja amerikiete, išėjusia į atvirą kosmosą.",
+"10-12":"1492 m. spalio 12 d. Kristupas Kolumbas pirmą kartą išsilaipino Amerikos žemyno salose.",
+"10-13":"1884 m. spalio 13 d. Grinvičo dienovidinis tapo pagrindiniu pasaulio ilgumos atskaitos tašku.",
+"10-14":"1947 m. spalio 14 d. Čakas Jageris pirmasis lėktuvu pralenkė garso greitį.",
+"10-15":"1878 m. spalio 15 d. Tomas Edisonas įkūrė elektros apšvietimo bendrovę.",
+"10-16":"1846 m. spalio 16 d. Bostone pirmą kartą viešai taikyta anestezija operacijos metu.",
+"10-17":"1933 m. spalio 17 d. Albertas Einšteinas atvyko į JAV.",
+"10-18":"1922 m. spalio 18 d. buvo įkurta BBC.",
+"10-19":"1943 m. spalio 19 d. buvo atrastas streptomicinas – vienas pirmųjų vaistų nuo tuberkuliozės.",
+"10-20":"1973 m. spalio 20 d. atidaryti Sidnėjaus operos rūmai.",
+"10-21":"1833 m. spalio 21 d. gimė Alfredas Nobelis, Nobelio premijų steigėjas.",
+"10-22":"1879 m. spalio 22 d. Edisono kaitinamoji lemputė degė apie 13 su puse valandos – tai laikoma sėkmingu išbandymu.",
+"10-23":"Šiandien chemikų Molio diena – data 10/23 primena Avogadro skaičių, 6,02·10²³.",
+"10-24":"1945 m. spalio 24 d. oficialiai pradėjo veikti Jungtinės Tautos.",
+"10-25":"1881 m. spalio 25 d. gimė dailininkas Pablas Pikasas.",
+"10-26":"1825 m. spalio 26 d. atidarytas Eri kanalas, sujungęs Niujorką su Didžiaisiais ežerais.",
+"10-27":"1904 m. spalio 27 d. atidarytas Niujorko metropolitenas.",
+"10-28":"1886 m. spalio 28 d. Niujorke atidengta Laisvės statula.",
+"10-29":"1969 m. spalio 29 d. išsiųstas pirmasis pranešimas kompiuterių tinklu ARPANET – interneto pirmtaku.",
+"10-30":"1938 m. spalio 30 d. radijo laida pagal H. Velso „Pasaulių karą“ išgąsdino daugybę klausytojų, nes skambėjo tarsi tikros naujienos.",
+"10-31":"Šiandien Helovinas. Šventė kilusi iš senovės keltų Samhaino.",
+"11-01":"Šiandien Visų šventųjų diena – Lietuvoje lankomi artimųjų kapai.",
+"11-02":"Šiandien Vėlinės – kapuose uždegamos žvakutės mirusiųjų atminimui.",
+"11-03":"1957 m. lapkričio 3 d. į kosmosą pakilo šuo Laika – pirmasis gyvūnas Žemės orbitoje.",
+"11-04":"1922 m. lapkričio 4 d. archeologas Hovardas Karteris aptiko Tutanchamono kapavietės laiptus.",
+"11-05":"Šiandien Pasaulinė tsunamių supratimo diena.",
+"11-06":"1814 m. lapkričio 6 d. gimė Adolfas Saksas – saksofono išradėjas.",
+"11-07":"1867 m. lapkričio 7 d. gimė Marie Curie, dviejų Nobelio premijų laureatė.",
+"11-08":"1895 m. lapkričio 8 d. Vilhelmas Rentgenas atrado rentgeno spindulius.",
+"11-09":"1989 metų lapkričio 9-ąją buvo atvertas Berlyno mūras.",
+"11-10":"1871 m. lapkričio 10 d. žurnalistas Henris Stenlis Afrikoje surado dingusį tyrinėtoją Deividą Livingstoną.",
+"11-11":"1918 m. lapkričio 11 d. paliaubomis baigėsi Pirmasis pasaulinis karas.",
+"11-12":"1840 m. lapkričio 12 d. gimė skulptorius Ogiustas Rodenas, „Mąstytojo“ autorius.",
+"11-13":"Šiandien Pasaulinė gerumo diena.",
+"11-14":"1889 m. lapkričio 14 d. žurnalistė Nelė Blai išvyko į kelionę aplink pasaulį ir ją baigė per 72 dienas.",
+"11-15":"1971 m. lapkričio 15 d. „Intel“ pristatė pirmąjį mikroprocesorių 4004.",
+"11-16":"Šiandien Tarptautinė tolerancijos diena. 1945 m. šią dieną įsteigta UNESCO.",
+"11-17":"1869 m. lapkričio 17 d. atidarytas Sueco kanalas, sujungęs Viduržemio ir Raudonąją jūras.",
+"11-18":"1928 m. lapkričio 18 d. premjerą turėjo filmukas „Garlaivis Vilis“ su Peliuku Mikiu.",
+"11-19":"1863 m. lapkričio 19 d. Abraomas Linkolnas pasakė garsiąją Getisburgo kalbą.",
+"11-20":"Šiandien Pasaulinė vaikų teisių diena.",
+"11-21":"1877 m. lapkričio 21 d. Tomas Edisonas paskelbė išradęs fonografą – aparatą garsui įrašyti ir atkurti.",
+"11-22":"1819 m. lapkričio 22 d. gimė rašytoja Džordžė Eliot.",
+"11-23":"Šiandien Lietuvos kariuomenės diena.",
+"11-24":"1859 m. lapkričio 24 d. išleista Čarlzo Darvino knyga „Rūšių atsiradimas“.",
+"11-25":"1952 m. lapkričio 25 d. Londone pirmą kartą suvaidintas Agathos Christie spektaklis „Pelėkautai“ – jis rodomas iki šiol.",
+"11-26":"1922 m. lapkričio 26 d. Hovardas Karteris pirmą kartą pažvelgė į Tutanchamono kapavietę ir pamatė „nuostabių daiktų“.",
+"11-27":"1701 m. lapkričio 27 d. gimė Andersas Celsijus, sukūręs Celsijaus temperatūros skalę.",
+"11-28":"1520 m. lapkričio 28 d. Magelano laivai pirmą kartą įplaukė į Ramųjį vandenyną.",
+"11-29":"1972 m. lapkričio 29 d. išleistas vienas pirmųjų vaizdo žaidimų „Pong“.",
+"11-30":"1835 m. lapkričio 30 d. gimė rašytojas Markas Tvenas.",
+"12-01":"1913 m. gruodžio 1 d. Henris Fordas pradėjo naudoti judantį konvejerį automobiliams gaminti.",
+"12-02":"1942 m. gruodžio 2 d. Čikagoje Enrico Fermis paleido pirmąjį branduolinį reaktorių.",
+"12-03":"1967 m. gruodžio 3 d. Keiptaune atlikta pirmoji žmogaus širdies persodinimo operacija.",
+"12-04":"1996 m. gruodžio 4 d. buvo paleistas Marso zondas „Mars Pathfinder“.",
+"12-05":"1901 m. gruodžio 5 d. gimė Voltas Disnėjus.",
+"12-06":"Šiandien Šv. Mikalojaus diena – vaikai laukia dovanų.",
+"12-07":"1972 m. gruodžio 7 d. „Apollo 17“ astronautai nufotografavo garsiąją „Mėlynojo marmuro“ Žemės nuotrauką.",
+"12-08":"1542 m. gruodžio 8 d. gimė Škotijos karalienė Marija Stiuart.",
+"12-09":"1968 m. gruodžio 9 d. Daglasas Engelbartas pirmą kartą viešai parodė kompiuterio pelę ir langus ekrane.",
+"12-10":"Šiandien Žmogaus teisių diena ir Nobelio premijų įteikimo diena – tą dieną 1896 m. mirė Alfredas Nobelis.",
+"12-11":"1843 m. gruodžio 11 d. gimė Robertas Kochas, bakteriologijos pradininkas.",
+"12-12":"1901 m. gruodžio 12 d. Guljelmas Markonis priėmė pirmąjį radijo signalą per Atlantą.",
+"12-13":"Šiandien Švedijoje švenčiama Liucijos diena – šviesos šventė.",
+"12-14":"1911 m. gruodžio 14 d. Rualas Amundsenas su draugais pirmieji pasiekė Pietų ašigalį.",
+"12-15":"1859 m. gruodžio 15 d. gimė Liudvikas Zamenhofas, esperanto kalbos kūrėjas.",
+"12-16":"Apie 1770 m. gruodžio 16 d. Bonoje buvo pakrikštytas Liudvigas van Bethovenas.",
+"12-17":"1903 metų gruodžio 17-ąją broliai Raitai atliko pirmąjį valdomą skrydį lėktuvu.",
+"12-18":"1892 m. gruodžio 18 d. Sankt Peterburge pirmą kartą suskambėjo Čaikovskio baletas „Spragtukas“.",
+"12-19":"1843 m. gruodžio 19 d. išleista Čarlzo Dikenso „Kalėdų giesmė“.",
+"12-20":"1951 m. gruodžio 20 d. JAV branduolinis reaktorius pirmą kartą pagamino elektros energiją.",
+"12-21":"Apie šią dieną Šiaurės pusrutulyje būna žiemos saulėgrįža – trumpiausia metų diena. 1968 m. šią dieną startavo „Apollo 8“, nuskraidinęs žmones aplink Mėnulį.",
+"12-22":"1882 m. gruodžio 22 d. Niujorke pirmą kartą papuošta elektrinėmis lemputėmis Kalėdų eglė.",
+"12-23":"1947 m. gruodžio 23 d. Belo laboratorijoje parodytas pirmasis tranzistorius – šiuolaikinės elektronikos pagrindas.",
+"12-24":"Šiandien Kūčios – lietuviai laikosi tradicijos ant stalo dėti dvylika patiekalų.",
+"12-25":"Šiandien Kalėdos.",
+"12-26":"Šiandien Šv. Stepono diena – antroji Kalėdų diena.",
+"12-27":"1571 m. gruodžio 27 d. gimė astronomas Johanesas Kepleris, planetų judėjimo dėsnių atradėjas.",
+"12-28":"1895 m. gruodžio 28 d. Paryžiuje broliai Liumjerai surengė pirmą mokamą kino seansą.",
+"12-29":"1959 m. gruodžio 29 d. Ričardas Feinmanas skaitė paskaitą, kurioje numatė nanotechnologijų erą.",
+"12-30":"1865 m. gruodžio 30 d. gimė rašytojas Radjardas Kiplingas, „Džiunglių knygos“ autorius.",
+"12-31":"Šiandien paskutinė metų diena."};
 var SEAFACTS={
 winter:['Sniegas atrodo baltas, nors kiekvienas ledo kristalas yra skaidrus.','Kiekviena snaigė turi šešis spindulius, o jų raštai beveik niekada nesikartoja.','Ežerų ledas šaltą žiemą gali tapti kelių dešimčių centimetrų storio.'],
 spring:['Pirmieji pavasario žiedai dažnai būna snieguolės ir žibuoklės.','Gandrai pavasarį sugrįžta iš šiltų kraštų, nuskridę kelis tūkstančius kilometrų.','Pavasarį sula teka beržuose.'],
@@ -673,8 +1010,7 @@ function moonInfo(d){
 }
 function dayFacts(){
   var now=new Date(),out=[],mmdd=('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
-  (DATEFACTS[mmdd]||[]).forEach(function(f){out.push(f,f)});
-  SEAFACTS[seasonOf(now)].forEach(function(f){out.push(f)});
+  var df=DATEFACTS[mmdd];if(df){for(var q=0;q<7;q++)out.push(df)}
   var l=myLoc(),t=sunTimes(now,l.lat,l.lon),y=sunTimes(new Date(now.getTime()-864e5),l.lat,l.lon);
   if(!t.polar&&!y.polar){
     var len=Math.round((t.set-t.rise)/6e4),h=Math.floor(len/60),m=len%60,dm=Math.round(((t.set-t.rise)-(y.set-y.rise))/6e4);
@@ -687,7 +1023,7 @@ function dayFacts(){
   var ev=[['pavasario lygiadienio',2,20],['vasaros saulėgrįžos',5,21],['rudens lygiadienio',8,23],['žiemos saulėgrįžos',11,21]],best=null;
   ev.forEach(function(e){var d=new Date(now.getFullYear(),e[1],e[2]);if(d<now)d=new Date(now.getFullYear()+1,e[1],e[2]);var n=Math.ceil((d-now)/864e5);if(!best||n<best.n)best={n:n,t:e[0]}});
   if(best)out.push('Iki '+best.t+' liko '+best.n+' '+ltPl(best.n,'diena','dienos','dienų')+'.');
-  GENFACTS.forEach(function(f){out.push(f)});
+  if(!out.length)GENFACTS.forEach(function(f){out.push(f)});
   return out;
 }
 var lastFact='',botN=0,botIdle=null,botBubbleT=null;
@@ -831,6 +1167,7 @@ function budgetDispCard(){
   c.onclick=function(){setView('budget')};
   var big=document.createElement('div');big.className='dbl '+(d.left<0?'bover':'bok');big.textContent=fmtM(d.left);c.appendChild(big);
   var mt=document.createElement('div');mt.className='meta';mt.textContent='liko iki mėnesio pabaigos';c.appendChild(mt);
+  var ix=document.createElement('div');ix.className='meta dbix';ix.textContent='Pajamos '+fmtM(d.income)+' · Planuojamos išlaidos '+fmtM(d.planned);c.appendChild(ix);
   var cats=d.sections.map(function(s){return {n:s.n,left:s.p-s.a,r:s.p>0?s.a/s.p:(s.a>0?9:0),p:s.p,a:s.a}});
   var all=cats;
   var sc=document.createElement('div');sc.className='dbscroll';c.appendChild(sc);
@@ -878,8 +1215,11 @@ function renderBudget(){
     var big=document.createElement('div');big.className='bbig '+(d.left<0?'bover':'bok');big.textContent=fmtM(d.left);sm.appendChild(big);
     var spent=d.actual,base=d.income-d.savings,pb=document.createElement('div');pb.className='bbar';
     var pi=document.createElement('i');pi.className=bcls(base,spent);pi.style.width=Math.min(100,base>0?spent/base*100:0)+'%';pb.appendChild(pi);sm.appendChild(pb);
-    var l2=document.createElement('div');l2.className='meta';
-    l2.textContent='Pajamos '+fmtM(d.income)+(d.savings?' · Taupymas '+fmtM(d.savings):'')+' · Išleista '+fmtM(d.actual)+' · Suplanuota '+fmtM(d.planned);sm.appendChild(l2);
+    var gs=document.createElement('div');gs.className='bstats';
+    [['Pajamos',d.income,'bok'],['Planuojamos išlaidos',d.planned,''],['Jau išleista',d.actual,d.actual>d.planned?'bover':''],['Taupymas',d.savings,'']].forEach(function(p){
+      if(p[0]==='Taupymas'&&!p[1])return;
+      var t=document.createElement('div');t.className='bst';var n=document.createElement('div');n.className='meta';n.textContent=p[0];var v2=document.createElement('div');v2.className='bsv '+p[2];v2.textContent=fmtM(p[1]);t.appendChild(n);t.appendChild(v2);gs.appendChild(t)});
+    sm.appendChild(gs);
     if(d.at){var l3=document.createElement('div');l3.className='meta';l3.textContent='Atnaujinta '+hhmm(d.at)+(d.src==='excel'?' · šaltinis: Excel failas':d.src==='google'?' · šaltinis: Google lapas'+(d.why?' (Excel nepavyko)':''):'');sm.appendChild(l3)}
     if(d.why){var l4=document.createElement('div');l4.className='meta bover';l4.style.marginTop='4px';l4.textContent='Excel nepavyko: '+d.why;sm.appendChild(l4)}
     v.appendChild(sm);
@@ -2225,7 +2565,7 @@ render();check();setView('home');
 setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)check()});
 $('updapp').onclick=function(){
-  var st=$('updstat');st.textContent='Atnaujinama…';
+  $('updapp').classList.add('spin');
   var base=location.pathname.replace(/[^\/]*$/,'');
   var p=[];
   try{if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.filter(function(r){return new URL(r.scope).pathname===base}).map(function(r){return r.unregister()}))}))}catch(e){}
