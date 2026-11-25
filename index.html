@@ -28,12 +28,13 @@ main{max-width:560px;margin:0 auto;padding:18px 16px 150px}
 header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 header svg{width:64px;height:64px;flex:none}
 h1{font-size:2rem;margin:0;line-height:1}
-#updapp{margin-left:auto;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:40px;width:40px;padding:0;opacity:.45;border-radius:50%;display:flex;align-items:center;justify-content:center}
+#updapp{margin-left:auto;margin-right:-6px;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:36px;width:36px;padding:0;opacity:.45;border-radius:50%;display:flex;align-items:center;justify-content:center}
 #updapp svg{width:19px;height:19px}
-#updapp.spin svg{animation:uspin .8s linear infinite}
+#updapp.spin{opacity:1;color:#5FD4B0;background:rgba(95,212,176,.18)}
+#updapp.spin svg{animation:uspin .6s linear infinite}
 @keyframes uspin{to{transform:rotate(360deg)}}
 body.disp #updapp{display:none}
-#gear{margin-left:0;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:40px;width:40px;padding:0;font-size:1.4rem;opacity:.45;border-radius:50%;display:flex;align-items:center;justify-content:center}
+#gear{margin-left:0;min-width:36px;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:36px;width:36px;padding:0;font-size:1.4rem;opacity:.45;border-radius:50%;display:flex;align-items:center;justify-content:center}
 #gear svg{width:20px;height:20px}
 #gear.on{opacity:1;color:var(--fg,inherit)}
 #gear:active{opacity:1}
@@ -464,7 +465,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 66</div></div>
+      <div class="meta">Versija 67</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1167,7 +1168,6 @@ function budgetDispCard(){
   c.onclick=function(){setView('budget')};
   var big=document.createElement('div');big.className='dbl '+(d.left<0?'bover':'bok');big.textContent=fmtM(d.left);c.appendChild(big);
   var mt=document.createElement('div');mt.className='meta';mt.textContent='liko iki mėnesio pabaigos';c.appendChild(mt);
-  var ix=document.createElement('div');ix.className='meta dbix';ix.textContent='Pajamos '+fmtM(d.income)+' · Planuojamos išlaidos '+fmtM(d.planned);c.appendChild(ix);
   var cats=d.sections.map(function(s){return {n:s.n,left:s.p-s.a,r:s.p>0?s.a/s.p:(s.a>0?9:0),p:s.p,a:s.a}});
   var all=cats;
   var sc=document.createElement('div');sc.className='dbscroll';c.appendChild(sc);
@@ -2565,12 +2565,12 @@ render();check();setView('home');
 setInterval(function(){check();render();if($('v-home').classList.contains('on'))renderHome()},5000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)check()});
 $('updapp').onclick=function(){
-  $('updapp').classList.add('spin');
+  $('updapp').classList.add('spin');try{toast('Atnaujinama…')}catch(e){}
   var base=location.pathname.replace(/[^\/]*$/,'');
   var p=[];
   try{if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.filter(function(r){return new URL(r.scope).pathname===base}).map(function(r){return r.unregister()}))}))}catch(e){}
   try{if(window.caches)p.push(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x.indexOf('bottie')===0}).map(function(x){return caches.delete(x)}))}))}catch(e){}
-  Promise.all(p).catch(function(){}).then(function(){location.replace(base+'?r='+Date.now())});
+  Promise.all(p.concat([new Promise(function(r){setTimeout(r,1200)})])).catch(function(){}).then(function(){location.replace(base+'?r='+Date.now())});
 };
 /* Atsarginė kopija */
 var BKEYS=[['Sinchronizacija','Sinchronizacija (skriptas ir šeimos kodas)',SK],['Biudžetas','Biudžeto skripto adresas',BU],['Biudžetas','Biudžeto raktas',BK],['Biudžetas','Biudžeto PIN (kodas, ne pats PIN)',BP],['Biudžetas','Rodyti biudžetą ekrane',BD],['Elektra','Tibber raktas',TT],['Elektra','Papildomas mokestis',EXK],['Push','OneSignal App ID','bottie-push-app'],['Kita','Vardas',NK],['Kita','Išvaizda ir nustatymai','bottie-prefs'],['Kita','Vieta','bottie-loc']];
