@@ -451,7 +451,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 56</div></div>
+      <div class="meta">Versija 58</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1246,12 +1246,19 @@ function syncNow(){
   .then(function(j){
     if(j.error)throw new Error(j.error);
     var loc={};notes.forEach(function(n){loc[n.id]=n});
-    var out=j.items.map(function(s){var l=loc[s.id];return(l&&(l.updated||0)>(s.updated||0))?l:s});
+    var first=bget('bottie-synced')!=='1';
+    var out=j.items.map(function(s){var l=loc[s.id];
+      if(first&&l&&s.id==='config'){ /* första synk på denna enhet: slå ihop profiler efter namn så inget försvinner */
+        var nw=(l.updated||0)>(s.updated||0)?l:s,od=nw===l?s:l,seenN={},ch=[];
+        (nw.children||[]).concat(od.children||[]).forEach(function(c){if(c&&c.name&&!seenN[c.name]){seenN[c.name]=1;ch.push(c)}});
+        var m=JSON.parse(JSON.stringify(nw));m.children=ch;m.call=Object.assign({},od.call||{},nw.call||{});m.updated=Math.max(l.updated||0,s.updated||0)+1;return m;
+      }
+      return(l&&(l.updated||0)>(s.updated||0))?l:s});
     var seen={};out.forEach(function(s){seen[s.id]=1});
     notes.forEach(function(n){if(!seen[n.id])out.push(n)});
     notes=out;persist();render();renderCal();renderHome();check();renderChores();
     if($('v-set').classList.contains('on')&&!/INPUT/.test(document.activeElement.tagName))renderSet();
-    sstat('Sinchronizuota '+hhmm(Date.now())+'.');
+    bset('bottie-synced','1');sstat('Sinchronizuota '+hhmm(Date.now())+'.');
   }).catch(function(e){
     sstat(e&&e.message==='unauthorized'?'Neteisingas šeimos kodas.':'Nepavyko sinchronizuoti. Patikrink adresą ir ryšį.');
   }).then(function(){syncing=false;if(DIRTY)syncSoon()});
@@ -2212,14 +2219,15 @@ function pushInit(){
   window.OneSignalDeferred=window.OneSignalDeferred||[];
   window.OneSignalDeferred.push(async function(O){
     try{
-      await O.init({appId:c,serviceWorkerPath:pushBase()+'sw.js',serviceWorkerParam:{scope:pushBase()},allowLocalhostAsSecureOrigin:true});
+      await O.init({appId:c,serviceWorkerPath:pushBase()+'OneSignalSDKWorker.js',serviceWorkerParam:{scope:pushBase()+'push/'},allowLocalhostAsSecureOrigin:true});
       var upd=function(){try{bset('bottie-push-on',O.User.PushSubscription.optedIn?'1':'0')}catch(e){}permInfo()};
       try{O.User.PushSubscription.addEventListener('change',upd)}catch(e){}
       pushReady=true;
       try{if(('Notification' in window)&&Notification.permission==='granted'&&!O.User.PushSubscription.optedIn)await O.User.PushSubscription.optIn()}catch(e){}
       upd();
-    }catch(e){pushStat('OneSignal klaida: '+(e&&e.message||e))}
+    }catch(e){bset('bottie-push-err',String(e&&e.message||e));pushStat('OneSignal klaida: '+(e&&e.message||e))}
   });
+  setTimeout(function(){if(!pushReady&&!bget('bottie-push-err'))bset('bottie-push-err','SDK nepasileido per 15 s (užblokuotas skriptas?)')},15000);
   var sc=document.createElement('script');sc.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';sc.defer=true;document.head.appendChild(sc);
 }
 function pushAsk(cb){
@@ -2229,7 +2237,7 @@ function pushAsk(cb){
 }
 function pushDiag(){
   var L=[];L.push('Leidimas: '+(('Notification' in window)?Notification.permission:'nėra'));
-  L.push('App ID: '+(bget(PA)?'yra':'nėra')+' · SDK paleista: '+(pushReady?'taip':'ne'));
+  L.push('App ID: '+(bget(PA)?'yra':'nėra')+' · SDK paleista: '+(pushReady?'taip':'ne')+' · skriptas: '+(typeof window.OneSignal!=='undefined'?'įkeltas':'neįkeltas'));if(bget('bottie-push-err'))L.push('Klaida: '+bget('bottie-push-err'));
   var fin=function(){pushStat(L.join('\n'))};
   var sw=function(){
     if(!navigator.serviceWorker||!navigator.serviceWorker.getRegistrations){fin();return}
@@ -2297,7 +2305,7 @@ function pushRun(force){
   pushInit();setTimeout(function(){pushRun(false)},6000);
   document.addEventListener('visibilitychange',function(){if(!document.hidden)pushSoon(false)});
 })();
-if('serviceWorker' in navigator){window.addEventListener('load',function(){if(!bget(PA))navigator.serviceWorker.register('sw.js').catch(function(){})})}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 </script>
 </body>
 </html>
