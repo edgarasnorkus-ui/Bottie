@@ -354,6 +354,12 @@ body.disp main{padding:10px 22px 48px}
 .dbscroll{max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-top:6px;padding-right:6px}
 .pinbox{max-width:360px;margin:24px auto;text-align:center}
 .pinbox input{text-align:center;font-size:1.6rem;letter-spacing:.4em}
+
+.sch-day{margin:14px 0 4px;font-weight:800}
+.sch-it{display:block;text-decoration:none;color:inherit;border-left:4px solid var(--mint);padding:6px 10px;margin:6px 0;background:rgba(255,255,255,.05);border-radius:10px}
+.sch-it b{display:block}
+.sch-it.a{border-left-color:var(--sun)}
+.sch-badge{display:inline-block;font-size:.8rem;margin-left:8px;white-space:nowrap;opacity:.9;cursor:pointer}
 </style>
 </head>
 <body>
@@ -380,10 +386,11 @@ body.disp main{padding:10px 22px 48px}
 
   <div id="fabs"><button class="fab" id="fabAdd" aria-label="Naujas užrašas">+</button></div>
 
-  <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="tasks">Užduotys</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="budget">Biudžetas</button><button data-v="disp">Ekranas</button></nav>
+  <nav id="tabs" aria-label="Programos"><button data-v="home">Apžvalga</button><button data-v="cal">Kalendorius</button><button data-v="tasks">Užduotys</button><button data-v="school">Mokykla</button><button data-v="notes">Užrašai</button><button data-v="weather">Orai</button><button data-v="price">Elektros kaina</button><button data-v="budget">Biudžetas</button><button data-v="disp">Ekranas</button></nav>
   <section class="view" id="v-home"></section>
   <section class="view" id="v-weather"></section>
   <section class="view" id="v-budget"></section>
+  <section class="view" id="v-school"></section>
   <section class="view" id="v-price">
     <div id="pbody"></div>
   </section>
@@ -465,7 +472,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 67</div></div>
+      <div class="meta">Versija 68</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1326,9 +1333,66 @@ function renderWeather(){
   var n=document.createElement('p');n.className='meta';n.textContent=WX.live?'Tiesioginė prognozė iš Open-Meteo, gauta '+WX.at+'.':'Rodoma išsaugota prognozė, gauta '+WX.at+'. Šiuo metu nėra ryšio.';w.appendChild(n);
 }
 function toggleSet(){setView($('v-set').classList.contains('on')?'home':'set')}
+
+/* Mokykla (Canvas) */
+function schoolCfg(){var u=bget(BU),k=bget(BK);return(u&&k&&u.indexOf('https://')===0&&!bIsPub(u))?{url:u,key:k}:null}
+function schoolRaw(){try{return JSON.parse(localStorage.getItem('bottie-school')||'null')}catch(e){return null}}
+function schoolFor(dk,kid){
+  var r=schoolRaw(),o=[];if(!r||!r.children)return o;
+  Object.keys(r.children).forEach(function(n){
+    if(kid&&n.toLowerCase()!==String(kid).toLowerCase())return;
+    r.children[n].forEach(function(x){if(x.d===dk)o.push(x)})});
+  return o;
+}
+var schoolLoading=false,schoolErr='';
+function loadSchool(fresh){
+  var c=schoolCfg();if(!c||schoolLoading)return;
+  var r=schoolRaw();if(!fresh&&r&&r.at&&Date.now()-r.at<6e5)return;
+  schoolLoading=true;schoolErr='';if($('v-school').classList.contains('on'))renderSchool();
+  fetch(c.url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({op:'school',key:c.key,fresh:!!fresh})})
+    .then(function(x){return x.json()}).then(function(j){
+      schoolLoading=false;
+      if(j.error){schoolErr=j.error==='unauthorized'?'Neteisingas raktas':j.error}
+      else{j.at=Date.now();try{localStorage.setItem('bottie-school',JSON.stringify(j))}catch(e){}}
+      if($('v-school').classList.contains('on'))renderSchool();
+      if($('v-cal').classList.contains('on'))renderCal();
+    }).catch(function(){schoolLoading=false;schoolErr='Nepavyko gauti duomenų';if($('v-school').classList.contains('on'))renderSchool()});
+}
+function renderSchool(){
+  var v=$('v-school');v.innerHTML='';
+  var top=document.createElement('div');top.className='row';top.style.marginTop='0';
+  var tt=document.createElement('div');tt.className='wtitle';tt.style.margin='0';tt.textContent='Mokykla · Canvas';top.appendChild(tt);
+  var rf=document.createElement('button');rf.type='button';rf.style.marginLeft='auto';rf.textContent=schoolLoading?'Kraunama…':'↻ Atnaujinti';rf.disabled=schoolLoading;rf.onclick=function(){loadSchool(true)};top.appendChild(rf);
+  v.appendChild(top);
+  var msg=function(t){var c=document.createElement('div');c.className='card';c.style.marginTop='12px';c.textContent=t;v.appendChild(c)};
+  if(!schoolCfg()){msg('Pirma įvesk biudžeto/skripto adresą ir raktą nustatymuose (⚙).');return}
+  if(schoolErr)msg('⚠ '+schoolErr);
+  var r=schoolRaw();if(!r||!r.children){if(!schoolLoading&&!schoolErr)msg('Duomenų dar nėra.');return}
+  var today=dkey(new Date()),names=Object.keys(r.children);
+  Object.keys(r.errors||{}).forEach(function(n){msg('⚠ '+n+': '+r.errors[n])});
+  names.forEach(function(n){
+    var items=r.children[n].filter(function(x){return x.d>=today});
+    var h=document.createElement('h3');h.style.margin='16px 0 0';h.textContent=n;
+    var kc=(typeof kidColor==='function')?kidColor(n):'';if(kc)h.style.color=kc;
+    v.appendChild(h);
+    if(!items.length){var e=document.createElement('div');e.className='meta';e.textContent='Nėra artėjančių įrašų.';v.appendChild(e);return}
+    var last='';
+    items.slice(0,40).forEach(function(x){
+      if(x.d!==last){last=x.d;var dl=document.createElement('div');dl.className='sch-day';
+        var dd=new Date(x.d+'T12:00:00'),wn=dd.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});
+        dl.textContent=(x.d===today?'Šiandien · ':'')+wn.charAt(0).toUpperCase()+wn.slice(1);v.appendChild(dl)}
+      var a=document.createElement(x.url?'a':'div');a.className='sch-it '+x.type;
+      if(x.url){a.href=x.url;a.target='_blank';a.rel='noopener'}
+      var b=document.createElement('b');b.textContent=(x.type==='a'?'📝 ':'🎓 ')+x.title;a.appendChild(b);
+      var m=document.createElement('div');m.className='meta';m.textContent=[x.t,x.course,x.type==='a'?'užduotis':''].filter(Boolean).join(' · ');a.appendChild(m);
+      if(x.desc){var ds=document.createElement('div');ds.className='meta';ds.textContent=x.desc.length>120?x.desc.slice(0,120)+'…':x.desc;a.appendChild(ds)}
+      v.appendChild(a)});
+  });
+  if(r.at){var f=document.createElement('div');f.className='meta';f.style.marginTop='12px';f.textContent='Atnaujinta '+hhmm(r.at);v.appendChild(f)}
+}
 function setView(v){
   var gg=$('gear');if(gg)gg.classList.toggle('on',v==='set');
-  ['home','cal','tasks','notes','weather','price','budget','set','disp'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
+  ['home','cal','tasks','notes','weather','price','budget','school','set','disp'].forEach(function(k){$('v-'+k).classList.toggle('on',k===v)});
   Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
   document.body.classList.toggle('notes',v==='notes');
   if(v!=='tasks'&&v!=='disp')cameFromDisp=false;
@@ -1338,9 +1402,10 @@ function setView(v){
   if(v!=='notes')closeSheet();
   if(v==='home')renderHome();
   if(v==='price'){renderPrice();if(getTok())loadPrice()}
-  if(v==='cal')renderCal();
+  if(v==='cal'){renderCal();loadSchool(false)}
   if(v==='budget'){renderBudget();loadBudget(false)}
   if(v==='tasks')renderChores();
+  if(v==='school'){renderSchool();loadSchool(false)}
   if(v==='set')renderSet();
   if(v==='disp'){dFresh=true;renderDisp();dFresh=false}
 }
@@ -1929,6 +1994,7 @@ function renderMonth(){
     var nmiss=list.filter(function(e){return missed(e,dk)}).length;
     c.className='mcell'+(d.getMonth()!==mon?' out':'')+(nmiss?' miss':'')+(dk===today?' today':'')+(dk===sd?' sel':'');
     var n=document.createElement('div');n.className='mnum';n.textContent=d.getDate();c.appendChild(n);
+    if(schoolFor(dk,calKid).length){var sb2=document.createElement('span');sb2.textContent=' 🎓';sb2.style.fontSize='.7rem';n.appendChild(sb2)}
     var dots=document.createElement('div');dots.className='mdots';
     list.slice(0,4).forEach(function(e){
       var o=document.createElement('span');o.className='mdot';o.style.background=missed(e,dk)?'#E5484D':kidColor(e.child);
@@ -2001,6 +2067,7 @@ function renderCal(){
     var wn=d.toLocaleDateString('lt-LT',{weekday:'long'});
     var nn=document.createElement('div');nn.className='dname';nn.textContent=wn.charAt(0).toUpperCase()+wn.slice(1);
     hd.appendChild(nm);hd.appendChild(nn);
+    var sc=schoolFor(dk,calKid);if(sc.length){var sb=document.createElement('span');sb.className='sch-badge';sb.textContent='🎓 '+sc.length;sb.title=sc.map(function(x){return x.title}).join('\n');sb.onclick=function(){setView('school')};hd.appendChild(sb)}
     var evs=document.createElement('div');evs.className='evs';
     if(!list.length){var em=document.createElement('div');em.className='meta';em.textContent='Laisva';evs.appendChild(em)}
     else list.forEach(function(e){evs.appendChild(evCard(e,dk))});
@@ -2218,6 +2285,7 @@ function renderDisp(){
     var wn=wd.toLocaleDateString('lt-LT',{weekday:'long'});
     var nn=document.createElement('div');nn.className='dname';nn.textContent=wn.charAt(0).toUpperCase()+wn.slice(1);
     hd.appendChild(nm);hd.appendChild(nn);
+    var sc=schoolFor(dk,calKid);if(sc.length){var sb=document.createElement('span');sb.className='sch-badge';sb.textContent='🎓 '+sc.length;sb.title=sc.map(function(x){return x.title}).join('\n');sb.onclick=function(){setView('school')};hd.appendChild(sb)}
     var evs=document.createElement('div');evs.className='evs';
     if(!wl.length){var em=document.createElement('div');em.className='meta';em.textContent='Laisva';evs.appendChild(em)}
     else wl.forEach(function(e){evs.appendChild(dEv(e,wdk,true))});
