@@ -508,7 +508,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 83</div></div>
+      <div class="meta">Versija 84</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1322,15 +1322,17 @@ function recStart(){
     function fin(cancel){
       if(done)return;done=true;REC=null;cleanup();voiceOn=false;$('talk').classList.remove('listen');
       if(cancel||!heard){botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
-      botSay('Galvoju…',false);
+      botSay('Galvoju…',false);clearTimeout(botBubbleT);
+      var tt0=Date.now(),tick=setInterval(function(){$('bubble').textContent='Galvoju… '+Math.round((Date.now()-tt0)/1000)+' s'},1000),ac=new AbortController(),tmo=setTimeout(function(){ac.abort()},45000);
+      function stopT(){clearInterval(tick);clearTimeout(tmo)}
       var c=schoolCfg(),sr=ctx.sampleRate||48000,b64;
       try{b64=wavB64(chunks,sr)}catch(e){voiceBox('Nepavyko apdoroti garso. Rašyk komandą.');return}
-      fetch(c.url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({op:'stt',key:c.key,mime:'audio/wav',audio:b64})})
-        .then(function(r){return r.json()}).then(function(j){
+      fetch(c.url,{method:'POST',headers:{'Content-Type':'text/plain'},signal:ac.signal,body:JSON.stringify({op:'stt',key:c.key,mime:'audio/wav',audio:b64})})
+        .then(function(r){return r.text()}).then(function(tx){stopT();var j;try{j=JSON.parse(tx)}catch(e){voiceBox('Netikėtas atsakymas iš serverio: '+tx.slice(0,120));return}
           if(j.error){voiceBox('Balso klaida: '+(j.error==='unauthorized'?'neteisingas raktas':j.error)+'. Rašyk komandą.');return}
           var t=(j.text||'').trim();if(!t){botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
           voiceRun(t);
-        }).catch(function(){voiceBox('Nepavyko prisijungti. Rašyk komandą.')});
+        }).catch(function(e){stopT();voiceBox(e&&e.name==='AbortError'?'Per ilgai laukta (45 s). Rašyk komandą.':'Nepavyko prisijungti. Rašyk komandą.')});
     }
     REC={stop:function(){fin(false)}};voiceOn=true;$('talk').classList.add('listen');botSay('Klausau…',false);
   }).catch(function(e){
