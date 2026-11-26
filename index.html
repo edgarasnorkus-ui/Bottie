@@ -472,7 +472,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 70</div></div>
+      <div class="meta">Versija 71</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1041,23 +1041,68 @@ function loadVoices(){try{var vs=window.speechSynthesis.getVoices()||[];var l=vs
 loadVoices();
 try{window.speechSynthesis.addEventListener('voiceschanged',loadVoices)}catch(e){try{window.speechSynthesis.onvoiceschanged=loadVoices}catch(e2){}}
 function ltPl(n,a,b,c){var m=n%10,h=n%100;return (m===1&&h!==11)?a:(m===0||(h>=11&&h<=19))?c:b}
-function speakable(t){
+var LTN={u:['nulis','vienas','du','trys','keturi','penki','šeši','septyni','aštuoni','devyni','dešimt','vienuolika','dvylika','trylika','keturiolika','penkiolika','šešiolika','septyniolika','aštuoniolika','devyniolika'],
+ t:['','','dvidešimt','trisdešimt','keturiasdešimt','penkiasdešimt','šešiasdešimt','septyniasdešimt','aštuoniasdešimt','devyniasdešimt'],
+ oi:['','pirmais','antrais','trečiais','ketvirtais','penktais','šeštais','septintais','aštuntais','devintais','dešimtais','vienuoliktais','dvyliktais','tryliktais','keturioliktais','penkioliktais','šešioliktais','septynioliktais','aštuonioliktais','devynioliktais'],
+ ti:['','','dvidešimtais','trisdešimtais','keturiasdešimtais','penkiasdešimtais','šešiasdešimtais','septyniasdešimtais','aštuoniasdešimtais','devyniasdešimtais'],
+ oa:['','pirmą','antrą','trečią','ketvirtą','penktą','šeštą','septintą','aštuntą','devintą','dešimtą','vienuoliktą','dvyliktą','tryliktą','keturioliktą','penkioliktą','šešioliktą','septynioliktą','aštuonioliktą','devynioliktą'],
+ ta:['','','dvidešimtą','trisdešimtą']};
+function ltPlw(n,a,b,c){var m=n%10,h=n%100;return (m===1&&h!==11)?a:(m===0||(h>=11&&h<=19))?c:b}
+var LTF=['','viena','dvi','trys','keturios','penkios','šešios','septynios','aštuonios','devynios'];
+function ltCard(n,fem){
+  n=Math.floor(n);if(n<0)return 'minus '+ltCard(-n,fem);
+  if(n<20){if(fem&&n>=1&&n<=9)return LTF[n];return LTN.u[n]}
+  if(n<100){var r=n%10;return LTN.t[Math.floor(n/10)]+(r?' '+ltCard(r,fem):'')}
+  if(n<1000){var h=Math.floor(n/100),r2=n%100;return (h===1?'šimtas':LTN.u[h]+' šimtai')+(r2?' '+ltCard(r2,fem):'')}
+  if(n<1e6){var k=Math.floor(n/1000),r3=n%1000;return (k===1?'':ltCard(k,false)+' ')+ltPlw(k,'tūkstantis','tūkstančiai','tūkstančių')+(r3?' '+ltCard(r3,fem):'')}
+  if(n<1e9){var m=Math.floor(n/1e6),r4=n%1e6;return ltCard(m,false)+' '+ltPlw(m,'milijonas','milijonai','milijonų')+(r4?' '+ltCard(r4,fem):'')}
+  return String(n).split('').join(' ');
+}
+function ltOrdIns(n){ // 1..99 instrumental pl. (devintais)
+  if(n<20)return LTN.oi[n];var o=n%10;return o?LTN.t[Math.floor(n/10)]+' '+LTN.oi[o]:LTN.ti[Math.floor(n/10)];
+}
+function ltYear(y){
+  if(y===2000)return 'dvitūkstantaisiais metais';if(y===1000)return 'tūkstantaisiais metais';
+  var l=y%100;if(!l)return ltCard(y)+' metais';
+  var pre=y-l;return (pre?ltCard(pre)+' ':'')+ltOrdIns(l)+' metais';
+}
+function ltYearGen(y){var w=ltYear(y).replace(/ metais$/,'').split(' ');var z=w.pop();z=z.replace(/iais$/,'ių').replace(/ais$/,'ų');if(/aisiais$/.test(w.join(' ')+z)){}return w.concat([z]).join(' ')+' metų'}
+function ltDay(n){ if(n<20)return LTN.oa[n]+' dieną';var o=n%10;return o?LTN.t[Math.floor(n/10)]+' '+LTN.oa[o]+' dieną':LTN.ta[Math.floor(n/10)]+' dieną'}
+var LTDICT=[[/Bottie/g,'Boti'],[/Canvas/g,'Kanvas'],[/UNESCO/g,'Junesko'],[/NASA/g,'Nasa'],[/NATO/g,'Nato'],[/BBC/g,'Bi bi si'],[/DNR/g,'De en er'],[/WWW/g,'dabliu dabliu dabliu'],[/iPhone/g,'aifonas'],[/Apollo/g,'Apolo'],[/Concorde/g,'Konkord'],[/Google/g,'Gugl'],[/Facebook/g,'Feisbuk'],[/Macintosh/g,'Makintoš'],[/IBM PC/g,'Ai bi em pi si'],[/Coca-Cola/g,'Koka kola'],[/The Beatles|Beatles/g,'Biatls'],[/Hablo/g,'Hablo'],[/Voyager/g,'Vojadžer'],[/Titanikas/g,'Titanikas'],[/kWh/g,'kilovatvalandė'],[/SEK/g,'kronų'],[/öre/g,'erė'],[/pr\. Kr\./g,'prieš Kristų'],[/Dž\. R\. R\./g,'Dž R R'],[/ir kt\./g,'ir kiti'],[/pvz\./g,'pavyzdžiui'],[/\bJAV\b/g,'Jungtinių Valstijų'],[/\bSSRS\b/g,'Es Es Es Er'],[/\bES\b/g,'E Es'],[/\bCPU\b/g,'Si pi ju'],[/\bUSB\b/g,'Ju es bi'],[/\bWi-?Fi\b/g,'Vai fai']];
+function ltSpeak(t){
   t=t.replace(/[\u{1F000}-\u{1FFFF}☀-➿️]/gu,'');
-  t=t.replace(/ – /g,', ').replace(/π/g,'pi').replace(/\s+/g,' ').trim();
+  LTDICT.forEach(function(p){t=t.replace(p[0],p[1])});
+  t=t.replace(/(\d)\s(\d{3})(?!\d)/g,'$1$2').replace(/(\d)\s(\d{3})(?!\d)/g,'$1$2');
+  t=t.replace(/(\d{3,4})\s+metų/g,function(m,y){return ltYearGen(+y)});
+  t=t.replace(/(\d{3,4})\s+metais/g,function(m,y){return ltYear(+y)});
+  t=t.replace(/(\d+)\s+(dien|savait|minut|valand|sekund)/g,function(m,n,w){return ltCard(+n,true)+' '+w});
+  t=t.replace(/(\d{1,4})\s*m\.(?!\s*[a-zą-žA-Z]{0,1}\.)/g,function(m,y){return ltYear(+y)});
+  t=t.replace(/(\d{1,2})\s*d\./g,function(m,d){return ltDay(+d)});
+  t=t.replace(/(\d{1,2}):(\d{2})/g,function(m,h,mi){h=+h;mi=+mi;var s=ltCard(h,true)+' '+ltPlw(h,'valanda','valandos','valandų');if(mi)s+=' '+ltCard(mi,true)+' '+ltPlw(mi,'minutė','minutės','minučių');return s});
+  t=t.replace(/[−–-](\d)/g,function(m,d,off,str){return (off>0&&/\w/.test(str[off-1]))?m:'minus '+d});
+  t=t.replace(/(\d+)[.,](\d+)/g,function(m,a,b){return ltCard(+a)+' kablelis '+(b.length<=2?ltCard(+b):b.split('').map(function(x){return LTN.u[+x]}).join(' '))});
+  t=t.replace(/(\d+)\s*%/g,function(m,n){return ltCard(+n)+' '+ltPlw(+n,'procentas','procentai','procentų')});
+  t=t.replace(/(\d+)\s*°/g,function(m,n){return ltCard(+n)+' '+ltPlw(+n,'laipsnis','laipsniai','laipsnių')});
+  t=t.replace(/\d+/g,function(n){return n.length>9?n.split('').join(' '):ltCard(+n)});
+  t=t.replace(/π/g,'pi').replace(/·/g,', ').replace(/ – /g,', ').replace(/\+/g,' plius ').replace(/\//g,' per ').replace(/\s+/g,' ').trim();
   return t;
 }
+function speakable(t){return ltSpeak(t)}
 function botSay(text,speak,cheer){
   var b=$('bubble');b.textContent=text;b.classList.add('show');clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show')},9000);
   if(!speak)return;
   try{
     var ss=window.speechSynthesis;if(!ss)return;
     loadVoices();
-    var sp=speakable(text),parts=(sp.match(/[^.!?]+[.!?]*/g)||[sp]).map(function(x){return x.trim()}).filter(function(x){return x});
+    var sp=speakable(text),parts=[];
+    (sp.match(/[^.!?]+[.!?]*/g)||[sp]).forEach(function(x){x=x.trim();if(!x)return;
+      if(x.length>70){var cs=x.split(/(?<=[,;:])\s+/),cur='';cs.forEach(function(c){if((cur+' '+c).length>70&&cur){parts.push(cur.trim());cur=c}else cur=cur?cur+' '+c:c});if(cur)parts.push(cur.trim())}
+      else parts.push(x)});
     var go=function(){
       try{ss.resume()}catch(e){}
       parts.forEach(function(p){
         var u=new SpeechSynthesisUtterance(p);u.lang='lt-LT';
-        u.pitch=cheer?1.15:1.0;u.rate=cheer?0.95:0.9;u.volume=1;
+        u.pitch=cheer?1.1:1.0;u.rate=cheer?0.98:0.94;u.volume=1;
         if(LTV)u.voice=LTV;
         ss.speak(u);
       });
