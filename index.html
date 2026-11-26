@@ -508,7 +508,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 84</div></div>
+      <div class="meta">Versija 87</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1285,10 +1285,15 @@ function voiceRun(text){
   if(res.call||res.undo)voiceShowCall(res);
 }
 function voiceBox(msg){
-  var b=$('vbox');b.hidden=false;if(msg)botSay(msg,false);
+  var b=$('vbox');b.hidden=false;vboxArm(20000);if(msg)botSay(msg,false);
   setTimeout(function(){try{$('vin').focus()}catch(e){}},50);
 }
-$('vbox').onsubmit=function(e){e.preventDefault();var v=$('vin').value.trim();if(!v)return;$('vin').value='';$('vin').blur();$('vbox').hidden=true;voiceRun(v)};
+var vboxT=0;
+function vboxHide(){clearTimeout(vboxT);$('vbox').hidden=true;$('vin').value=''}
+function vboxArm(ms){clearTimeout(vboxT);vboxT=setTimeout(vboxHide,ms)}
+$('vin').addEventListener('input',function(){vboxArm(30000)});
+$('vin').addEventListener('blur',function(){setTimeout(function(){if(!$('vbox').hidden&&!$('vin').value.trim()&&document.activeElement!==$('vin')&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#vbox')))vboxHide()},350)});
+$('vbox').onsubmit=function(e){e.preventDefault();var v=$('vin').value.trim();if(!v)return;$('vin').value='';$('vin').blur();vboxHide();voiceRun(v)};
 /* Įrašymas + Gemini (kai naršyklės atpažinimas neveikia, pvz. pagrindiniame ekrane) */
 var REC=null;
 function wavB64(chunks,sr){
@@ -1323,7 +1328,7 @@ function recStart(){
       if(done)return;done=true;REC=null;cleanup();voiceOn=false;$('talk').classList.remove('listen');
       if(cancel||!heard){botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
       botSay('Galvoju…',false);clearTimeout(botBubbleT);
-      var tt0=Date.now(),tick=setInterval(function(){$('bubble').textContent='Galvoju… '+Math.round((Date.now()-tt0)/1000)+' s'},1000),ac=new AbortController(),tmo=setTimeout(function(){ac.abort()},45000);
+      var tt0=Date.now(),tick=setInterval(function(){$('bubble').textContent='Galvoju… '+Math.round((Date.now()-tt0)/1000)+' s'},1000),ac=new AbortController(),tmo=setTimeout(function(){ac.abort()},70000);
       function stopT(){clearInterval(tick);clearTimeout(tmo)}
       var c=schoolCfg(),sr=ctx.sampleRate||48000,b64;
       try{b64=wavB64(chunks,sr)}catch(e){voiceBox('Nepavyko apdoroti garso. Rašyk komandą.');return}
@@ -1332,7 +1337,7 @@ function recStart(){
           if(j.error){voiceBox('Balso klaida: '+(j.error==='unauthorized'?'neteisingas raktas':j.error)+'. Rašyk komandą.');return}
           var t=(j.text||'').trim();if(!t){botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
           voiceRun(t);
-        }).catch(function(e){stopT();voiceBox(e&&e.name==='AbortError'?'Per ilgai laukta (45 s). Rašyk komandą.':'Nepavyko prisijungti. Rašyk komandą.')});
+        }).catch(function(e){stopT();voiceBox(e&&e.name==='AbortError'?'Per ilgai laukta (70 s). Rašyk komandą.':'Nepavyko prisijungti. Rašyk komandą.')});
     }
     REC={stop:function(){fin(false)}};voiceOn=true;$('talk').classList.add('listen');botSay('Klausau…',false);
   }).catch(function(e){
@@ -1342,7 +1347,7 @@ function recStart(){
 function voiceStart(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   var standalone=!!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
-  if(!$('vbox').hidden&&!voiceOn)$('vbox').hidden=true;
+  if(!$('vbox').hidden&&!voiceOn)vboxHide();
   if(REC){REC.stop();return}
   if(!SR||standalone){
     if(recCanDo()){try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(e){}recStart();return}
@@ -1715,6 +1720,14 @@ function setView(v){
   if(v==='disp'){dFresh=true;renderDisp();dFresh=false}
 }
 Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){b.onclick=function(){setView(b.getAttribute('data-v'))}});
+function nowLabel(j){
+  var cur=j.current||{},c=WCODE(cur.weather_code),h=j.hourly||{},ix=-1;
+  try{ix=h.time.indexOf(String(cur.time).slice(0,13)+':00')}catch(e){}
+  var sf=Math.max(cur.snowfall||0,ix>=0?(h.snowfall[ix]||0):0),pr=Math.max(cur.precipitation||0,ix>=0?(h.precipitation[ix]||0):0),tp=cur.temperature_2m;
+  if(sf>0&&!/Snieg/.test(c))return 'Sniegas';
+  if(sf<=0&&pr>0&&!/Snieg|Liet|Liūt|Dulks/.test(c))return tp<=0.5?'Sniegas':'Lietus';
+  return c;
+}
 var WCODE=function(c){return c===0?'Giedra':c<=2?'Daugiausia giedra':c===3?'Apsiniaukę':c<=48?'Rūkas':c<=57?'Dulksna':c<=67?'Lietus':c<=77?'Sniegas':c<=82?'Liūtys':c<=86?'Sniego škvalai':'Perkūnija'};
 var WLV={1:{c:'#FFC83D'},2:{c:'#FF9F5A'},3:{c:'#FF4D4D'}};
 function dayLabel(dk){
@@ -1785,11 +1798,11 @@ function weatherSummary(h){
   return {g:Math.round(g),gt:gt,sn:Math.round(sn),rn:Math.round(rn)};
 }
 function loadWeather(lat,lon,place){
-  var u='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,precipitation,snowfall,wind_gusts_10m,weather_code&wind_speed_unit=ms&timezone=auto';
+  var u='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,weather_code,snowfall,precipitation&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,precipitation,snowfall,wind_gusts_10m,weather_code&wind_speed_unit=ms&timezone=auto';
   fetch(u).then(function(r){return r.json()}).then(function(j){
     var d=j.daily,days=[];
     for(var i=0;i<d.time.length;i++){days.push([i===0?'Šiandien':(function(w){return w.charAt(0).toUpperCase()+w.slice(1)})(new Date(d.time[i]+'T12:00').toLocaleDateString('lt-LT',{weekday:'long'})),Math.round(d.temperature_2m_max[i]),Math.round(d.temperature_2m_min[i]),d.precipitation_probability_max[i]||0])}
-    WX={place:place,live:true,at:new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}),now:{t:Math.round(j.current.temperature_2m),c:WCODE(j.current.weather_code)},days:days,alerts:calcAlerts(j.hourly),sum:weatherSummary(j.hourly),ts:Date.now()};
+    WX={place:place,live:true,at:new Date().toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'}),now:{t:Math.round(j.current.temperature_2m),c:nowLabel(j)},days:days,alerts:calcAlerts(j.hourly),sum:weatherSummary(j.hourly),ts:Date.now()};
     try{localStorage.setItem('bottie-wx',JSON.stringify(WX))}catch(e){}
     renderWeather();if($('v-home').classList.contains('on'))renderHome();
   }).catch(function(){});
