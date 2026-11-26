@@ -275,9 +275,15 @@ body.disp main{padding:10px 22px 48px}
 .dprow{display:flex;align-items:baseline;gap:6px}
 .dprice .big{font-size:3.6rem}
 .dpunit{color:var(--muted);font-size:1.2rem}
-.dpbadge{display:inline-block;margin-top:6px;padding:4px 14px;border-radius:999px;background:var(--lv,var(--sun));color:#1F2A44;font-weight:800;animation:glow 2.6s ease-in-out infinite}
+.dpbadge{display:inline-block;margin-top:4px;padding:2px 10px;font-size:.8rem;border-radius:999px;background:var(--lv,var(--sun));color:#1F2A44;font-weight:800;animation:glow 2.6s ease-in-out infinite}
 .dpbars{display:flex;align-items:flex-end;gap:2px;height:120px;margin-top:14px}
-.dpaxis{position:relative;height:1.3em;margin-top:4px;font-size:.78rem;color:var(--muted)}.dpaxis span{position:absolute;top:0;white-space:nowrap}
+.dpwrap{display:flex;gap:6px;margin-top:14px}
+.dpy{position:relative;width:2.4em;flex:none;font-size:.72rem;color:var(--muted);text-align:right}
+.dpy span{position:absolute;right:0;transform:translateY(50%);line-height:1}
+.dpin{position:relative;flex:1;min-width:0}
+.dpgl{position:absolute;inset:0;pointer-events:none}.dpgl u{position:absolute;left:0;right:0;border-top:1px dashed var(--line);opacity:.8}
+.dpwrap .dpbars{margin-top:0}
+.dpaxis{position:relative;height:1.3em;margin:4px 0 0 calc(2.4em + 6px);font-size:.78rem;color:var(--muted)}.dpaxis span{position:absolute;top:0;white-space:nowrap}
 .dpbars i{flex:1;border-radius:3px 3px 0 0;transform-origin:bottom}
 .dpbars.anim i{animation:grow .7s ease-out both}
 .dpbars i.now{outline:3px solid var(--ink);animation:pulse 1.8s ease-in-out infinite}
@@ -324,8 +330,9 @@ body.disp main{padding:10px 22px 48px}
 @media (min-width:900px){#chartgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .profrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .profbtn{display:flex;align-items:center;gap:8px;padding:6px 16px 6px 6px;border-radius:999px;background:transparent;color:var(--ink);border:2px solid var(--line)}
+.profbtn.sm{padding:3px 12px 3px 3px;font-size:.9rem;min-height:0}
 .profbtn.on{border-color:var(--accent);background:var(--card)}
-.tchart{position:relative;border-radius:22px;padding:14px;overflow:hidden;border:2px solid var(--line);background:var(--card)}
+.tchart{position:relative;border-radius:22px;padding:10px 12px;overflow:hidden;border:2px solid var(--line);background:var(--card)}
 .tchart.mine{box-shadow:0 0 0 3px var(--accent)}
 .tchart>*{position:relative;z-index:1}
 .season-winter{--sa:#7FB8FF;background:linear-gradient(165deg,rgba(127,184,255,.30),rgba(255,255,255,.04)),var(--card)}
@@ -338,19 +345,19 @@ body.disp main{padding:10px 22px 48px}
 .chead{display:flex;align-items:center;gap:10px}
 .chead .nm{font-size:1.25rem;font-weight:800}
 .pill{margin-left:auto;background:var(--bg);border-radius:999px;padding:4px 12px;font-weight:800;white-space:nowrap}
-.pbar2{height:12px;border-radius:999px;background:var(--bg);overflow:hidden;margin:10px 0 4px}
+.pbar2{height:10px;border-radius:999px;background:var(--bg);overflow:hidden;margin:6px 0 2px}
 .pbar2>i{display:block;height:100%;background:var(--sa);border-radius:999px;transition:width .4s}
-.ctab{border-collapse:separate;border-spacing:4px;width:100%;margin-top:8px}
+.ctab{border-collapse:separate;border-spacing:3px;width:100%;margin-top:8px}
 .ctab th{font-size:.8rem;font-weight:700;color:var(--muted);padding:0}
 .ctab th.td{color:var(--ink)}
 .ctab td{padding:0;text-align:center}
 .ctab .tl{text-align:left;font-size:.9rem;width:30%;max-width:34vw}
-.cell{width:100%;min-width:30px;min-height:42px;border-radius:12px;border:2px solid var(--sa);background:var(--bg);font-size:1.35rem;padding:0;line-height:1}
+.cell{width:100%;min-width:30px;min-height:clamp(26px,4.6vh,40px);border-radius:12px;border:2px solid var(--sa);background:var(--bg);font-size:1.35rem;padding:0;line-height:1}
 .cell.on{background:var(--card)}
 .cell.fut{opacity:.35}
 .tchart:not(.mine) .cell{opacity:.85}
-.rshelf{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.rbtn{display:flex;align-items:center;gap:6px;background:var(--bg);color:var(--ink);border:2px solid var(--sa);border-radius:14px;padding:6px 12px;font-weight:700}
+.rshelf{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rbtn{display:flex;align-items:center;gap:5px;background:var(--bg);color:var(--ink);border:2px solid var(--sa);border-radius:12px;padding:3px 9px;font-size:.82rem;font-weight:700;min-height:0}.rbtn svg,.rbtn img{width:16px;height:16px}
 .rbtn.no{opacity:.45}
 .ered{background:var(--bg);border-radius:16px;padding:12px;margin-top:12px}
 .ered .fc{align-items:center}
@@ -512,7 +519,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 89</div>
+    <div id="verset">Versija 90</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -2658,7 +2665,16 @@ function renderDisp(){
         if(x.startsAt===cs.startsAt)bi.className='now';
         bars.appendChild(bi);
       });
-      pc.appendChild(bars);
+      var wrap=document.createElement('div');wrap.className='dpwrap';
+      var yax=document.createElement('div');yax.className='dpy';
+      [[1,Math.round(mxv*100)],[.5,Math.round(mxv*50)],[0,0]].forEach(function(t){
+        var yl=document.createElement('span');yl.style.bottom=(t[0]*100)+'%';yl.textContent=t[1];yax.appendChild(yl);
+      });
+      wrap.appendChild(yax);
+      var gl=document.createElement('div');gl.className='dpgl';[.5,1].forEach(function(f){var l=document.createElement('u');l.style.bottom=(f*100)+'%';gl.appendChild(l)});
+      bars.style.flex='1';bars.style.marginTop='0';bars.style.position='relative';
+      var inner=document.createElement('div');inner.className='dpin';inner.appendChild(gl);inner.appendChild(bars);
+      wrap.appendChild(inner);pc.appendChild(wrap);
       var ax=document.createElement('div');ax.className='dpaxis';
       tdp.forEach(function(x,i){
         var dt=new Date(x.startsAt);if(dt.getMinutes()!==0||dt.getHours()%6!==0)return;
@@ -2947,6 +2963,13 @@ function renderChores(){
     b.onclick=function(){chWk=p[1]===0?0:chWk+p[1];renderChores()};nav.appendChild(b);
   });
   var eb=document.createElement('button');eb.type='button';eb.style.marginLeft='auto';eb.textContent=chEdit?'🔓 Uždaryti tėvų režimą':'🔒 Tėvų režimas';
+  var kids0=kidsList();
+  kids0.forEach(function(p){
+    var b=document.createElement('button');b.type='button';b.className='profbtn sm'+(chProf===p.name?' on':'');
+    var a=avEl(p.name,30);if(a)b.appendChild(a);b.appendChild(document.createTextNode(p.name));
+    b.onclick=function(){chProf=(chProf===p.name)?null:p.name;renderChores()};
+    nav.appendChild(b);
+  });
   eb.onclick=function(){
     if(chEdit){chEdit=false;renderChores();return}
     var a=6+Math.floor(Math.random()*4),b2=6+Math.floor(Math.random()*4),r=prompt('Tik suaugusiems: '+a+' × '+b2+' = ?');
@@ -2961,16 +2984,7 @@ function renderChores(){
     var em=document.createElement('div');em.className='card';em.style.marginTop='12px';
     em.textContent='Pridėk vaikus skiltyje Nustatymai > Šeima, tada jų užduočių lentelės atsiras čia.';v.appendChild(em);return;
   }
-  var pm=document.createElement('div');pm.className='meta';pm.style.marginTop='12px';
-  pm.textContent=chEdit?'Tėvų režimas: gali taisyti visas lenteles ir užduotis':(chProf?'Pildo: '+chProf:'Kas pildo? Pasirink savo profilį');v.appendChild(pm);
-  var pr=document.createElement('div');pr.className='profrow';
-  kids.forEach(function(p){
-    var b=document.createElement('button');b.type='button';b.className='profbtn'+(chProf===p.name?' on':'');
-    var a=avEl(p.name,40);if(a)b.appendChild(a);b.appendChild(document.createTextNode(p.name));
-    b.onclick=function(){chProf=(chProf===p.name)?null:p.name;renderChores()};
-    pr.appendChild(b);
-  });
-  v.appendChild(pr);
+  tt.textContent+=' · '+(chEdit?'Tėvų režimas: gali taisyti viską':(chProf?'Pildo: '+chProf:'Pasirink, kas pildo'));
   if(chEdit)v.appendChild(choreEditor());
   var grid=document.createElement('div');grid.id='chartgrid';
   kids.forEach(function(k){grid.appendChild(chartCard(k))});
