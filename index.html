@@ -190,7 +190,7 @@ body.disp #dexit{display:flex;position:fixed;bottom:calc(10px + env(safe-area-in
 @media (min-width:900px) and (orientation:landscape){
   #v-disp.on{grid-template-columns:1.6fr 1fr;align-items:start;gap:12px}
   .dleft,.dright{display:flex;flex-direction:column;gap:12px;min-width:0}
-  .dtr{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .dtr{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:stretch}
   .dclockbox,.dweather{order:0}
   .dbudget .dbscroll{max-height:max(200px,calc(100vh - 520px))}
   .dtasks .dkids{flex-direction:column;align-items:stretch}
@@ -277,6 +277,7 @@ body.disp main{padding:10px 22px 48px}
 .dpunit{color:var(--muted);font-size:1.2rem}
 .dpbadge{display:inline-block;margin-top:6px;padding:4px 14px;border-radius:999px;background:var(--lv,var(--sun));color:#1F2A44;font-weight:800;animation:glow 2.6s ease-in-out infinite}
 .dpbars{display:flex;align-items:flex-end;gap:2px;height:120px;margin-top:14px}
+.dpaxis{position:relative;height:1.3em;margin-top:4px;font-size:.78rem;color:var(--muted)}.dpaxis span{position:absolute;top:0;white-space:nowrap}
 .dpbars i{flex:1;border-radius:3px 3px 0 0;transform-origin:bottom}
 .dpbars.anim i{animation:grow .7s ease-out both}
 .dpbars i.now{outline:3px solid var(--ink);animation:pulse 1.8s ease-in-out infinite}
@@ -511,7 +512,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 88</div>
+    <div id="verset">Versija 89</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -2606,7 +2607,7 @@ function renderDisp(){
     [{name:''}].concat(cfgItem().children).forEach(function(p){var o=document.createElement('option');o.value=p.name;o.textContent=p.name||'Visi';sel.appendChild(o)});
     sel.value=dKid;
     sel.onchange=function(){try{localStorage.setItem('bottie-dkid',sel.value)}catch(e){}renderDisp()};
-    var h3=wk.querySelector('h3');h3.insertBefore(sel,h3.lastChild);
+    sel.style.marginLeft='auto';sel.style.marginRight='10px';var h3=wk.querySelector('h3');h3.insertBefore(sel,h3.lastChild);
   })();
   var nm7=0;for(var q=0;q<7;q++){var qd=new Date(t0);qd.setDate(qd.getDate()-q);var qk=dkey(qd);dayList(qd).filter(dflt).forEach(function(e){if(missed(e,qk))nm7++})}
   if(nm7){var bd=document.createElement('span');bd.className='missbadge';bd.textContent='⚠ Praleista: '+nm7;var hh=wk.querySelector('h3');hh.insertBefore(bd,hh.childNodes[1]||null)}
@@ -2628,6 +2629,14 @@ function renderDisp(){
   v.appendChild(wk);
 
   var pc=dcard('Elektros kaina'),cs=currentSlot();pc.classList.add('dprice');
+  var dRange='1';try{dRange=localStorage.getItem('bottie-dprange')||'1'}catch(e){}
+  if(PRICE&&cs){
+    var rsel=document.createElement('select');rsel.className='calf';rsel.setAttribute('aria-label','Laikotarpis');
+    [['1','1 para'],['2','2 paros']].forEach(function(o){var op=document.createElement('option');op.value=o[0];op.textContent=o[1];rsel.appendChild(op)});
+    rsel.value=dRange;
+    rsel.onchange=function(){try{localStorage.setItem('bottie-dprange',rsel.value)}catch(e){}renderDisp()};
+    var ph=pc.querySelector('h3');ph.style.display='flex';ph.style.alignItems='center';rsel.style.marginLeft='auto';ph.appendChild(rsel);
+  }
   if(!PRICE||!cs)pc.appendChild(dline('Pridėk elektros kainą skiltyje „Elektros kaina“.'));
   else{
     var lv=cs.level||'NORMAL',col=/CHEAP/.test(lv)?'var(--mint)':/EXPENSIVE/.test(lv)?'var(--pink)':'var(--sun)';
@@ -2637,7 +2646,8 @@ function renderDisp(){
     var pu=document.createElement('span');pu.className='dpunit';pu.textContent=' öre/kWh';
     pr.appendChild(pn);pr.appendChild(pu);pc.appendChild(pr);
     var bd=document.createElement('div');bd.className='dpbadge';bd.textContent=LV[lv]||'';pc.appendChild(bd);
-    var tdp=PRICE.today||[];
+    var tdp=PRICE.today||[],ndays=1;
+    if(dRange==='2'&&(PRICE.tomorrow||[]).length){tdp=tdp.concat(PRICE.tomorrow);ndays=2}
     if(tdp.length){
       var vals=tdp.map(function(x){return Math.max(0,x.total+EX())}),mxv=Math.max.apply(null,vals)||1;
       var bars=document.createElement('div');bars.className='dpbars'+(dFresh?' anim':'');
@@ -2649,7 +2659,15 @@ function renderDisp(){
         bars.appendChild(bi);
       });
       pc.appendChild(bars);
-      var all=tdp.concat(PRICE.tomorrow||[]),ni=-1;
+      var ax=document.createElement('div');ax.className='dpaxis';
+      tdp.forEach(function(x,i){
+        var dt=new Date(x.startsAt);if(dt.getMinutes()!==0||dt.getHours()%6!==0)return;
+        var lb=document.createElement('span');lb.style.left=(i/tdp.length*100)+'%';
+        lb.textContent=(dt.getHours()===0&&i>0?'rytoj ':'')+String(dt.getHours()).padStart(2,'0');
+        ax.appendChild(lb);
+      });
+      pc.appendChild(ax);
+      var all=PRICE.today.concat(PRICE.tomorrow||[]),ni=-1;
       all.forEach(function(x,i){if(x.startsAt===cs.startsAt)ni=i});
       var nx=ni>=0?all[ni+1]:null;
       if(nx){var dv=ore(nx.total)-ore(cs.total);pc.appendChild(dline('Kitas laikotarpis: '+ore(nx.total)+' öre '+(dv>0?'▲':dv<0?'▼':'●'),hhmm(nx.startsAt)))}
