@@ -524,7 +524,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 94</div>
+    <div id="verset">Versija 96</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1295,7 +1295,24 @@ function voiceShowCall(res){
   b.classList.add('show');b.style.pointerEvents='auto';window.__keepB=Date.now()+14000;clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show');b.style.pointerEvents=''},14000);
 }
 function voiceStop(){voiceOn=false;$('talk').classList.remove('listen');try{voiceRec&&voiceRec.abort()}catch(e){}}
+var FC=null;
+function fcUnlock(){try{if(!FC){var AC=window.AudioContext||window.webkitAudioContext;if(AC)FC=new AC()}if(FC&&FC.state==='suspended')FC.resume()}catch(e){}}
+function fartSound(){
+  fcUnlock();if(!FC)return;
+  var n=1+Math.floor(Math.random()*3),t=FC.currentTime+0.05;
+  for(var i=0;i<n;i++){
+    var d=0.18+Math.random()*0.45,f0=70+Math.random()*50;
+    var o=FC.createOscillator(),lf=FC.createOscillator(),lg=FC.createGain(),g=FC.createGain(),fl=FC.createBiquadFilter();
+    o.type='sawtooth';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*0.55,t+d);
+    lf.frequency.value=28+Math.random()*30;lg.gain.value=f0*0.35;lf.connect(lg);lg.connect(o.frequency);
+    fl.type='lowpass';fl.frequency.value=420;
+    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.9,t+0.03);g.gain.setValueAtTime(0.9,t+d*0.7);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+    o.connect(fl);fl.connect(g);g.connect(FC.destination);o.start(t);lf.start(t);o.stop(t+d+0.05);lf.stop(t+d+0.05);
+    t+=d+0.08+Math.random()*0.12;
+  }
+}
 function voiceRun(text){
+  if(/persk|pirsk|prutt|prūsk|prusk|\bfart/i.test(text)){fartSound();botSay('💨 Prrrt!',false);return}
   var best=voiceIntent(text),res=voiceReply(best);
   botSay('„'+text+'“ – '+res.s,true,false);
   if(res.call||res.undo)voiceShowCall(res);
@@ -1309,7 +1326,7 @@ function vboxHide(){clearTimeout(vboxT);$('vbox').hidden=true;$('vin').value=''}
 function vboxArm(ms){clearTimeout(vboxT);vboxT=setTimeout(vboxHide,ms)}
 $('vin').addEventListener('input',function(){vboxArm(30000)});
 $('vin').addEventListener('blur',function(){setTimeout(function(){if(!$('vbox').hidden&&!$('vin').value.trim()&&document.activeElement!==$('vin')&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#vbox')))vboxHide()},350)});
-$('vbox').onsubmit=function(e){e.preventDefault();var v=$('vin').value.trim();if(!v)return;$('vin').value='';$('vin').blur();vboxHide();voiceRun(v)};
+$('vbox').onsubmit=function(e){e.preventDefault();fcUnlock();var v=$('vin').value.trim();if(!v)return;$('vin').value='';$('vin').blur();vboxHide();voiceRun(v)};
 /* Įrašymas + Gemini (kai naršyklės atpažinimas neveikia, pvz. pagrindiniame ekrane) */
 var REC=null;
 function wavB64(chunks,sr){
@@ -1361,6 +1378,7 @@ function recStart(){
   });
 }
 function voiceStart(){
+  fcUnlock();
   try{var ss0=window.speechSynthesis;if(ss0){var u0=new SpeechSynthesisUtterance(' ');u0.volume=0;u0.lang='lt-LT';ss0.speak(u0)}}catch(e){}
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   var standalone=!!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
