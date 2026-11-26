@@ -476,7 +476,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 74</div></div>
+      <div class="meta">Versija 75</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1130,9 +1130,9 @@ function botClick(){
 /* Bottie gyvena: mirksi ir kartais pašoka */
 (function(){
   function blink(){var es=document.querySelectorAll('.beye');Array.prototype.forEach.call(es,function(e){e.classList.remove('bl');void e.getBoundingClientRect();e.classList.add('bl')})}
-  function hop(){['logo','logo2'].forEach(function(id){var l=document.getElementById(id);if(!l||!l.offsetParent)return;l.classList.remove('bothop');void l.getBoundingClientRect();l.classList.add('bothop')})}
+  function hop(){['logo','logo2'].forEach(function(id){var l=document.getElementById(id);if(!l)return;var rc=l.getBoundingClientRect();if(!rc.width||!rc.height)return;l.classList.remove('bothop');void l.getBoundingClientRect();l.classList.add('bothop')})}
   function loopBlink(){setTimeout(function(){if(!document.hidden){blink();if(Math.random()<.25)setTimeout(blink,320)}loopBlink()},3500+Math.random()*7000)}
-  function loopHop(){setTimeout(function(){if(!document.hidden)hop();loopHop()},20000+Math.random()*30000)}
+  function loopHop(){setTimeout(function(){if(!document.hidden)hop();loopHop()},15000+Math.random()*20000)}
   loopBlink();loopHop();
 })();
 $('logo').onclick=botClick;
