@@ -330,7 +330,12 @@ body.disp main{padding:10px 22px 48px}
 @media (min-width:900px){#chartgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .profrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .profbtn{display:flex;align-items:center;gap:8px;padding:6px 16px 6px 6px;border-radius:999px;background:transparent;color:var(--ink);border:2px solid var(--line)}
-.profbtn.sm{padding:3px 12px 3px 3px;font-size:.9rem;min-height:0}
+.profbtn.sm{padding:3px 12px 3px 3px;font-size:.9rem;min-height:34px}
+.row2{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px}
+.wtitle.sm{font-size:.9rem;margin:0}
+.rg{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.cb.tiny{min-height:28px!important;padding:2px 10px!important;font-size:.8rem!important}
+.cb{min-height:34px!important;padding:3px 14px!important;font-size:.9rem!important}
 .profbtn.on{border-color:var(--accent);background:var(--card)}
 .tchart{position:relative;border-radius:22px;padding:10px 12px;overflow:hidden;border:2px solid var(--line);background:var(--card)}
 .tchart.mine{box-shadow:0 0 0 3px var(--accent)}
@@ -519,7 +524,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 90</div>
+    <div id="verset">Versija 93</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1406,7 +1411,7 @@ function offDay(d){
 function payDay(y,m){var d=new Date(y,m,25);while(offDay(d))d.setDate(d.getDate()-1);return d}
 function bCurMon(){var n=new Date(),t=new Date(n.getFullYear(),n.getMonth(),n.getDate()),pd=payDay(n.getFullYear(),n.getMonth());return t>=pd?(n.getMonth()+1)%12:n.getMonth()}
 $('gear').onclick=toggleSet;
-var BU='bottie-budget-url',BK='bottie-budget-key',BC='bottie-budget-cache-',BP='bottie-budget-pin',BD='bottie-budget-disp',bMon=bCurMon(),bOpen={},bLoading=false,bErr='',bUnlocked=false;
+var BU='bottie-budget-url',BK='bottie-budget-key',BC='bottie-budget-cache-',BP='bottie-budget-pin',PP='bottie-parent-pin',BD='bottie-budget-disp',bMon=bCurMon(),bOpen={},bLoading=false,bErr='',bUnlocked=false;
 function pinHash(p){var h=5381,t='bottie|'+p;for(var i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return String(h)}
 function bDataM(m){try{return JSON.parse(localStorage.getItem(BC+m)||'null')}catch(e){return null}}
 function bget(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
@@ -2895,6 +2900,13 @@ function chartCard(kid){
 function choreEditor(){
   var cfg=ensureCfg(),box=document.createElement('div');box.className='ered';
   var save2=function(){touch(cfg);save();renderChores()};
+  var pr0=document.createElement('div');pr0.className='fc';pr0.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px';
+  var pt0=document.createElement('span');pt0.className='meta';pt0.textContent=bget(PP)?'Tėvų režimo PIN įjungtas':'Tėvų režimas be PIN (klausiama daugybos užduotis)';pr0.appendChild(pt0);
+  var pb0=document.createElement('button');pb0.type='button';pb0.className='soft';pb0.textContent=bget(PP)?'Pakeisti PIN':'Nustatyti PIN';
+  pb0.onclick=function(){askPin('Naujas tėvų PIN (4–6 skaitmenys)',function(p){if(!/^\d{4,6}$/.test(p)){toast('PIN turi būti 4–6 skaitmenys');return}bset(PP,pinHash(p));toast('PIN išsaugotas');renderChores()})};
+  pr0.appendChild(pb0);
+  if(bget(PP)){var pb1=document.createElement('button');pb1.type='button';pb1.className='soft';pb1.textContent='Išjungti PIN';pb1.onclick=function(){bset(PP,'');toast('PIN išjungtas');renderChores()};pr0.appendChild(pb1)}
+  box.appendChild(pr0);
   var h=document.createElement('h3');h.style.margin='0 0 6px';h.textContent='Užduotys';box.appendChild(h);
   var te=document.createElement('input');te.className='inp';te.placeholder='😀';te.style.maxWidth='64px';te.setAttribute('aria-label','Emoji');
   var tt=document.createElement('input');tt.className='inp';tt.placeholder='Nauja užduotis';tt.setAttribute('aria-label','Užduotis');
@@ -2952,6 +2964,21 @@ function choreEditor(){
   gr.appendChild(gl);gr.appendChild(gi);box.appendChild(gr);
   return box;
 }
+function askPin(title,cb){
+  var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px';
+  var bx=document.createElement('div');bx.className='card';bx.style.cssText='max-width:320px;width:100%;text-align:center';
+  var h=document.createElement('div');h.style.cssText='font-weight:800;margin-bottom:10px';h.textContent=title;
+  var inp=document.createElement('input');inp.type='password';inp.inputMode='numeric';inp.autocomplete='off';inp.maxLength=6;inp.className='inp';inp.setAttribute('aria-label','PIN');inp.style.cssText='text-align:center;font-size:1.6rem;letter-spacing:.4em';
+  var row=document.createElement('div');row.className='row';row.style.cssText='justify-content:center;margin-top:12px';
+  var ok=document.createElement('button');ok.type='button';ok.textContent='Gerai';
+  var no=document.createElement('button');no.type='button';no.className='soft';no.textContent='Atšaukti';
+  var close=function(){if(ov.parentNode)ov.parentNode.removeChild(ov)};
+  var go=function(){var p=inp.value.trim();close();cb(p)};
+  ok.onclick=go;no.onclick=close;inp.onkeydown=function(e){if(e.key==='Enter')go();else if(e.key==='Escape')close()};
+  ov.onclick=function(e){if(e.target===ov)close()};
+  row.appendChild(ok);row.appendChild(no);bx.appendChild(h);bx.appendChild(inp);bx.appendChild(row);ov.appendChild(bx);document.body.appendChild(ov);
+  setTimeout(function(){inp.focus()},50);
+}
 function renderChores(){
   var v=$('v-tasks');if(!v)return;v.innerHTML='';
   var mon=monOf(chWk),end=new Date(mon);end.setDate(end.getDate()+6);
@@ -2959,32 +2986,35 @@ function renderChores(){
   var nav=document.createElement('div');nav.className='row';nav.style.marginTop='0';
   if(cameFromDisp){var bk=document.createElement('button');bk.type='button';bk.textContent='‹ Ekranas';bk.onclick=function(){cameFromDisp=false;setView('disp')};nav.appendChild(bk)}
   [['‹ Ankstesnė',-1],['Šiandien',0],['Kita ›',1]].forEach(function(p){
-    var b=document.createElement('button');b.type='button';b.className='soft';b.textContent=p[0];
+    var b=document.createElement('button');b.type='button';b.className='soft cb';b.textContent=p[0];
     b.onclick=function(){chWk=p[1]===0?0:chWk+p[1];renderChores()};nav.appendChild(b);
   });
-  var eb=document.createElement('button');eb.type='button';eb.style.marginLeft='auto';eb.textContent=chEdit?'🔓 Uždaryti tėvų režimą':'🔒 Tėvų režimas';
-  var kids0=kidsList();
-  kids0.forEach(function(p){
-    var b=document.createElement('button');b.type='button';b.className='profbtn sm'+(chProf===p.name?' on':'');
-    var a=avEl(p.name,30);if(a)b.appendChild(a);b.appendChild(document.createTextNode(p.name));
-    b.onclick=function(){chProf=(chProf===p.name)?null:p.name;renderChores()};
-    nav.appendChild(b);
-  });
+  var eb=document.createElement('button');eb.type='button';eb.className='cb tiny';eb.style.marginLeft='auto';eb.textContent=chEdit?'🔓 Uždaryti tėvų režimą':'🔒 Tėvų režimas';
   eb.onclick=function(){
     if(chEdit){chEdit=false;renderChores();return}
-    var a=6+Math.floor(Math.random()*4),b2=6+Math.floor(Math.random()*4),r=prompt('Tik suaugusiems: '+a+' × '+b2+' = ?');
+    if(bget(PP)){askPin('Tėvų režimas – įvesk PIN',function(p){if(pinHash(p)===bget(PP)){chEdit=true;renderChores()}else toast('Neteisingas PIN')});return}
+    var a=6+Math.floor(Math.random()*4),b2=6+Math.floor(Math.random()*4),r=prompt('Tik suaugusiems: '+a+' × '+b2+' = ? (PIN nustatomas tėvų režime)');
     if(r===null)return;
     if(parseInt(r,10)===a*b2){chEdit=true;renderChores()}else toast('Neteisingas atsakymas');
   };
   nav.appendChild(eb);
   v.appendChild(nav);
-  var tt=document.createElement('div');tt.className='wtitle';tt.textContent=isoWeek(mon)+' savaitė · '+ff(mon)+' – '+ff(end);v.appendChild(tt);
+  var r2=document.createElement('div');r2.className='row2';
+  var tt=document.createElement('div');tt.className='wtitle sm';tt.textContent=isoWeek(mon)+' savaitė · '+ff(mon)+' – '+ff(end);r2.appendChild(tt);v.appendChild(r2);
   var kids=kidsList(),people=cfgItem().children;
   if(!kids.length){
     var em=document.createElement('div');em.className='card';em.style.marginTop='12px';
     em.textContent='Pridėk vaikus skiltyje Nustatymai > Šeima, tada jų užduočių lentelės atsiras čia.';v.appendChild(em);return;
   }
-  tt.textContent+=' · '+(chEdit?'Tėvų režimas: gali taisyti viską':(chProf?'Pildo: '+chProf:'Pasirink, kas pildo'));
+  var rg=document.createElement('div');rg.className='rg';
+  var pt=document.createElement('span');pt.className='meta';pt.textContent=chEdit?'Tėvų režimas: gali taisyti viską':(chProf?'Pildo: '+chProf:'Pasirink, kas pildo');rg.appendChild(pt);
+  kids.forEach(function(p){
+    var b=document.createElement('button');b.type='button';b.className='profbtn sm'+(chProf===p.name?' on':'');
+    var a=avEl(p.name,28);if(a)b.appendChild(a);b.appendChild(document.createTextNode(p.name));
+    b.onclick=function(){chProf=(chProf===p.name)?null:p.name;renderChores()};
+    rg.appendChild(b);
+  });
+  r2.appendChild(rg);
   if(chEdit)v.appendChild(choreEditor());
   var grid=document.createElement('div');grid.id='chartgrid';
   kids.forEach(function(k){grid.appendChild(chartCard(k))});
@@ -3003,7 +3033,7 @@ $('updapp').onclick=function(){
   Promise.all(p.concat([new Promise(function(r){setTimeout(r,1200)})])).catch(function(){}).then(function(){location.replace(base+'?r='+Date.now())});
 };
 /* Atsarginė kopija */
-var BKEYS=[['Sinchronizacija','Sinchronizacija (skriptas ir šeimos kodas)',SK],['Biudžetas','Biudžeto skripto adresas',BU],['Biudžetas','Biudžeto raktas',BK],['Biudžetas','Biudžeto PIN (kodas, ne pats PIN)',BP],['Biudžetas','Rodyti biudžetą ekrane',BD],['Elektra','Tibber raktas',TT],['Elektra','Papildomas mokestis',EXK],['Push','OneSignal App ID','bottie-push-app'],['Kita','Vardas',NK],['Kita','Išvaizda ir nustatymai','bottie-prefs'],['Kita','Vieta','bottie-loc']];
+var BKEYS=[['Sinchronizacija','Sinchronizacija (skriptas ir šeimos kodas)',SK],['Biudžetas','Biudžeto skripto adresas',BU],['Biudžetas','Biudžeto raktas',BK],['Biudžetas','Biudžeto PIN (kodas, ne pats PIN)',BP],['Užduotys','Tėvų režimo PIN (kodas, ne pats PIN)',PP],['Biudžetas','Rodyti biudžetą ekrane',BD],['Elektra','Tibber raktas',TT],['Elektra','Papildomas mokestis',EXK],['Push','OneSignal App ID','bottie-push-app'],['Kita','Vardas',NK],['Kita','Išvaizda ir nustatymai','bottie-prefs'],['Kita','Vieta','bottie-loc']];
 function bkBuild(){
   var data={},L=['BOTTIE – nustatymai ('+new Date().toLocaleString('lt-LT')+')','Šis failas turi slaptų raktų. Laikyk jį privačiai.',''],cur='';
   BKEYS.forEach(function(k){
