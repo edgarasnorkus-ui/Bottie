@@ -28,6 +28,31 @@ main{max-width:560px;margin:0 auto;padding:18px 16px 150px}
 header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 header #logo{width:88px;height:88px;flex:none;margin:-6px 0 -6px -6px}
 h1{font-size:2rem;margin:0;line-height:1}
+/* Sezoninis vardas */
+#hname{display:flex;align-items:center;position:relative}
+#hname .ch{position:relative;display:inline-block}
+#hname.sn .ch::before{content:"";position:absolute;left:6%;right:6%;top:-.07em;height:.15em;background:#fff;border-radius:.1em .1em .04em .04em;box-shadow:0 1px 0 rgba(120,160,200,.45);z-index:2}
+#hname.sn .ch.lo::before{top:.1em}
+#hname.sn .ch.tt::before{top:.04em;left:14%;right:2%}
+#hname.ic .ch::after{content:"";position:absolute;left:34%;top:88%;border-left:.07em solid transparent;border-right:.07em solid transparent;border-top:.26em solid #BFE6FA;filter:drop-shadow(0 1px 0 rgba(255,255,255,.8));animation:icsh 7s ease-in-out infinite}
+#hname.ic .ch:nth-child(odd)::after{left:58%;border-top-width:.17em;animation-delay:-3s}
+#hname.ic .ch:nth-child(3)::after{border-top-width:.32em}
+#hname.ic .ch:nth-child(5)::after{display:none}
+@keyframes icsh{50%{opacity:.55}}
+#hname .dot{position:absolute;left:-.02em;top:-.2em;font-size:.5em;line-height:1;font-weight:400;animation:flspin 24s linear infinite;z-index:3}
+@keyframes flspin{to{transform:rotate(360deg)}}
+#hname .hat{position:absolute;left:-.12em;top:-.62em;width:.72em;height:.72em;transform-origin:30% 90%;animation:hatsw 7s ease-in-out infinite;z-index:3}
+@keyframes hatsw{50%{transform:rotate(3deg)}}
+#hname .fl{position:absolute;top:-.1em;font-size:.32em;font-weight:400;opacity:0;pointer-events:none;color:#9ec9ee;animation:fldrift 11s ease-in-out infinite}
+@keyframes fldrift{0%{opacity:0;transform:translateY(0)}20%{opacity:.7}80%{opacity:.5}100%{opacity:0;transform:translateY(1.7em) translateX(.25em)}}
+#hname .em{font-size:.6em;margin-left:.2em;font-weight:400}
+@media (prefers-reduced-motion:reduce){#hname *{animation:none!important}}
+
+#talk{background:transparent;color:var(--accent,#5FD4B0);border:0;box-shadow:none;min-height:40px;width:36px;padding:0;display:flex;align-items:center;justify-content:center;margin:0 0 0 -16px;opacity:.9}
+#talk svg{width:30px;height:30px}
+#talk.listen{animation:tpulse 1s ease-in-out infinite;opacity:1;color:#2FBF94}
+@keyframes tpulse{50%{transform:scale(1.25)}}
+body.disp #talk{display:none}
 #updapp{margin-left:auto;margin-right:-6px;background:transparent;color:var(--muted);border:0;box-shadow:none;min-height:36px;width:36px;padding:0;opacity:.45;border-radius:50%;display:flex;align-items:center;justify-content:center}
 #updapp svg{width:19px;height:19px}
 #updapp.spin{opacity:1;color:#5FD4B0;background:rgba(95,212,176,.18)}
@@ -370,6 +395,7 @@ body.disp main{padding:10px 22px 48px}
 <main>
   <header>
     <svg id="logo" viewBox="0 0 100 100" role="button" tabindex="0" aria-label="Bottie"></svg>
+    <button id="talk" type="button" aria-label="Kalbėtis su Bottie" title="Kalbėtis su Bottie"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M9.5 8.2a5.4 5.4 0 0 1 0 7.6"/><path d="M13.2 5.2a9.6 9.6 0 0 1 0 13.6"/><path d="M16.9 2.4a13.6 13.6 0 0 1 0 19.2"/></svg></button>
     <h1 id="hname">Bottie</h1>
     <button id="updapp" type="button" aria-label="Atnaujinti programą" title="Atnaujinti programą"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
     <button id="gear" type="button" aria-label="Nustatymai" title="Nustatymai"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -476,7 +502,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 75</div></div>
+      <div class="meta">Versija 79</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1093,9 +1119,9 @@ function ltSpeak(t){
 }
 function speakable(t){return ltSpeak(t)}
 function botSay(text,speak,cheer){
-  var b=$('bubble');b.textContent=text;b.classList.add('show');clearTimeout(botBubbleT);
+  var b=$('bubble');b.style.pointerEvents='';window.__keepB=0;b.textContent=text;b.classList.add('show');clearTimeout(botBubbleT);
   var myId=(window.__bsid=(window.__bsid||0)+1);
-  var hideB=function(d){if(myId!==window.__bsid)return;clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show')},d)};
+  var hideB=function(d){if(myId!==window.__bsid)return;if(window.__keepB&&Date.now()<window.__keepB)d=Math.max(d,window.__keepB-Date.now());clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show')},d)};
   hideB(Math.max(7000,text.length*85+3000));
   if(!speak)return;
   try{
@@ -1135,6 +1161,146 @@ function botClick(){
   function loopHop(){setTimeout(function(){if(!document.hidden)hop();loopHop()},15000+Math.random()*20000)}
   loopBlink();loopHop();
 })();
+/* Balso valdymas (bandomasis): spausk bangų ikoną ir kalbėk */
+function vNorm(t){return String(t||'').toLowerCase().replace(/[ąä]/g,'a').replace(/[čć]/g,'c').replace(/[ęė]/g,'e').replace(/į/g,'i').replace(/š/g,'s').replace(/[ųū]/g,'u').replace(/ž/g,'z').replace(/å/g,'a').replace(/ö/g,'o').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+function voiceIntent(raw){
+  var t=vNorm(raw);
+  if(/\bprim\w*/.test(t))return{t:'remind',raw:raw};
+  var call=/\b(skambin\w*|paskambin\w*|skambut\w*|zvanyk\w*|ring\w*|facetime)\b/.test(t);
+  if(call){
+    if(/\b(mam\w*|mamma|mum\w*)\b/.test(t))return{t:'call',who:'mama'};
+    if(/\b(tec\w*|tev\w*|tetis|tete|papa|pappa|pap\w*)\b/.test(t))return{t:'call',who:'tevas'};
+    return{t:'call',who:''};
+  }
+  var tom=/\b(rytoj|rytojaus|imorgon)\b/.test(t);
+  if(/\b(mokykl\w*|pamok\w*|uzduot\w*|namu darb\w*|canvas|skola)\b/.test(t))return{t:'school',tom:tom};
+  if(/\b(elektr\w*|kain\w*|energij\w*|el pris|elpris)\b/.test(t))return{t:'price'};
+  if(/\b(or[ai]\w*|temperatur\w*|lietu\w*|snig\w*|vader|vaeder)\b/.test(t))return{t:'weather'};
+  if(/\b(kiek valand\w*|kuri valanda|kiek laiko|vilken tid|klockan)\b/.test(t))return{t:'time'};
+  if(/\b(kokia data|kokia siandien diena|kelinta|kuri siandien|vilket datum)\b/.test(t))return{t:'date'};
+  if(/\b(planai|planas|kalendor\w*|ivyki\w*|vyks\w*|vyksta|suplanuot\w*|kas bus|kas siandien|kas rytoj|idag|imorgon|handelser)\b/.test(t)||/\bkas\b.*\b(siandien|rytoj)\b/.test(t))return{t:'events',tom:tom};
+  if(/\b(labas\w*|sveik\w*|sveiki|hej|hallo|ei)\b/.test(t))return{t:'hello'};
+  return{t:'unknown'};
+}
+function voiceRemind(raw,now){
+  now=now||new Date();
+  var fold=function(x){return x.replace(/[ąä]/g,'a').replace(/č/g,'c').replace(/[ęė]/g,'e').replace(/į/g,'i').replace(/š/g,'s').replace(/[ųū]/g,'u').replace(/ž/g,'z')};
+  var t=String(raw||'').trim().toLowerCase().replace(/[„“”"]/g,''),f=fold(t);
+  if(!/prim\w*/.test(f))return null;
+  var cut=function(re){var m=f.match(re);if(!m)return null;var i=m.index,l=m[0].length;t=t.slice(0,i)+' '+t.slice(i+l);f=f.slice(0,i)+' '+f.slice(i+l);return m};
+  cut(/^\s*(pridek|sukurk|sukurti|irasyk|uzrasyk)?\s*(nauja|naują)?\s*/);
+  cut(/\bprim(inima|inimas|ink|inti|inu|enk)\w*\s*(man|mums|mus)?\s*[:,\-]?\s*/);
+  var due=null,used=false,off=0,hh=null,mm=0,part=null,r;
+  var W={'viena':1,'vienos':1,'dvieju':2,'dvi':2,'triju':3,'trys':3,'keturiu':4,'penkiu':5,'sesiu':6,'septyniu':7,'astuoniu':8,'devyniu':9,'desimt':10,'penkiolika':15,'dvidesimt':20,'trisdesimt':30};
+  var wm=function(x){return /^\d+$/.test(x)?+x:(W[x]||null)};
+  if((r=f.match(/\bpo\s+(\d+|[a-z]+)\s+(min\w*|val\w*)/))&&wm(r[1])){var n=wm(r[1]);var u=/^min/.test(r[2]);cut(/\bpo\s+(\d+|[a-z]+)\s+(min\w*|val\w*)/);due=now.getTime()+n*(u?60000:3600000)}
+  else if(cut(/\bpo\s+pusvalandzio\b/)){due=now.getTime()+1800000}
+  else if(cut(/\bpo\s+valandos\b/)){due=now.getTime()+3600000}
+  if(due===null){
+    if(cut(/\b(rytoj|rytojaus)\b/)){off=1;used=true}
+    else if(cut(/\bporyt\b/)){off=2;used=true}
+    else if(cut(/\b(siandien)\b/)){off=0;used=true}
+    if(r=cut(/\b(\d{1,2})[:.](\d{2})\b/)){hh=+r[1];mm=+r[2]}
+    else if(r=cut(/\b(\d{1,2})\s*(valanda|valand\w*|val\.?|h)(?![a-z])/)){hh=+r[1]}
+    if(cut(/\b(vakare|vakaro|vakara)\b/))part='v';
+    else if(cut(/\b(ryte|ryta|ryto)\b/))part='r';
+    else if(cut(/\b(popiet|po pietu)\b/))part='p';
+    if(hh===null&&!used&&!part)return{need:'time'};
+    if(hh===null)hh=part==='v'?19:part==='p'?15:part==='r'?8:9;
+    else if(hh<12&&(part==='v'||part==='p'))hh+=12;
+    var d=new Date(now);d.setHours(hh,mm,0,0);d.setDate(d.getDate()+off);
+    if(!used&&d.getTime()<=now.getTime())d.setDate(d.getDate()+1);
+    due=d.getTime();
+  }
+  t=t.replace(/^[\s,:;.\-]+/,'').replace(/^(kad|apie|ka|ką)\s+/,'').replace(/\s+/g,' ').replace(/[\s,.]+$/,'').trim();
+  if(!t)return{need:'text'};
+  return{text:t.charAt(0).toUpperCase()+t.slice(1),due:due};
+}
+var voiceRec=null,voiceOn=false;
+function voiceReply(r){
+  var now=new Date(),d0=new Date(now);d0.setHours(0,0,0,0);
+  if(r.t==='remind'){
+    var q=voiceRemind(r.raw,now);
+    if(!q)return{s:'Nesupratau priminimo.'};
+    if(q.need==='time')return{s:'Kada priminti? Pvz.: primink rytoj 15:00 nupirkti pieno.'};
+    if(q.need==='text')return{s:'Ką priminti? Pvz.: primink rytoj 15:00 nupirkti pieno.'};
+    var nn={id:nid(),text:q.text,due:q.due,need:true,ack:false,last:0};touch(nn);notes.push(nn);save();try{render();check()}catch(e){}
+    var dd=new Date(q.due),dk2=dkey(dd),tk=dkey(new Date(now.getTime())),tm2=new Date(d0);tm2.setDate(tm2.getDate()+1);
+    var when=dk2===tk?'šiandien':dk2===dkey(tm2)?'rytoj':dd.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});
+    return{s:'Gerai, priminsiu '+when+' '+('0'+dd.getHours()).slice(-2)+':'+('0'+dd.getMinutes()).slice(-2)+': '+q.text+'.',undo:nn.id};
+  }
+  if(r.t==='hello')return{s:'Labas! Kuo galiu padėti?'};
+  if(r.t==='time')return{s:'Dabar '+('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+'.'};
+  if(r.t==='date'){var w=now.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});return{s:'Šiandien '+w+'.'}}
+  if(r.t==='call'){
+    var c=cfgItem().call||{},nm={mama:'mamai',tevas:'tėčiui'},who=r.who;
+    if(!who)return{s:'Kam skambinti: mamai ar tėčiui?'};
+    var val=(c[who]||'').replace(/[^0-9a-zA-Z@.+_\-]/g,'');
+    if(!val)return{s:'Nustatymuose dar nėra '+(who==='mama'?'mamos':'tėčio')+' numerio.'};
+    return{s:'Skambinu '+nm[who]+'.',call:val,callName:who==='mama'?'Mama':'Tėtis'};
+  }
+  if(r.t==='price'){
+    var cs=null;try{cs=currentSlot()}catch(e){}
+    if(!PRICE||!cs)return{s:'Elektros kainos dar neturiu.'};
+    return{s:'Elektros kaina dabar '+ore(cs.total)+' öre/kWh. '+(LV[cs.level]||'')+'.'};
+  }
+  if(r.t==='weather'){
+    if(!WX||!WX.now)return{s:'Orų dar neturiu.'};
+    var d0w=WX.days&&WX.days[0];
+    return{s:'Dabar '+WX.place+' '+WX.now.t+'°, '+String(WX.now.c).toLowerCase()+'.'+(d0w?' Šiandien nuo '+d0w[2]+' iki '+d0w[1]+'°.':'')};
+  }
+  if(r.t==='events'){
+    var d=new Date(d0);if(r.tom)d.setDate(d.getDate()+1);
+    var l=dayList(d),lab=r.tom?'Rytoj':'Šiandien';
+    if(!l.length)return{s:lab+' nieko nesuplanuota.'};
+    return{s:lab+' '+(l.length===1?'yra vienas įvykis':'yra '+l.length+' '+ltPl(l.length,'įvykis','įvykiai','įvykių'))+': '+l.map(function(e){return (e.time?e.time+' ':'')+e.title+(e.child?', '+e.child:'')}).join('; ')+'.'};
+  }
+  if(r.t==='school'){
+    var raw=schoolRaw();if(!raw||!raw.children)return{s:'Mokyklos duomenų dar neturiu.'};
+    var d1=new Date(d0);if(r.tom)d1.setDate(d1.getDate()+1);var dk=dkey(d1),out=[];
+    Object.keys(raw.children).forEach(function(n){raw.children[n].forEach(function(x){if(x.d===dk)out.push((x.t?x.t+' ':'')+x.title+' ('+n+')')})});
+    var lb=r.tom?'Rytoj':'Šiandien';
+    return{s:out.length?lb+' mokykloje: '+out.join('; ')+'.':lb+' mokykloje nieko nėra.'};
+  }
+  return{s:'Nesupratau. Pabandyk pasakyti: skambink mamai, kas šiandien, kokia elektros kaina, koks oras.'};
+}
+function voiceShowCall(res){
+  var b=$('bubble');b.innerHTML='';var tx=document.createElement('div');tx.textContent=res.s;b.appendChild(tx);
+  var a=document.createElement('a');a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;border-radius:999px;color:#fff;text-decoration:none;font-weight:800;cursor:pointer';
+  if(res.call){a.href='facetime:'+res.call;a.textContent='📞 Skambinti: '+res.callName;a.style.background='#34C759'}
+  else if(res.undo){a.textContent='↩ Atšaukti';a.style.background='#8A94B8';a.onclick=function(e){e.preventDefault();var n=notes.filter(function(q){return q.id===res.undo})[0];if(n){n.deleted=true;touch(n);save();try{render();check()}catch(x){}}a.textContent='Atšaukta';a.style.pointerEvents='none'}}
+  b.appendChild(a);
+  b.classList.add('show');b.style.pointerEvents='auto';window.__keepB=Date.now()+14000;clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show');b.style.pointerEvents=''},14000);
+}
+function voiceStop(){voiceOn=false;$('talk').classList.remove('listen');try{voiceRec&&voiceRec.abort()}catch(e){}}
+function voiceStart(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){botSay('Šiame įrenginyje balso atpažinimas neveikia.',false);return}
+  if(voiceOn){voiceStop();return}
+  try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(e){}
+  var r=new SR();voiceRec=r;r.lang='lt-LT';r.interimResults=false;r.maxAlternatives=3;r.continuous=false;
+  var got=false;
+  r.onstart=function(){voiceOn=true;$('talk').classList.add('listen');botSay('Klausau…',false)};
+  r.onresult=function(ev){
+    got=true;var alts=[];for(var i=0;i<ev.results[0].length;i++)alts.push(ev.results[0][i].transcript);
+    var best=null,heard=alts[0];
+    for(var k=0;k<alts.length;k++){var it=voiceIntent(alts[k]);if(it.t!=='unknown'){best=it;heard=alts[k];break}}
+    if(!best)best=voiceIntent(alts[0]);
+    var res=voiceReply(best);
+    if(res.call||res.undo){botSay('„'+heard+'“ – '+res.s,true,false);voiceShowCall(res)}
+    else botSay('„'+heard+'“ – '+res.s,true,false);
+  };
+  r.onerror=function(ev){
+    got=true;var e=ev&&ev.error,m='Balso klaida: '+e;
+    if(e==='not-allowed'||e==='service-not-allowed')m='Reikia leisti mikrofoną ir kalbos atpažinimą (iPhone nustatymai › Privatumas › Mikrofonas / Kalbos atpažinimas).';
+    else if(e==='no-speech')m='Nieko negirdėjau. Bandyk dar kartą.';
+    else if(e==='language-not-supported')m='Lietuvių kalbos atpažinimas šiame įrenginyje nepasiekiamas.';
+    botSay(m,false);
+  };
+  r.onend=function(){voiceStop();if(!got)botSay('Nieko negirdėjau. Bandyk dar kartą.',false)};
+  try{r.start()}catch(e){botSay('Nepavyko paleisti mikrofono.',false)}
+}
+$('talk').onclick=voiceStart;
 $('logo').onclick=botClick;
 $('logo').onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();botClick()}};
 
@@ -2842,6 +3008,49 @@ function pushRun(force){
   document.addEventListener('visibilitychange',function(){if(!document.hidden)pushSoon(false)});
 })();
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+
+/* Sezoninis Bottie vardas */
+(function(){
+  function easter(y){var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da)}
+  function season(now){
+    var q=(location.search.match(/sasong=(\w+)/)||[])[1];if(q)return q;
+    var m=now.getMonth()+1,d=now.getDate(),e=easter(now.getFullYear()),t=new Date(now.getFullYear(),m-1,d);
+    var dd=Math.round((t-e)/864e5);
+    if(dd>=-7&&dd<=1)return 'pask';
+    if(m===12&&d<=26)return 'jul';
+    if(m===12||m<=2)return 'vinter';
+    if(m===10&&d>=25)return 'halloween';
+    if(m<=5)return 'var';
+    if(m<=8)return 'sommar';
+    return 'host';
+  }
+  var P={
+    vinter:{a:'#3A7BD5',b:'#8FD3F8',cls:'sn ic',dot:'❄',fl:1},
+    jul:{a:'#D32F2F',b:'#2E7D32',cls:'sn',hat:1,fl:1},
+    pask:{a:'#F5B93C',b:'#6FBF5B',em:'🐣'},
+    halloween:{a:'#FF9F1C',b:'#E4572E',em:'🎃'},
+    var:{a:'#6BCB77',b:'#F2A7C3',em:'🌷'},
+    sommar:{a:'#FFC93C',b:'#FF6B6B',em:'☀️'},
+    host:{a:'#FF9F1C',b:'#C8553D',em:'🍂'}
+  };
+  function hx(c){return[1,3,5].map(function(i){return parseInt(c.substr(i,2),16)})}
+  function mix(a,b,t){var x=hx(a),y=hx(b);return 'rgb('+x.map(function(v,i){return Math.round(v+(y[i]-v)*t)}).join(',')+')'}
+  function build(){
+    var h=document.getElementById('hname');if(!h)return;
+    var k=season(new Date()),p=P[k]||P.host,w='Bottie'.split(''),o='';
+    w.forEach(function(ch,i){
+      var c=mix(p.a,p.b,i/(w.length-1)),cl='ch'+(i===0?'':(ch==='t'?' tt':' lo')),inner=ch;
+      if(ch==='i'&&p.dot){inner='ı<b class="dot" style="color:'+c+'">'+p.dot+'</b>'}
+      if(i===0&&p.hat)inner+='<svg class="hat" viewBox="0 0 44 44" aria-hidden="true"><path d="M6 36 Q8 8 30 6 Q26 14 36 30 Z" fill="#E53935"/><rect x="2" y="30" width="38" height="9" rx="4.5" fill="#fff"/><circle cx="31" cy="7" r="5" fill="#fff"/></svg>';
+      o+='<span class="'+cl+'" style="color:'+c+'">'+inner+'</span>';
+    });
+    if(p.fl)o+='<b class="fl" style="left:18%">❄</b><b class="fl" style="left:62%;animation-delay:-5s">❅</b>';
+    if(p.em)o+='<span class="em">'+p.em+'</span>';
+    h.className=p.cls||'';h.innerHTML=o;h.setAttribute('aria-label','Bottie');
+  }
+  build();
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)build()});
+})();
 </script>
 </body>
 </html>
