@@ -45,11 +45,16 @@ h1{font-size:2rem;margin:0;line-height:1}
 @keyframes hatsw{50%{transform:rotate(3deg)}}
 #hname .fl{position:absolute;top:-.1em;font-size:.32em;font-weight:400;opacity:0;pointer-events:none;color:#9ec9ee;animation:fldrift 11s ease-in-out infinite}
 @keyframes fldrift{0%{opacity:0;transform:translateY(0)}20%{opacity:.7}80%{opacity:.5}100%{opacity:0;transform:translateY(1.7em) translateX(.25em)}}
+#hname .lf{position:absolute;left:-.1em;top:.1em;font-size:.36em;font-weight:400;opacity:0;pointer-events:none;animation:lfblow 14s ease-in-out infinite}
+@keyframes lfblow{0%{opacity:0;transform:translate(0,0) rotate(0)}12%{opacity:.85}30%{transform:translate(2.4em,-1.1em) rotate(110deg)}50%{transform:translate(4.8em,.8em) rotate(230deg)}70%{transform:translate(7.2em,-.6em) rotate(340deg)}88%{opacity:.7}100%{opacity:0;transform:translate(9.4em,1.6em) rotate(450deg)}}
+#hname .tree{position:relative;display:inline-block;width:.97em;height:1em;margin:0 -.13em;vertical-align:bottom}
+#hname .tree svg{position:absolute;left:0;bottom:.15em;width:100%;height:1.3em;overflow:visible}
 #hname .em{font-size:.6em;margin-left:.2em;font-weight:400}
 @media (prefers-reduced-motion:reduce){#hname *{animation:none!important}}
 
 #talk{background:transparent;color:var(--accent,#5FD4B0);border:0;box-shadow:none;min-height:40px;width:36px;padding:0;display:flex;align-items:center;justify-content:center;margin:0 0 0 -16px;opacity:.9}
 #talk svg{width:30px;height:30px}
+#vbox{display:flex;gap:8px;margin:-4px 0 14px}#vbox[hidden]{display:none}#vbox input{flex:1;min-width:0;font:inherit;font-size:16px;padding:11px 14px;border-radius:14px;border:2px solid #2FBF94;background:#fff;color:inherit}#vbox button{border:0;border-radius:14px;background:#2FBF94;color:#fff;font-size:20px;width:48px}
 #talk.listen{animation:tpulse 1s ease-in-out infinite;opacity:1;color:#2FBF94}
 @keyframes tpulse{50%{transform:scale(1.25)}}
 body.disp #talk{display:none}
@@ -400,6 +405,7 @@ body.disp main{padding:10px 22px 48px}
     <button id="updapp" type="button" aria-label="Atnaujinti programą" title="Atnaujinti programą"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
     <button id="gear" type="button" aria-label="Nustatymai" title="Nustatymai"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
+  <form id="vbox" hidden autocomplete="off"><input id="vin" type="text" enterkeyhint="send" placeholder="Rašyk arba diktuok (mikrofonas klaviatūroje)…" aria-label="Komanda Bottie"><button type="submit" aria-label="Siųsti">➤</button></form>
 
   <section class="card" id="sheet" aria-label="Naujas užrašas">
     <textarea id="txt" placeholder="Ką norėtum prisiminti?" aria-label="Naujas užrašas"></textarea>
@@ -502,7 +508,7 @@ body.disp main{padding:10px 22px 48px}
       </select>
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
-      <div class="meta">Versija 79</div></div>
+      <div class="meta">Versija 83</div></div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1273,9 +1279,72 @@ function voiceShowCall(res){
   b.classList.add('show');b.style.pointerEvents='auto';window.__keepB=Date.now()+14000;clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show');b.style.pointerEvents=''},14000);
 }
 function voiceStop(){voiceOn=false;$('talk').classList.remove('listen');try{voiceRec&&voiceRec.abort()}catch(e){}}
+function voiceRun(text){
+  var best=voiceIntent(text),res=voiceReply(best);
+  botSay('„'+text+'“ – '+res.s,true,false);
+  if(res.call||res.undo)voiceShowCall(res);
+}
+function voiceBox(msg){
+  var b=$('vbox');b.hidden=false;if(msg)botSay(msg,false);
+  setTimeout(function(){try{$('vin').focus()}catch(e){}},50);
+}
+$('vbox').onsubmit=function(e){e.preventDefault();var v=$('vin').value.trim();if(!v)return;$('vin').value='';$('vin').blur();$('vbox').hidden=true;voiceRun(v)};
+/* Įrašymas + Gemini (kai naršyklės atpažinimas neveikia, pvz. pagrindiniame ekrane) */
+var REC=null;
+function wavB64(chunks,sr){
+  var n=0;chunks.forEach(function(c){n+=c.length});var all=new Float32Array(n),o=0;chunks.forEach(function(c){all.set(c,o);o+=c.length});
+  var r=sr/16000,m=Math.floor(n/r),pcm=new Int16Array(m);
+  for(var i=0;i<m;i++){var a=Math.floor(i*r),b=Math.min(n,Math.floor((i+1)*r)),sum=0,k=0;for(var j=a;j<b;j++){sum+=all[j];k++}var v=k?sum/k:0;v=Math.max(-1,Math.min(1,v));pcm[i]=v<0?v*32768:v*32767}
+  var buf=new ArrayBuffer(44+m*2),d=new DataView(buf);
+  function ws(p,t){for(var i=0;i<t.length;i++)d.setUint8(p+i,t.charCodeAt(i))}
+  ws(0,'RIFF');d.setUint32(4,36+m*2,true);ws(8,'WAVE');ws(12,'fmt ');d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,1,true);d.setUint32(24,16000,true);d.setUint32(28,32000,true);d.setUint16(32,2,true);d.setUint16(34,16,true);ws(36,'data');d.setUint32(40,m*2,true);
+  for(var q=0;q<m;q++)d.setInt16(44+q*2,pcm[q],true);
+  var bytes=new Uint8Array(buf),s='';for(var z=0;z<bytes.length;z+=8192)s+=String.fromCharCode.apply(null,bytes.subarray(z,z+8192));
+  return btoa(s);
+}
+function recCanDo(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&(window.AudioContext||window.webkitAudioContext)&&schoolCfg())}
+function recStart(){
+  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}).then(function(stream){
+    var AC=window.AudioContext||window.webkitAudioContext,ctx=new AC();try{ctx.resume()}catch(e){}
+    var src=ctx.createMediaStreamSource(stream),proc=ctx.createScriptProcessor(4096,1,1),chunks=[],t0=Date.now(),heard=false,lastLoud=0,floor=0,nch=0,done=false;
+    proc.onaudioprocess=function(ev){
+      if(done)return;var d=ev.inputBuffer.getChannelData(0);chunks.push(new Float32Array(d));
+      var s=0;for(var i=0;i<d.length;i+=4)s+=d[i]*d[i];var rms=Math.sqrt(s/(d.length/4)),now=Date.now();
+      nch++;if(nch<=3){floor=Math.max(floor,rms);return}
+      var thr=Math.max(.02,floor*3);
+      if(rms>thr){heard=true;lastLoud=now}
+      if(heard&&now-lastLoud>1300)fin(false);
+      else if(!heard&&now-t0>8000)fin(true);
+      else if(now-t0>15000)fin(false);
+    };
+    src.connect(proc);proc.connect(ctx.destination);
+    function cleanup(){try{proc.disconnect();src.disconnect()}catch(e){}try{stream.getTracks().forEach(function(t){t.stop()})}catch(e){}try{ctx.close()}catch(e){}}
+    function fin(cancel){
+      if(done)return;done=true;REC=null;cleanup();voiceOn=false;$('talk').classList.remove('listen');
+      if(cancel||!heard){botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
+      botSay('Galvoju…',false);
+      var c=schoolCfg(),sr=ctx.sampleRate||48000,b64;
+      try{b64=wavB64(chunks,sr)}catch(e){voiceBox('Nepavyko apdoroti garso. Rašyk komandą.');return}
+      fetch(c.url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({op:'stt',key:c.key,mime:'audio/wav',audio:b64})})
+        .then(function(r){return r.json()}).then(function(j){
+          if(j.error){voiceBox('Balso klaida: '+(j.error==='unauthorized'?'neteisingas raktas':j.error)+'. Rašyk komandą.');return}
+          var t=(j.text||'').trim();if(!t){botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
+          voiceRun(t);
+        }).catch(function(){voiceBox('Nepavyko prisijungti. Rašyk komandą.')});
+    }
+    REC={stop:function(){fin(false)}};voiceOn=true;$('talk').classList.add('listen');botSay('Klausau…',false);
+  }).catch(function(e){
+    voiceBox(e&&e.name==='NotAllowedError'?'Reikia leisti mikrofoną (paprašys, kai paspausi „Leisti“). Rašyk komandą.':'Mikrofonas nepasiekiamas. Rašyk komandą.');
+  });
+}
 function voiceStart(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){botSay('Šiame įrenginyje balso atpažinimas neveikia.',false);return}
+  var standalone=!!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
+  if(!$('vbox').hidden&&!voiceOn)$('vbox').hidden=true;
+  if(REC){REC.stop();return}
+  if(!SR||standalone){
+    if(recCanDo()){try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(e){}recStart();return}
+    voiceBox('Rašyk komandą arba paspausk mikrofoną klaviatūroje ir kalbėk.');return}
   if(voiceOn){voiceStop();return}
   try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(e){}
   var r=new SR();voiceRec=r;r.lang='lt-LT';r.interimResults=false;r.maxAlternatives=3;r.continuous=false;
@@ -1292,7 +1361,7 @@ function voiceStart(){
   };
   r.onerror=function(ev){
     got=true;var e=ev&&ev.error,m='Balso klaida: '+e;
-    if(e==='not-allowed'||e==='service-not-allowed')m='Reikia leisti mikrofoną ir kalbos atpažinimą (iPhone nustatymai › Privatumas › Mikrofonas / Kalbos atpažinimas).';
+    if(e==='not-allowed'||e==='service-not-allowed'||e==='language-not-supported'){voiceBox('Balso atpažinimas čia neveikia. Rašyk komandą arba naudok mikrofoną klaviatūroje.');return}
     else if(e==='no-speech')m='Nieko negirdėjau. Bandyk dar kartą.';
     else if(e==='language-not-supported')m='Lietuvių kalbos atpažinimas šiame įrenginyje nepasiekiamas.';
     botSay(m,false);
@@ -3031,22 +3100,68 @@ if('serviceWorker' in navigator){window.addEventListener('load',function(){navig
     halloween:{a:'#FF9F1C',b:'#E4572E',em:'🎃'},
     var:{a:'#6BCB77',b:'#F2A7C3',em:'🌷'},
     sommar:{a:'#FFC93C',b:'#FF6B6B',em:'☀️'},
-    host:{a:'#FF9F1C',b:'#C8553D',em:'🍂'}
+    host:{a:'#FF9F1C',b:'#C8553D',tree:1}
   };
   function hx(c){return[1,3,5].map(function(i){return parseInt(c.substr(i,2),16)})}
   function mix(a,b,t){var x=hx(a),y=hx(b);return 'rgb('+x.map(function(v,i){return Math.round(v+(y[i]-v)*t)}).join(',')+')'}
+  var treeStop=null;
+  function tree(svg){
+    if(treeStop)treeStop();
+    var NS='http://www.w3.org/2000/svg',seed=7;
+    function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647}
+    function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e}
+    var BR='#6B4429';
+    el('path',{d:'M29 100 C34 98 35 94 35.5 88 C36 78 36.5 70 37 62 L43 62 C43.5 72 44 80 44.5 88 C45 94 47 98 52 100 Z',fill:BR});
+    el('path',{d:'M40 100 C40.5 90 40.5 78 40.5 64',stroke:'#835536','stroke-width':1.2,fill:'none',opacity:.7});
+    var crown=el('g',{}),br=el('g',{},crown);
+    [['M40 66 C34 58 24 52 12 44',4.2],['M40 64 C46 56 52 50 60 42',4],['M40 62 C40 52 40 42 41 30',3.4],['M33 56 C28 54 24 50 20 48',2],['M47 54 C52 52 56 48 60 47',2],['M30 48 C27 42 26 36 25 30',1.8],['M50 44 C53 38 54 32 56 28',1.8],['M41 44 C37 40 35 36 33 32',1.6],['M41 40 C45 36 47 32 49 26',1.6]].forEach(function(b){el('path',{d:b[0],stroke:BR,'stroke-width':b[1],'stroke-linecap':'round',fill:'none'},br)});
+    var lc=[['#B8431F','#C8553D','#A33A22'],['#E4572E','#E8742A','#D9531E'],['#FF9F1C','#F5B93C','#FF8A3D']],L=[],lay=el('g',{},crown);
+    for(var i=0;i<100;i++){
+      var ly=i<34?0:(i<70?1:2),a=rnd()*6.283,r=Math.sqrt(rnd()),x=33+Math.cos(a)*r*(ly?38:42),y=26+Math.sin(a)*r*(ly?21:25)-(ly==2?2:0),g=el('g',{},lay),sz=ly==2?1.15:1;
+      el('ellipse',{cx:0,cy:0,rx:4.8*sz,ry:2.9*sz,fill:lc[ly][i%3]},g);
+      if(ly==2)el('path',{d:'M-3.6 0 L3.6 0',stroke:'rgba(0,0,0,.18)','stroke-width':.5},g);
+      L.push({g:g,x:x,y:y,r:rnd()*180-90,i:i,ph:rnd()*6.28});
+    }
+    function put(l,x,y,a,o){l.g.setAttribute('transform','translate('+x.toFixed(1)+','+y.toFixed(1)+') rotate('+a.toFixed(0)+')');l.g.setAttribute('opacity',o)}
+    L.forEach(function(l){put(l,l.x,l.y,l.r,1)});
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+    function env(t,a,b){return t<a||t>b?0:Math.sin((t-a)/(b-a)*Math.PI)}
+    var timer=0,raf=0,dead=false;
+    function gust(){
+      var n=1+(Math.random()<.5?1:0),F={};
+      while(Object.keys(F).length<n){var k=70+Math.floor(Math.random()*30);F[k]={t0:1.4+Math.random()*2,d:4.4+Math.random()*.8,dx:(Math.random()-.5)*34}}
+      var t0=performance.now();
+      (function step(now){
+        if(dead)return;var t=(now-t0)/1000;
+        if(t>10.4){L.forEach(function(l){put(l,l.x,l.y,l.r,1)});crown.setAttribute('transform','');timer=setTimeout(gust,15000+Math.random()*25000);return}
+        var g=env(t,0,6.4);crown.setAttribute('transform','rotate('+(g*2.2*Math.sin(t*6.5)).toFixed(2)+' 40 66)');
+        L.forEach(function(l){
+          var ang=l.r+g*14*Math.sin(t*9+l.ph),x=l.x+g*1.1*Math.sin(t*8+l.ph),y=l.y+g*.7*Math.sin(t*7+l.ph*2),op=1,f=F[l.i];
+          if(f){
+            if(t>=f.t0&&t<f.t0+f.d){var u=(t-f.t0)/f.d;y=l.y+u*(94-l.y);x=l.x+f.dx*u+8*Math.sin(u*9);ang=l.r+u*280+35*Math.sin(u*9);op=u>.82?(1-u)/.18:1}
+            else if(t>=f.t0+f.d){op=t>8.8?Math.min(1,(t-8.8)/1.5):0}
+          }
+          put(l,x,y,ang,op)});
+        raf=requestAnimationFrame(step)})(t0);
+    }
+    treeStop=function(){dead=true;clearTimeout(timer);cancelAnimationFrame(raf)};
+    timer=setTimeout(gust,2500+Math.random()*3000);
+  }
   function build(){
     var h=document.getElementById('hname');if(!h)return;
     var k=season(new Date()),p=P[k]||P.host,w='Bottie'.split(''),o='';
     w.forEach(function(ch,i){
       var c=mix(p.a,p.b,i/(w.length-1)),cl='ch'+(i===0?'':(ch==='t'?' tt':' lo')),inner=ch;
       if(ch==='i'&&p.dot){inner='ı<b class="dot" style="color:'+c+'">'+p.dot+'</b>'}
+      if(i===3&&p.tree)inner='<span class="tree"><svg viewBox="0 0 80 100" aria-hidden="true"></svg></span>';
       if(i===0&&p.hat)inner+='<svg class="hat" viewBox="0 0 44 44" aria-hidden="true"><path d="M6 36 Q8 8 30 6 Q26 14 36 30 Z" fill="#E53935"/><rect x="2" y="30" width="38" height="9" rx="4.5" fill="#fff"/><circle cx="31" cy="7" r="5" fill="#fff"/></svg>';
       o+='<span class="'+cl+'" style="color:'+c+'">'+inner+'</span>';
     });
     if(p.fl)o+='<b class="fl" style="left:18%">❄</b><b class="fl" style="left:62%;animation-delay:-5s">❅</b>';
+    if(false)o+='<b class="lf">🍂</b><b class="lf" style="animation-delay:-5s;top:.3em">🍁</b><b class="lf" style="animation-delay:-9.5s;top:-.1em">🍃</b>';
     if(p.em)o+='<span class="em">'+p.em+'</span>';
     h.className=p.cls||'';h.innerHTML=o;h.setAttribute('aria-label','Bottie');
+    var ts=h.querySelector('.tree svg');if(ts)tree(ts);
   }
   build();
   document.addEventListener('visibilitychange',function(){if(!document.hidden)build()});
