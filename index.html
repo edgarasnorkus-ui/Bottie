@@ -524,7 +524,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 110</div>
+    <div id="verset">Versija 111</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1429,7 +1429,7 @@ function wavB64(chunks,sr){
 function recCanDo(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&(window.AudioContext||window.webkitAudioContext)&&schoolCfg())}
 var SES=null;
 function sesClose(){if(!SES)return;var x=SES;SES=null;clearTimeout(x.t);try{x.stream.getTracks().forEach(function(t){t.stop()})}catch(e){}try{x.ctx.close()}catch(e){}}
-function recStart(q){
+function recStart(q,fresh){
   var run=function(stream,ctx){
     var src=ctx.createMediaStreamSource(stream),proc=ctx.createScriptProcessor(4096,1,1),chunks=[],t0=Date.now(),heard=false,lastLoud=0,floor=0,nch=0,done=false;
     proc.onaudioprocess=function(ev){
@@ -1460,10 +1460,18 @@ function recStart(q){
           window.__viaVoice=true;setTimeout(function(){voiceRun(t)},400);
         }).catch(function(e){stopT();voiceBox(e&&e.name==='AbortError'?'Per ilgai laukta (70 s). Rašyk komandą.':'Nepavyko prisijungti. Rašyk komandą.')});
     }
+    setTimeout(function(){if(done||nch>0)return;done=true;REC=null;cleanup();voiceOn=false;$('talk').classList.remove('listen');sesClose();
+      if(!fresh)recStart(q,true);else voiceBox('Mikrofonas nutilo. Paspausk mikrofoną ir kalbėk dar kartą.')},1800);
     REC={stop:function(){fin(false)}};voiceOn=true;$('talk').classList.add('listen');botSay('Klausau…',false);
   };
-  var live=SES&&SES.ctx.state!=='closed'&&SES.stream.getTracks().some(function(t){return t.readyState==='live'});
-  if(live){clearTimeout(SES.t);try{SES.ctx.resume()}catch(e){}run(SES.stream,SES.ctx);return}
+  var live=!fresh&&SES&&SES.ctx.state!=='closed'&&SES.stream.getAudioTracks().some(function(t){return t.readyState==='live'});
+  if(live){
+    clearTimeout(SES.t);try{SES.ctx.resume()}catch(e){}
+    var tr=SES.stream.getAudioTracks()[0],go=function(){if(SES)run(SES.stream,SES.ctx)};
+    if(tr&&tr.muted){var fired=false,onu=function(){if(fired)return;fired=true;tr.removeEventListener('unmute',onu);setTimeout(go,150)};tr.addEventListener('unmute',onu);setTimeout(function(){if(!fired){fired=true;tr.removeEventListener('unmute',onu);go()}},2500)}
+    else go();
+    return;
+  }
   sesClose();
   navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(function(stream){
     var AC=window.AudioContext||window.webkitAudioContext,ctx=new AC();try{ctx.resume()}catch(e){}
