@@ -524,7 +524,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 102</div>
+    <div id="verset">Versija 104</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -546,7 +546,7 @@ function BOTF(k){
   return '<defs><linearGradient id="hd'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9D6F7"/></linearGradient></defs>'
    +'<g transform="translate(50 50) scale(1.12) translate(-50 -53)">'
    +'<rect x="48.8" y="19" width="2.4" height="11" rx="1.2" fill="#fff" stroke="#8FA6E8" stroke-width="1"/><path d="M49.5 20C44 14 37 15 36 19C41 22 46 22 49.5 20Z" fill="#B8F5DF" stroke="#8FA6E8" stroke-width="1"/><path d="M50.5 20C56 14 63 15 64 19C59 22 54 22 50.5 20Z" fill="#fff" stroke="#8FA6E8" stroke-width="1"/>'
-   +'<rect x="20" y="29" width="60" height="53" rx="24" fill="url(#hd'+k+')" stroke="#8FA6E8" stroke-width="1.8"/>'
+   +'<rect x="20" y="29" width="60" height="53" rx="17" fill="url(#hd'+k+')" stroke="#8FA6E8" stroke-width="1.8"/>'
    +'<rect x="28" y="38" width="44" height="30" rx="14" fill="#12204A"/>'
    +'<g class="beye"><path d="M36 51Q39.5 46.5 43 51M57 51Q60.5 46.5 64 51" stroke="#5CF2D0" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>'
    +'<circle cx="35" cy="58" r="2.8" fill="#9B6479"/><circle cx="65" cy="58" r="2.8" fill="#9B6479"/>'
@@ -1262,10 +1262,13 @@ function voiceEvent(raw,now){
   else if(r=cut(/\b(sekmadien|pirmadien|antradien|treciadien|ketvirtadien|penktadien|sestadien)\w*/)){
     d=new Date(base);var df=(W[r[1]]-base.getDay()+7)%7;if(df===0)df=7;d.setDate(d.getDate()+df)}
   var kid='';cfgItem().children.forEach(function(c){var k=fold(String(c.name).toLowerCase()).slice(0,4);if(k&&!kid){var m=cut(new RegExp('\\b'+k+'\\w*'));if(m)kid=c.name}});
+  var allday=!!cut(/\b(visa diena|visa dien\w*|be laiko)\b/),every=!!cut(/\b(visiems|seimai|visai seimai|abiem\w*|visi)\b/);
   t=t.replace(/\b(kas savait\w*)\b/g,' ');
   t=t.replace(/^[\s,:;.\-]+/,'').replace(/^(kad|apie|ka|ką|su|man|mums|mus|vaikui|vaikams)\s+/,'').replace(/\b(del|dėl|vaikui|vaikams|man|mums|mus)\s*$/,'').replace(/\s+/g,' ').replace(/(^|\s)(į|i)\s*$/i,'').replace(/[\s,.:;]+$/,'').trim();
   if(!d)return{need:'date'};
   if(!t)return{need:'text'};
+  if(hh===null&&!allday)return{need:'time'};
+  if(!kid&&!every)return{need:'who'};
   return{title:t.charAt(0).toUpperCase()+t.slice(1),date:d,time:hh===null?'':('0'+hh).slice(-2)+':'+('0'+mm).slice(-2),child:kid,weekly:weekly};
 }
 function voiceReply(r){
@@ -1284,6 +1287,8 @@ function voiceReply(r){
     var q=voiceEvent(r.raw,now);
     if(q.need==='date')return{ask:1,s:'Kada? Pvz.: rytoj 15:00 arba penktadienį.'};
     if(q.need==='text')return{ask:1,s:'Koks įvykis? Pvz.: dantistas.'};
+    if(q.need==='time')return{ask:1,s:'Kelintą valandą? Arba pasakyk „visą dieną“.'};
+    if(q.need==='who')return{ask:1,s:'Kam tai? Pasakyk vardą ('+cfgItem().children.map(function(c){return c.name}).join(', ')+') arba „visiems“.'};
     var ne={id:nid(),kind:'event',title:q.title,child:q.child,date:dkey(q.date),time:q.time,place:'',weekly:q.weekly,acks:{},created:(dkey(q.date)<dkey(new Date())?dkey(q.date):dkey(new Date()))};
     touch(ne);notes.push(ne);save();try{renderCal();renderHome();dispRefresh()}catch(e){}
     var tm3=new Date(d0);tm3.setDate(tm3.getDate()+1),dk3=dkey(q.date);
