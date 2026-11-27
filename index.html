@@ -524,7 +524,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 100</div>
+    <div id="verset">Versija 101</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1188,6 +1188,7 @@ function botClick(){
 function vNorm(t){return String(t||'').toLowerCase().replace(/[ąä]/g,'a').replace(/[čć]/g,'c').replace(/[ęė]/g,'e').replace(/į/g,'i').replace(/š/g,'s').replace(/[ųū]/g,'u').replace(/ž/g,'z').replace(/å/g,'a').replace(/ö/g,'o').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
 function voiceIntent(raw){
   var t=vNorm(raw);
+  if(/\b(pridek\w*|prideti|sukurk\w*|uzrasyk\w*|irasyk\w*|ivesk\w*|isirasyk\w*|lagg|skriv)\b/.test(t)&&/\b(kalendor\w*|ivyk\w*|renginy\w*|kalender)\b/.test(t))return{t:'event',raw:raw};
   if(/\bprim\w*/.test(t))return{t:'remind',raw:raw};
   var call=/\b(skambin\w*|paskambin\w*|skambut\w*|zvanyk\w*|ring\w*|facetime)\b/.test(t);
   if(call){
@@ -1240,6 +1241,33 @@ function voiceRemind(raw,now){
   return{text:t.charAt(0).toUpperCase()+t.slice(1),due:due};
 }
 var voiceRec=null,voiceOn=false;
+function voiceEvent(raw,now){
+  now=now||new Date();
+  var fold=function(x){return x.replace(/[ąä]/g,'a').replace(/č/g,'c').replace(/[ęė]/g,'e').replace(/į/g,'i').replace(/š/g,'s').replace(/[ųū]/g,'u').replace(/ž/g,'z')};
+  var t=String(raw||'').trim().toLowerCase().replace(/[„“”"]/g,''),f=fold(t);
+  var cut=function(re){var m=f.match(re);if(!m)return null;var i=m.index,l=m[0].length;t=t.slice(0,i)+' '+t.slice(i+l);f=f.slice(0,i)+' '+f.slice(i+l);return m};
+  for(var z=0;z<2;z++){cut(/\b(pridek\w*|prideti|sukurk\w*|uzrasyk\w*|irasyk\w*|isirasyk\w*|ivesk\w*)\b/);
+  cut(/\b(i|in)\s+(kalendori\w*|ivyki\w*|renginiu\s+sarasa)\b/);cut(/\b(kalendori\w*|nauja|nauja\s+ivyki\w*|ivyki\w*|renginy\w*)\b/);}
+  var d=null,hh=null,mm=0,r,weekly=!!cut(/\bkas\s+savait\w*/),W={sekmadien:0,pirmadien:1,antradien:2,treciadien:3,ketvirtadien:4,penktadien:5,sestadien:6};
+  if(r=cut(/\b(\d{1,2})[:.](\d{2})\b/)){hh=+r[1];mm=+r[2]}
+  else if(r=cut(/\b(?:(?:nuo|apie|per)\s+)?(\d{1,2})\s*(valanda|valand\w*|val\.?|h)(?![a-z])/)){hh=+r[1]}
+  var part=cut(/\b(vakare|vakaro|vakara)\b/)?'v':cut(/\b(popiet|po pietu)\b/)?'p':0;if(hh!==null&&hh<12&&part)hh+=12;
+  var base=new Date(now);base.setHours(0,0,0,0);
+  if(cut(/\b(rytoj|rytojaus)\b/)){d=new Date(base);d.setDate(d.getDate()+1)}
+  else if(cut(/\bporyt\b/)){d=new Date(base);d.setDate(d.getDate()+2)}
+  else if(cut(/\bsiandien\b/)){d=new Date(base)}
+  else if(r=cut(/\b(sausio|vasario|kovo|balandzio|geguzes|birzelio|liepos|rugpjucio|rugsejo|spalio|lapkricio|gruodzio)\s+(\d{1,2})\s*(d\.?|dien\w*)?/)){
+    var mo=['sausio','vasario','kovo','balandzio','geguzes','birzelio','liepos','rugpjucio','rugsejo','spalio','lapkricio','gruodzio'].indexOf(r[1]);
+    d=new Date(base.getFullYear(),mo,+r[2]);if(d<base)d.setFullYear(d.getFullYear()+1)}
+  else if(r=cut(/\b(sekmadien|pirmadien|antradien|treciadien|ketvirtadien|penktadien|sestadien)\w*/)){
+    d=new Date(base);var df=(W[r[1]]-base.getDay()+7)%7;if(df===0)df=7;d.setDate(d.getDate()+df)}
+  var kid='';cfgItem().children.forEach(function(c){var k=fold(String(c.name).toLowerCase()).slice(0,4);if(k&&!kid){var m=cut(new RegExp('\\b'+k+'\\w*'));if(m)kid=c.name}});
+  t=t.replace(/\b(kas savait\w*)\b/g,' ');
+  t=t.replace(/^[\s,:;.\-]+/,'').replace(/^(kad|apie|ka|ką|su|man|mums|mus|vaikui|vaikams)\s+/,'').replace(/\b(del|dėl|vaikui|vaikams|man|mums|mus)\s*$/,'').replace(/\s+/g,' ').replace(/(^|\s)(į|i)\s*$/i,'').replace(/[\s,.:;]+$/,'').trim();
+  if(!d)return{need:'date'};
+  if(!t)return{need:'text'};
+  return{title:t.charAt(0).toUpperCase()+t.slice(1),date:d,time:hh===null?'':('0'+hh).slice(-2)+':'+('0'+mm).slice(-2),child:kid,weekly:weekly};
+}
 function voiceReply(r){
   var now=new Date(),d0=new Date(now);d0.setHours(0,0,0,0);
   if(r.t==='remind'){
@@ -1251,6 +1279,16 @@ function voiceReply(r){
     var dd=new Date(q.due),dk2=dkey(dd),tk=dkey(new Date(now.getTime())),tm2=new Date(d0);tm2.setDate(tm2.getDate()+1);
     var when=dk2===tk?'šiandien':dk2===dkey(tm2)?'rytoj':dd.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});
     return{s:'Gerai, priminsiu '+when+' '+('0'+dd.getHours()).slice(-2)+':'+('0'+dd.getMinutes()).slice(-2)+': '+q.text+'.',undo:nn.id};
+  }
+  if(r.t==='event'){
+    var q=voiceEvent(r.raw,now);
+    if(q.need==='date')return{ask:1,s:'Kada? Pvz.: rytoj 15:00 arba penktadienį.'};
+    if(q.need==='text')return{ask:1,s:'Koks įvykis? Pvz.: dantistas.'};
+    var ne={id:nid(),kind:'event',title:q.title,child:q.child,date:dkey(q.date),time:q.time,place:'',weekly:q.weekly,acks:{},created:(dkey(q.date)<dkey(new Date())?dkey(q.date):dkey(new Date()))};
+    touch(ne);notes.push(ne);save();try{renderCal();renderHome();dispRefresh()}catch(e){}
+    var tm3=new Date(d0);tm3.setDate(tm3.getDate()+1),dk3=dkey(q.date);
+    var wh=dk3===dkey(d0)?'šiandien':dk3===dkey(tm3)?'rytoj':q.date.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});
+    return{s:'Įrašiau į kalendorių: '+wh+(q.time?' '+q.time:'')+' – '+q.title+(q.child?' ('+q.child+')':'')+(q.weekly?', kas savaitę':'')+'.',undo:ne.id};
   }
   if(r.t==='hello')return{s:'Labas! Kuo galiu padėti?'};
   if(r.t==='time')return{s:'Dabar '+('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+'.'};
