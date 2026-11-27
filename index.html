@@ -524,7 +524,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 105</div>
+    <div id="verset">Versija 109</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -546,7 +546,7 @@ function BOTF(k){
   return '<defs><linearGradient id="hd'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9D6F7"/></linearGradient></defs>'
    +'<g transform="translate(50 50) scale(1.12) translate(-50 -53)">'
    +'<rect x="48.8" y="19" width="2.4" height="11" rx="1.2" fill="#fff" stroke="#8FA6E8" stroke-width="1"/><path d="M49.5 20C44 14 37 15 36 19C41 22 46 22 49.5 20Z" fill="#B8F5DF" stroke="#8FA6E8" stroke-width="1"/><path d="M50.5 20C56 14 63 15 64 19C59 22 54 22 50.5 20Z" fill="#fff" stroke="#8FA6E8" stroke-width="1"/>'
-   +'<rect x="20" y="29" width="60" height="53" rx="21" fill="url(#hd'+k+')" stroke="#8FA6E8" stroke-width="1.8"/>'
+   +'<rect x="20" y="29" width="60" height="53" rx="22" fill="url(#hd'+k+')" stroke="#8FA6E8" stroke-width="1.8"/>'
    +'<rect x="28" y="38" width="44" height="30" rx="14" fill="#12204A"/>'
    +'<g class="beye"><path d="M36 51Q39.5 46.5 43 51M57 51Q60.5 46.5 64 51" stroke="#5CF2D0" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>'
    +'<circle cx="35" cy="58" r="2.8" fill="#9B6479"/><circle cx="65" cy="58" r="2.8" fill="#9B6479"/>'
@@ -1190,6 +1190,7 @@ function voiceIntent(raw){
   var t=vNorm(raw);
   if(/\b(pridek\w*|prideti|sukurk\w*|uzrasyk\w*|irasyk\w*|ivesk\w*|isirasyk\w*|lagg|skriv)\b/.test(t)&&/\b(kalendor\w*|ivyk\w*|renginy\w*|kalender)\b/.test(t))return{t:'event',raw:raw};
   if(/\bprim\w*/.test(t))return{t:'remind',raw:raw};
+  if(/\b(pazymek\w*|pazymeti|uzbrauk\w*|uzbraukti|atlikt\w*|atlikau|atlikome|atlikom|padaryt\w*|padariau|bocka\w*|klart)\b/.test(t))return{t:'done',raw:raw};
   var call=/\b(skambin\w*|paskambin\w*|skambut\w*|zvanyk\w*|ring\w*|facetime)\b/.test(t);
   if(call){
     if(/\b(mam\w*|mamma|mum\w*)\b/.test(t))return{t:'call',who:'mama'};
@@ -1295,6 +1296,24 @@ function voiceReply(r){
     var wh=dk3===dkey(d0)?'šiandien':dk3===dkey(tm3)?'rytoj':q.date.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});
     return{s:'Įrašiau į kalendorių: '+wh+(q.time?' '+q.time:'')+' – '+q.title+(q.child?' ('+q.child+')':'')+(q.weekly?', kas savaitę':'')+'.',undo:ne.id};
   }
+  if(r.t==='done'){
+    var fo=function(x){return String(x).toLowerCase().replace(/[ąä]/g,'a').replace(/č/g,'c').replace(/[ęė]/g,'e').replace(/į/g,'i').replace(/š/g,'s').replace(/[ųū]/g,'u').replace(/ž/g,'z')};
+    var dd0=new Date(d0),fr=fo(r.raw);if(/\bvakar\b/.test(fr))dd0.setDate(dd0.getDate()-1);
+    var dkd=dkey(dd0),open1=dayList(dd0).filter(function(e){return !(e.acks&&e.acks[dkd])});
+    var stop=/^(pazymek\w*|pazymeti|uzbrauk\w*|uzbraukti|atlikt\w*|atlikau|atlikome|atlikom|padaryt\w*|padariau|bocka\w*|klart|kaip|ka|kad|tai|sia|siandien|vakar|ivyki\w*|ivyk\w*|kalendori\w*|visus|viska|visi|is|ir|man|mums|jau|jis|ji|tas|tą|ta)$/;
+    var ws=fr.split(/[^a-z0-9]+/).filter(function(w){return w.length>=3&&!stop.test(w)});
+    var all=/\b(visus|viska|visi|visas)\b/.test(fr),hit;
+    if(!open1.length)return{s:'Nėra neatliktų įvykių '+(dd0<d0?'vakar':'šiandien')+'.'};
+    if(all)hit=open1;
+    else if(ws.length){hit=open1.filter(function(e){var hay=fo(e.title+' '+(e.child||'')+' '+(e.place||'')).split(/[^a-z0-9]+/);return ws.some(function(w){var k=w.slice(0,Math.min(5,w.length));return hay.some(function(h){return h.indexOf(k)===0||(k.length>=4&&w.indexOf(h.slice(0,5))===0&&h.length>=4)})})})}
+    else if(open1.length===1)hit=open1;
+    else return{ask:1,s:'Kurį pažymėti? '+open1.map(function(e){return (e.time?e.time+' ':'')+e.title}).join('; ')+'. Arba „visus“.'};
+    if(!hit.length)return{s:'Nerandu tokio neatlikto įvykio. Šiandien: '+open1.map(function(e){return e.title}).join('; ')+'.'};
+    var stamp=(myName()?myName()+' ':'')+hhmm(Date.now());
+    hit.forEach(function(e){e.acks=e.acks||{};e.acks[dkd]=stamp;touch(e)});
+    save();try{renderCal();renderHome();dispRefresh()}catch(e2){}
+    return{s:'Pažymėta kaip atlikta: '+hit.map(function(e){return e.title}).join('; ')+'.',unack:{ids:hit.map(function(e){return e.id}),dk:dkd}};
+  }
   if(r.t==='hello')return{s:'Labas! Kuo galiu padėti?'};
   if(r.t==='time')return{s:'Dabar '+('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+'.'};
   if(r.t==='date'){var w=now.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});return{s:'Šiandien '+w+'.'}}
@@ -1334,6 +1353,7 @@ function voiceShowCall(res){
   var b=$('bubble');b.innerHTML='';var tx=document.createElement('div');tx.textContent=res.s;b.appendChild(tx);
   var a=document.createElement('a');a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;border-radius:999px;color:#fff;text-decoration:none;font-weight:800;cursor:pointer';
   if(res.call){a.href='facetime:'+res.call;a.textContent='📞 Skambinti: '+res.callName;a.style.background='#34C759'}
+  else if(res.unack){a.textContent='↩ Atšaukti';a.style.background='#8A94B8';a.onclick=function(e){e.preventDefault();res.unack.ids.forEach(function(id){var n=notes.filter(function(q){return q.id===id})[0];if(n&&n.acks){delete n.acks[res.unack.dk];touch(n)}});save();try{renderCal();renderHome();dispRefresh()}catch(x){}a.textContent='Atšaukta';a.style.pointerEvents='none'}}
   else if(res.undo){a.textContent='↩ Atšaukti';a.style.background='#8A94B8';a.onclick=function(e){e.preventDefault();var n=notes.filter(function(q){return q.id===res.undo})[0];if(n){n.deleted=true;touch(n);save();try{render();check()}catch(x){}}a.textContent='Atšaukta';a.style.pointerEvents='none'}}
   b.appendChild(a);
   b.classList.add('show');b.style.pointerEvents='auto';window.__keepB=Date.now()+14000;clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show');b.style.pointerEvents=''},14000);
@@ -1375,11 +1395,11 @@ function voiceRun(text){
   if(rs.length===1)res=rs[0];
   else{
     res={s:rs.map(function(r){return r.s}).join(' ')};
-    rs.forEach(function(r){if(r.ask)res.ask=1;if(r.call&&!res.call){res.call=r.call;res.callName=r.callName}if(r.undo)res.undo=r.undo});
+    rs.forEach(function(r){if(r.ask)res.ask=1;if(r.call&&!res.call){res.call=r.call;res.callName=r.callName}if(r.undo)res.undo=r.undo;if(r.unack&&!res.unack)res.unack=r.unack});
   }
   if(viaV)window.__afterSay=function(){if(!REC&&!voiceOn&&recCanDo()){window.__viaVoice=true;recStart(!res.ask)}};
   botSay(res.ask?res.s:'„'+text+'“ – '+res.s,true,false);
-  if(res.call||res.undo)voiceShowCall(res);
+  if(res.call||res.undo||res.unack)voiceShowCall(res);
 }
 function voiceBox(msg){
   var b=$('vbox');b.hidden=false;vboxArm(20000);if(msg)botSay(msg,false);
