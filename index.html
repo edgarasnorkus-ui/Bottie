@@ -524,7 +524,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 97</div>
+    <div id="verset">Versija 100</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1142,12 +1142,13 @@ function ltSpeak(t){
 function speakable(t){return ltSpeak(t)}
 function botSay(text,speak,cheer){
   var b=$('bubble');b.style.pointerEvents='';window.__keepB=0;b.textContent=text;b.classList.add('show');clearTimeout(botBubbleT);
+  var after=window.__afterSay;window.__afterSay=null;
   var myId=(window.__bsid=(window.__bsid||0)+1);
   var hideB=function(d){if(myId!==window.__bsid)return;if(window.__keepB&&Date.now()<window.__keepB)d=Math.max(d,window.__keepB-Date.now());clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show')},d)};
   hideB(Math.max(7000,text.length*85+3000));
-  if(!speak)return;
+  if(!speak){if(after)setTimeout(after,300);return}
   try{
-    var ss=window.speechSynthesis;if(!ss)return;
+    var ss=window.speechSynthesis;if(!ss){if(after)setTimeout(after,300);return}
     loadVoices();
     var sp=speakable(text),parts=[];
     (sp.match(/[^.!?]+[.!?]*/g)||[sp]).forEach(function(x){x=x.trim();if(!x)return;
@@ -1159,7 +1160,7 @@ function botSay(text,speak,cheer){
         var u=new SpeechSynthesisUtterance(p);u.lang='lt-LT';
         u.pitch=cheer?1.1:1.0;u.rate=cheer?0.98:0.94;u.volume=1;
         if(LTV)u.voice=LTV;
-        if(p===parts[parts.length-1]){u.onend=function(){hideB(2200)};u.onerror=function(){hideB(3000)}}
+        if(p===parts[parts.length-1]){u.onend=function(){hideB(2200);if(after)setTimeout(after,350)};u.onerror=function(){hideB(3000);if(after)setTimeout(after,350)}}
         ss.speak(u);
       });
     };
@@ -1244,8 +1245,8 @@ function voiceReply(r){
   if(r.t==='remind'){
     var q=voiceRemind(r.raw,now);
     if(!q)return{s:'Nesupratau priminimo.'};
-    if(q.need==='time')return{s:'Kada priminti? Pvz.: primink rytoj 15:00 nupirkti pieno.'};
-    if(q.need==='text')return{s:'Ką priminti? Pvz.: primink rytoj 15:00 nupirkti pieno.'};
+    if(q.need==='time')return{ask:1,s:'Kada priminti? Pvz.: rytoj 15:00.'};
+    if(q.need==='text')return{ask:1,s:'Ką priminti? Pvz.: nupirkti pieno.'};
     var nn={id:nid(),text:q.text,due:q.due,need:true,ack:false,last:0};touch(nn);notes.push(nn);save();try{render();check()}catch(e){}
     var dd=new Date(q.due),dk2=dkey(dd),tk=dkey(new Date(now.getTime())),tm2=new Date(d0);tm2.setDate(tm2.getDate()+1);
     var when=dk2===tk?'šiandien':dk2===dkey(tm2)?'rytoj':dd.toLocaleDateString('lt-LT',{weekday:'long',day:'numeric',month:'long'});
@@ -1295,6 +1296,7 @@ function voiceShowCall(res){
   b.classList.add('show');b.style.pointerEvents='auto';window.__keepB=Date.now()+14000;clearTimeout(botBubbleT);botBubbleT=setTimeout(function(){b.classList.remove('show');b.style.pointerEvents=''},14000);
 }
 function voiceStop(){voiceOn=false;$('talk').classList.remove('listen');try{voiceRec&&voiceRec.abort()}catch(e){}}
+var VPEND=null;
 var FC=null;
 function fcUnlock(){try{if(!FC){var AC=window.AudioContext||window.webkitAudioContext;if(AC)FC=new AC()}if(FC&&FC.state==='suspended')FC.resume()}catch(e){}}
 function fartSound(){
@@ -1311,10 +1313,29 @@ function fartSound(){
     t+=d+0.08+Math.random()*0.12;
   }
 }
+function voiceSplit(text){
+  var bits=String(text).split(/(\s*(?:[,;]|\bir\b|\bbei\b|\bo\b|\btaip pat\b|\bdar\b|\bpaskui\b|\btada\b)\s+)/i),out=[],i,cur=bits[0];
+  for(i=1;i<bits.length;i+=2){
+    var sep=bits[i],piece=bits[i+1]||'';
+    if(piece.trim()&&voiceIntent(piece).t!=='unknown'){out.push(cur);cur=piece}
+    else cur+=sep+piece;
+  }
+  out.push(cur);
+  return out.map(function(x){return x.trim()}).filter(Boolean);
+}
 function voiceRun(text){
   if(/persk|pirsk|prutt|prūsk|prusk|\bfart/i.test(text)){fartSound();botSay('💨 Prrrt!',false);return}
-  var best=voiceIntent(text),res=voiceReply(best);
-  botSay('„'+text+'“ – '+res.s,true,false);
+  var viaV=window.__viaVoice;window.__viaVoice=false;
+  if(VPEND&&Date.now()-VPEND.t<90000){text=VPEND.raw+' '+text}VPEND=null;
+  var parts=voiceSplit(text),rs=[],res;
+  parts.forEach(function(p){var r=voiceReply(voiceIntent(p));rs.push(r);if(r.ask&&!VPEND)VPEND={raw:p,t:Date.now()}});
+  if(rs.length===1)res=rs[0];
+  else{
+    res={s:rs.map(function(r){return r.s}).join(' ')};
+    rs.forEach(function(r){if(r.ask)res.ask=1;if(r.call&&!res.call){res.call=r.call;res.callName=r.callName}if(r.undo)res.undo=r.undo});
+  }
+  if(viaV)window.__afterSay=function(){if(!REC&&!voiceOn&&recCanDo()){window.__viaVoice=true;recStart(!res.ask)}};
+  botSay(res.ask?res.s:'„'+text+'“ – '+res.s,true,false);
   if(res.call||res.undo)voiceShowCall(res);
 }
 function voiceBox(msg){
@@ -1341,7 +1362,7 @@ function wavB64(chunks,sr){
   return btoa(s);
 }
 function recCanDo(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&(window.AudioContext||window.webkitAudioContext)&&schoolCfg())}
-function recStart(){
+function recStart(q){
   navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}).then(function(stream){
     var AC=window.AudioContext||window.webkitAudioContext,ctx=new AC();try{ctx.resume()}catch(e){}
     var src=ctx.createMediaStreamSource(stream),proc=ctx.createScriptProcessor(4096,1,1),chunks=[],t0=Date.now(),heard=false,lastLoud=0,floor=0,nch=0,done=false;
@@ -1352,14 +1373,14 @@ function recStart(){
       var thr=Math.max(.02,floor*3);
       if(rms>thr){heard=true;lastLoud=now}
       if(heard&&now-lastLoud>1300)fin(false);
-      else if(!heard&&now-t0>8000)fin(true);
+      else if(!heard&&now-t0>(q?5500:8000))fin(true);
       else if(now-t0>15000)fin(false);
     };
     src.connect(proc);proc.connect(ctx.destination);
     function cleanup(){try{proc.disconnect();src.disconnect()}catch(e){}try{stream.getTracks().forEach(function(t){t.stop()})}catch(e){}try{ctx.close()}catch(e){}}
     function fin(cancel){
       if(done)return;done=true;REC=null;cleanup();voiceOn=false;$('talk').classList.remove('listen');
-      if(cancel||!heard){botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
+      if(cancel||!heard){if(q)$('bubble').classList.remove('show');else botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
       botSay('Galvoju…',false);clearTimeout(botBubbleT);
       var tick=0,ac=new AbortController(),tmo=setTimeout(function(){ac.abort()},70000);
       function stopT(){clearTimeout(tmo)}
@@ -1369,7 +1390,7 @@ function recStart(){
         .then(function(r){return r.text()}).then(function(tx){stopT();var j;try{j=JSON.parse(tx)}catch(e){voiceBox('Netikėtas atsakymas iš serverio: '+tx.slice(0,120));return}
           if(j.error){voiceBox('Balso klaida: '+(j.error==='unauthorized'?'neteisingas raktas':j.error)+'. Rašyk komandą.');return}
           var t=(j.text||'').trim();if(!t){botSay('Nieko negirdėjau. Bandyk dar kartą.',false);return}
-          setTimeout(function(){voiceRun(t)},400);
+          window.__viaVoice=true;setTimeout(function(){voiceRun(t)},400);
         }).catch(function(e){stopT();voiceBox(e&&e.name==='AbortError'?'Per ilgai laukta (70 s). Rašyk komandą.':'Nepavyko prisijungti. Rašyk komandą.')});
     }
     REC={stop:function(){fin(false)}};voiceOn=true;$('talk').classList.add('listen');botSay('Klausau…',false);
