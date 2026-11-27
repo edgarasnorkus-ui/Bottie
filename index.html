@@ -524,7 +524,7 @@ body.disp main{padding:10px 22px 48px}
       <div class="meta" id="sunnfo" aria-live="polite"></div>
       <div class="row"><span>Tamsi tema nuo</span><input type="number" min="0" max="23" id="pfrom" class="inp" style="width:84px;flex:none" aria-label="Nuo valandos"><span>iki</span><input type="number" min="0" max="23" id="pto" class="inp" style="width:84px;flex:none" aria-label="Iki valandos"><span>val.</span></div>
       </div>
-    <div id="verset">Versija 101</div>
+    <div id="verset">Versija 102</div>
   </section>
   <section class="view" id="v-notes"><div id="list"></div></section>
 </main>
@@ -1390,6 +1390,8 @@ $('vbox').onsubmit=function(e){e.preventDefault();fcUnlock();var v=$('vin').valu
 var REC=null;
 function wavB64(chunks,sr){
   var n=0;chunks.forEach(function(c){n+=c.length});var all=new Float32Array(n),o=0;chunks.forEach(function(c){all.set(c,o);o+=c.length});
+  var pk=0;for(var pi=0;pi<n;pi++){var av=Math.abs(all[pi]);if(av>pk)pk=av}
+  var gain=(pk>.002&&pk<.6)?Math.min(25,.85/pk):1;if(gain!==1)for(var gi=0;gi<n;gi++)all[gi]*=gain;
   var r=sr/16000,m=Math.floor(n/r),pcm=new Int16Array(m);
   for(var i=0;i<m;i++){var a=Math.floor(i*r),b=Math.min(n,Math.floor((i+1)*r)),sum=0,k=0;for(var j=a;j<b;j++){sum+=all[j];k++}var v=k?sum/k:0;v=Math.max(-1,Math.min(1,v));pcm[i]=v<0?v*32768:v*32767}
   var buf=new ArrayBuffer(44+m*2),d=new DataView(buf);
@@ -1401,14 +1403,14 @@ function wavB64(chunks,sr){
 }
 function recCanDo(){return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&(window.AudioContext||window.webkitAudioContext)&&schoolCfg())}
 function recStart(q){
-  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}).then(function(stream){
+  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(function(stream){
     var AC=window.AudioContext||window.webkitAudioContext,ctx=new AC();try{ctx.resume()}catch(e){}
     var src=ctx.createMediaStreamSource(stream),proc=ctx.createScriptProcessor(4096,1,1),chunks=[],t0=Date.now(),heard=false,lastLoud=0,floor=0,nch=0,done=false;
     proc.onaudioprocess=function(ev){
       if(done)return;var d=ev.inputBuffer.getChannelData(0);chunks.push(new Float32Array(d));
       var s=0;for(var i=0;i<d.length;i+=4)s+=d[i]*d[i];var rms=Math.sqrt(s/(d.length/4)),now=Date.now();
-      nch++;if(nch<=3){floor=Math.max(floor,rms);return}
-      var thr=Math.max(.02,floor*3);
+      nch++;if(nch<=2)return;if(nch<=6){floor=Math.max(floor,rms);return}
+      var thr=Math.max(.008,floor*3);
       if(rms>thr){heard=true;lastLoud=now}
       if(heard&&now-lastLoud>1300)fin(false);
       else if(!heard&&now-t0>(q?5500:8000))fin(true);
